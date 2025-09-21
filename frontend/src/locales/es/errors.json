@@ -1,0 +1,16 @@
+{
+  "general": {
+    "unexpected": "Ocurrió un error inesperado",
+    "try_again": "Por favor intenta de nuevo más tarde",
+    "contact_support": "Si el problema persiste, contacta soporte"
+  },
+  "network": {
+    "offline": "Pareces estar desconectado",
+    "connection_lost": "Conexión perdida",
+    "timeout": "Tiempo de espera agotado"
+  },
+  "validation": {
+    "required": "Este campo es requerido",
+    "invalid_email": "Por favor ingresa un email válido"
+  }
+}

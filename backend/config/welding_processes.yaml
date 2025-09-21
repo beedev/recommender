@@ -1,0 +1,112 @@
+# Welding Process Configuration
+# Central source of truth for all welding processes, materials, and domain knowledge
+
+welding_processes:
+  # Primary process names (standard abbreviations)
+  primary:
+    - "MIG"
+    - "TIG" 
+    - "MMA"
+    - "STICK"
+    - "FLUX_CORE"
+    - "MULTI_PROCESS"
+  
+  # Technical acronyms (AWS/Industry standard)
+  technical:
+    - "GMAW"    # Gas Metal Arc Welding (MIG)
+    - "GTAW"    # Gas Tungsten Arc Welding (TIG)
+    - "SMAW"    # Shielded Metal Arc Welding (STICK)
+    - "FCAW"    # Flux-Cored Arc Welding
+    - "SAW"     # Submerged Arc Welding
+    - "PAW"     # Plasma Arc Welding
+  
+  # Aliases and common terms
+  aliases:
+    MIG: ["GMAW", "Gas Metal Arc", "wire welding"]
+    TIG: ["GTAW", "Gas Tungsten Arc", "argon welding"]
+    STICK: ["SMAW", "Shielded Metal Arc", "electrode welding", "MMA"]
+    FLUX_CORE: ["FCAW", "Flux-Cored Arc"]
+
+materials:
+  # Base materials
+  primary:
+    - "steel"
+    - "stainless_steel"
+    - "aluminum"
+    - "carbon_steel"
+    - "copper"
+    - "titanium"
+    - "nickel_alloys"
+  
+  # Common aliases
+  aliases:
+    steel: ["mild steel", "carbon steel", "structural steel"]
+    stainless_steel: ["stainless", "SS", "316", "304"]
+    aluminum: ["aluminium", "Al", "6061", "5356"]
+
+industries:
+  - "automotive"
+  - "aerospace" 
+  - "marine"
+  - "construction"
+  - "manufacturing"
+  - "fabrication"
+  - "pipeline"
+  - "shipbuilding"
+  - "petrochemical"
+  - "nuclear"
+
+applications:
+  - "general fabrication"
+  - "structural welding"
+  - "pipe welding"
+  - "sheet metal"
+  - "heavy fabrication"
+  - "precision welding"
+  - "repair work"
+  - "production welding"
+
+environments:
+  - "indoor"
+  - "outdoor"
+  - "marine"
+  - "high humidity"
+  - "clean room"
+  - "industrial"
+  - "field work"
+  - "confined space"
+
+# Power specifications
+power_ranges:
+  voltage: [110, 220, 240, 380, 480, 575]
+  current_min: 10
+  current_max: 2000
+  duty_cycle: [20, 40, 60, 80, 100]
+
+# Common consumables
+consumables:
+  mig_wires:
+    - "ER70S-6"
+    - "ER4043"
+    - "ER5356"
+    - "ER308L"
+    - "ER316L"
+  
+  tig_rods:
+    - "ER70S-2"
+    - "ER4043"
+    - "ER2319"
+    - "ER308L"
+  
+  stick_electrodes:
+    - "E7018"
+    - "E6010" 
+    - "E6013"
+    - "E308L-16"
+
+# Validation rules
+validation:
+  thickness_range: [0.1, 100.0]  # mm
+  current_range: [10, 2000]      # amps
+  voltage_range: [110, 575]      # volts
+  power_range: [100, 50000]      # watts

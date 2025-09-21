@@ -1,0 +1,122 @@
+# Mode Detection Configuration
+# Simple lookup lists for determining user expertise level
+
+expert_signals:
+  # Technical welding parameters
+  - "amperage"
+  - "voltage" 
+  - "duty cycle"
+  - "wire feed speed"
+  - "penetration"
+  - "HAZ"
+  - "travel speed"
+  
+  # Process acronyms
+  - "GMAW"
+  - "GTAW"
+  - "SMAW"
+  - "FCAW"
+  - "MIG"
+  - "TIG"
+  
+  # Consumable specifications
+  - "ER70S"
+  - "ER4043"
+  - "E7018"
+  - "E6010"
+  
+  # Our specific products (expert users know exact model names)
+  - "Aristo 500 ix"
+  - "Warrior 400i"
+  - "Renegade 300"
+  
+  # Expert compatibility language
+  - "compatible with"
+  - "pairs with"
+  - "designed for"
+  - "wire feeder"
+  - "cooler"
+  - "regulator"
+
+guided_signals:
+  # Beginner indicators
+  - "beginner"
+  - "new to welding"
+  - "just starting"
+  - "learning"
+  - "first time"
+  - "getting started"
+  
+  # Learning questions
+  - "how do I"
+  - "what is"
+  - "help me understand"
+  - "teach me"
+  - "guide me"
+  - "step by step"
+  
+  # Uncertainty
+  - "not sure"
+  - "confused"
+  - "help me choose"
+  - "what do I need"
+  
+  # Home/hobby context
+  - "home projects"
+  - "garage"
+  - "hobby"
+  - "DIY"
+  - "weekend project"
+  
+  # Guided flow step indicators
+  - "step 1 of guided flow"
+  - "step 2 of guided flow" 
+  - "step 3 of guided flow"
+  - "step 4 of guided flow"
+  - "step 5 of guided flow"
+  - "guided selection"
+  - "ranked by sales frequency"
+  - "top 3"
+  - "top 6"
+  - "popular feeders"
+  - "popular coolers"
+  - "show me available"
+  - "let user select from the list"
+
+# Guided flow triggers - realistic user scenarios
+guided_flow_scenarios:
+  package_formation:
+    - "form a package with"
+    - "create a package with"
+    - "build a setup with"
+    - "complete setup for"
+    - "what goes with"
+    - "compatible with"
+    - "pair with"
+    
+  multi_process_queries:
+    - "multi process"
+    - "multiple processes"
+    - "versatile welding"
+    - "different welding processes"
+    
+  beginner_package_requests:
+    - "looking for welding machine"
+    - "need welding equipment"
+    - "complete welding setup"
+    - "welding starter kit"
+    - "welding package"
+    
+  specific_product_queries:
+    - "with the"
+    - "using the"
+    - "I have a"
+    - "I own a"
+    - "my current"
+    - "existing"
+    - "already have"
+
+# Weights for scoring
+expert_weight: 0.4
+guided_weight: 0.6
+confidence_threshold: 0.7

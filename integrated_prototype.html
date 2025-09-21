@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESAB Welding Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <style>
+        :root {
+            --sparky-gold: #EAB308;
+            --sparky-dark: #1F2937;
+            --sparky-bg: #0F0F0F;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #8B4513 0%, #D2691E 30%, #654321 100%);
+            min-height: 100vh;
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+        
+        .sidebar {
+            width: 280px;
+            background: rgba(0, 0, 0, 0.8);
+            border-right: 2px solid var(--sparky-gold);
+        }
+        
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 20px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-left: 4px solid transparent;
+        }
+        
+        .sidebar-item:hover {
+            background: rgba(234, 179, 8, 0.1);
+            border-left-color: var(--sparky-gold);
+        }
+        
+        .sidebar-item.active {
+            background: rgba(234, 179, 8, 0.2);
+            border-left-color: var(--sparky-gold);
+            font-weight: bold;
+        }
+        
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+        }
+        
+        .section {
+            display: none;
+        }
+        
+        .section.active {
+            display: block;
+        }
+        
+        .sparky-avatar {
+            background: linear-gradient(135deg, #8B4513 0%, #D2691E 100%);
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 20px;
+        }
+        
+        .user-avatar {
+            background: var(--sparky-gold);
+            color: black;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        
+        .chat-message {
+            background: white;
+            border-radius: 20px;
+            padding: 16px 20px;
+            margin: 8px 0;
+            max-width: 80%;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .product-tile {
+            background: var(--sparky-gold);
+            border-radius: 12px;
+            padding: 16px;
+            margin: 8px 0;
+            color: black;
+            font-weight: 500;
+        }
+        
+        .package-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 16px;
+            padding: 32px;
+            color: black;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            border: 2px solid var(--sparky-gold);
+        }
+        
+        .package-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 32px;
+        }
+        
+        .package-header .sparky-icon {
+            background: var(--sparky-gold);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: black;
+            font-weight: bold;
+            font-size: 24px;
+        }
+        
+        .component-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+            font-size: 16px;
+        }
+        
+        .component-item:last-child {
+            border-bottom: none;
+        }
+        
+        .component-name {
+            font-weight: 600;
+        }
+        
+        .component-description {
+            font-weight: 400;
+            opacity: 0.8;
+        }
+        
+        .component-price {
+            font-weight: bold;
+            font-size: 18px;
+        }
+        
+        .total-section {
+            margin-top: auto;
+            padding-top: 24px;
+            border-top: 3px dashed rgba(0,0,0,0.3);
+        }
+        
+        .total-price {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        
+        .chat-input-container {
+            background: rgba(255,255,255,0.1);
+            border-radius: 25px;
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 16px;
+        }
+        
+        .chat-input {
+            background: transparent;
+            border: none;
+            outline: none;
+            color: white;
+            flex: 1;
+            padding: 12px 20px;
+            font-size: 16px;
+        }
+        
+        .chat-input::placeholder {
+            color: rgba(255,255,255,0.7);
+        }
+        
+        .send-button {
+            background: var(--sparky-gold);
+            color: black;
+            border: none;
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .send-button:hover {
+            transform: scale(1.1);
+        }
+        
+        .section-divider {
+            width: 4px;
+            background: linear-gradient(180deg, var(--sparky-gold) 0%, #F59E0B  100%);
+            margin: 0 16px;
+            border-radius: 2px;
+        }
+        
+        .status-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            padding: 24px;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        .status-card.online {
+            border-color: #10B981;
+        }
+        
+        .status-card.offline {
+            border-color: #EF4444;
+        }
+        
+        .status-card.warning {
+            border-color: #F59E0B;
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+        
+        .status-online {
+            background: #10B981;
+            box-shadow: 0 0 8px #10B981;
+        }
+        
+        .status-offline {
+            background: #EF4444;
+            box-shadow: 0 0 8px #EF4444;
+        }
+        
+        .status-warning {
+            background: #F59E0B;
+            box-shadow: 0 0 8px #F59E0B;
+        }
+        
+        .metric-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid var(--sparky-gold);
+        }
+        
+        .quote-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid var(--sparky-gold);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .quote-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            border-color: var(--sparky-gold);
+        }
+        
+        .search-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            padding: 24px;
+            border: 2px solid var(--sparky-gold);
+            margin-bottom: 24px;
+        }
+        
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .status-pending {
+            background: #FEF3C7;
+            color: #92400E;
+        }
+        
+        .status-approved {
+            background: #D1FAE5;
+            color: #065F46;
+        }
+        
+        .status-rejected {
+            background: #FEE2E2;
+            color: #991B1B;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            margin: 20px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Header -->
+    <div class="bg-yellow-400 p-4">
+        <div class="flex items-center justify-between max-w-full mx-auto">
+            <!-- ESAB Logo -->
+            <div class="flex items-center gap-6">
+                <div class="bg-black px-6 py-2 transform -skew-x-12">
+                    <span class="font-black text-yellow-400 text-xl transform skew-x-12 inline-block">ESAB</span>
+                </div>
+                <h1 class="text-black font-bold text-xl">Welding Management System</h1>
+            </div>
+            
+            <!-- User Profile -->
+            <div class="flex items-center gap-3">
+                <div class="text-right">
+                    <div class="text-black text-sm">Welcome</div>
+                    <div class="text-black font-bold">Jane Chapman</div>
+                </div>
+                <div class="bg-black text-yellow-400 rounded-full w-12 h-12 flex items-center justify-center font-bold">
+                    JC
+                </div>
+                <button class="text-black">
+                    <i data-lucide="power" class="h-5 w-5"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex h-screen">
+        <!-- Sidebar Navigation -->
+        <div class="sidebar">
+            <div class="p-6">
+                <h2 class="text-white text-xl font-bold mb-6">Navigation</h2>
+            </div>
+            
+            <nav>
+                <div class="sidebar-item active" onclick="showSection('sparky')" data-section="sparky">
+                    <i data-lucide="zap" class="h-5 w-5"></i>
+                    <span>Sparky - Product Config</span>
+                </div>
+                
+                <div class="sidebar-item" onclick="showSection('dashboard')" data-section="dashboard">
+                    <i data-lucide="gauge" class="h-5 w-5"></i>
+                    <span>System Dashboard</span>
+                </div>
+                
+                <div class="sidebar-item" onclick="showSection('quotes')" data-section="quotes">
+                    <i data-lucide="file-text" class="h-5 w-5"></i>
+                    <span>Quote Management</span>
+                </div>
+            </nav>
+            
+            <div class="p-6 mt-auto">
+                <div class="text-xs text-gray-400">
+                    <p>System Status</p>
+                    <div class="flex items-center gap-2 mt-2">
+                        <div class="status-indicator status-online"></div>
+                        <span class="text-green-400">All Systems Online</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="main-content">
+            
+            <!-- Sparky Product Configuration Section -->
+            <div id="sparky" class="section active">
+                <div class="flex" style="height: calc(100vh - 80px);">
+                    <!-- Left Side: Ask Sparky -->
+                    <div class="flex-1 p-8 flex flex-col">
+                        <h1 class="text-white text-3xl font-bold mb-8">Ask Sparky</h1>
+                        
+                        <!-- Chat Container -->
+                        <div class="flex-1 flex flex-col gap-4 overflow-y-auto">
+                            <!-- Sparky's initial message -->
+                            <div class="flex items-start gap-4">
+                                <div class="sparky-avatar">
+                                    <i data-lucide="zap" class="h-6 w-6"></i>
+                                </div>
+                                <div class="chat-message">
+                                    <div class="text-gray-800">Hello! I'm Sparky,</div>
+                                    <div class="text-gray-800">What are you looking for?</div>
+                                </div>
+                            </div>
+                            
+                            <!-- User message -->
+                            <div class="flex items-start gap-4 justify-end">
+                                <div class="chat-message">
+                                    <div class="text-gray-800">Hi Sparky, I'm looking for a multipurpose machine that supports both MIG and MMA processes with solid and flux-cored wire options.</div>
+                                </div>
+                                <div class="user-avatar">JC</div>
+                            </div>
+                            
+                            <!-- Sparky's response -->
+                            <div class="flex items-start gap-4">
+                                <div class="sparky-avatar">
+                                    <i data-lucide="zap" class="h-6 w-6"></i>
+                                </div>
+                                <div class="chat-message">
+                                    <div class="text-gray-800">While I make your package, here are some options for solid and Flux Cored Conduit wire options.</div>
+                                    <div class="text-gray-800">Please select anyone</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Product Options -->
+                            <div class="ml-16 space-y-3">
+                                <div class="product-tile cursor-pointer hover:bg-yellow-500 transition-colors" onclick="selectProduct('AWC44-116')">
+                                    <div class="font-bold">Tweco AWC44-116</div>
+                                    <div class="text-sm mt-1">Conduit Liner (1/16) Robotic, Bronze Jump, for Aluminum Wire</div>
+                                </div>
+                                
+                                <div class="product-tile cursor-pointer hover:bg-yellow-500 transition-colors" onclick="selectProduct('44FC-18-15')">
+                                    <div class="font-bold">Tweco 44FC-18-15</div>
+                                    <div class="text-sm mt-1">Conduit Liner (450A, 7/64-1/8, 15FT) for Fluxcored Wire</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Separate Chat Input Section at Bottom -->
+                        <div class="mt-8 pt-4 border-t border-yellow-400/30">
+                            <div class="mb-2">
+                                <span class="text-yellow-400 text-sm font-medium">💬 Chat with Sparky</span>
+                            </div>
+                            <div class="chat-input-container">
+                                <input type="text" class="chat-input" placeholder="Ask Sparky about welding packages, compatibility, or get recommendations...">
+                                <button class="send-button" onclick="sendMessage()">
+                                    <i data-lucide="send" class="h-5 w-5"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Section Divider -->
+                    <div class="section-divider"></div>
+                    
+                    <!-- Right Side: Sparky's Suggestions -->
+                    <div class="flex-1 p-8 flex flex-col">
+                        <h1 class="text-white text-3xl font-bold mb-8">Sparky's Suggestions</h1>
+                        
+                        <!-- Scrollable Package Container -->
+                        <div class="flex-1 overflow-y-auto">
+                            <!-- Sparky's Choice Package - Full Width -->
+                            <div class="package-card">
+                                <div class="package-header">
+                                    <div class="sparky-icon">S</div>
+                                    <h2 class="text-3xl font-bold">SPARKY'S CHOICE</h2>
+                                </div>
+                                
+                                <!-- Components List - One per line with pricing -->
+                                <div class="flex-1">
+                                    <div class="component-item">
+                                        <div>
+                                            <div class="component-name">Wire Feeder</div>
+                                            <div class="component-description">Standard Wire Feeder</div>
+                                        </div>
+                                        <div class="component-price">$2,850.00</div>
+                                    </div>
+                                    
+                                    <div class="component-item">
+                                        <div>
+                                            <div class="component-name">Connection Cable</div>
+                                            <div class="component-description">3m Cable Set</div>
+                                        </div>
+                                        <div class="component-price">$145.00</div>
+                                    </div>
+                                    
+                                    <div class="component-item">
+                                        <div>
+                                            <div class="component-name">Cooling Unit</div>
+                                            <div class="component-description">Standard Cooling Unit</div>
+                                        </div>
+                                        <div class="component-price">$1,890.00</div>
+                                    </div>
+                                    
+                                    <div class="component-item">
+                                        <div>
+                                            <div class="component-name">Torches</div>
+                                            <div class="component-description">Standard MIG Torch</div>
+                                        </div>
+                                        <div class="component-price">$475.00</div>
+                                    </div>
+                                    
+                                    <div class="component-item">
+                                        <div>
+                                            <div class="component-name">Trolley</div>
+                                            <div class="component-description">Standard Trolley</div>
+                                        </div>
+                                        <div class="component-price">$320.00</div>
+                                    </div>
+                                    
+                                    <div class="component-item">
+                                        <div>
+                                            <div class="component-name">Accessories</div>
+                                            <div class="component-description">Basic Accessory Kit</div>
+                                        </div>
+                                        <div class="component-price">$285.00</div>
+                                    </div>
+                                    
+                                    <div class="component-item">
+                                        <div>
+                                            <div class="component-name">Wear Parts</div>
+                                            <div class="component-description">Standard Wear Parts Kit</div>
+                                        </div>
+                                        <div class="component-price">$284.92</div>
+                                    </div>
+                                    
+                                    <!-- Additional components for scrolling demonstration -->
+                                    <div class="component-item">
+                                        <div>
+                                            <div class="component-name">Power Source</div>
+                                            <div class="component-description">Multipurpose MIG/MMA Welder 400A</div>
+                                        </div>
+                                        <div class="component-price">$4,500.00</div>
+                                    </div>
+                                    
+                                    <div class="component-item">
+                                        <div>
+                                            <div class="component-name">Ground Cable</div>
+                                            <div class="component-description">Heavy Duty Ground Cable 5m</div>
+                                        </div>
+                                        <div class="component-price">$89.00</div>
+                                    </div>
+                                    
+                                    <div class="component-item">
+                                        <div>
+                                            <div class="component-name">Gas Regulator</div>
+                                            <div class="component-description">Precision Gas Flow Regulator</div>
+                                        </div>
+                                        <div class="component-price">$195.00</div>
+                                    </div>
+                                    
+                                    <div class="component-item">
+                                        <div>
+                                            <div class="component-name">Wire Spool</div>
+                                            <div class="component-description">ER70S-6 Wire 1.2mm 15kg</div>
+                                        </div>
+                                        <div class="component-price">$125.00</div>
+                                    </div>
+                                    
+                                    <div class="component-item">
+                                        <div>
+                                            <div class="component-name">Safety Equipment</div>
+                                            <div class="component-description">Professional Welding Helmet & Gloves</div>
+                                        </div>
+                                        <div class="component-price">$220.00</div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Total Section -->
+                                <div class="total-section">
+                                    <div class="total-price">
+                                        <span>Total Price:</span>
+                                        <span>$11,378.92</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dashboard Section -->
+            <div id="dashboard" class="section">
+                <div class="p-8">
+                    <h1 class="text-white text-4xl font-bold mb-8">System Dashboard</h1>
+                    
+                    <!-- System Status Overview -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                        <!-- Neo4j Status -->
+                        <div class="status-card online">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="font-bold text-lg">Neo4j Database</h3>
+                                <i data-lucide="database" class="h-6 w-6 text-green-600"></i>
+                            </div>
+                            <div class="flex items-center mb-2">
+                                <span class="status-indicator status-online"></span>
+                                <span class="font-medium text-green-700">Online</span>
+                            </div>
+                            <div class="text-sm text-gray-600">
+                                <p>Host: neo4j://localhost:7687</p>
+                                <p>Uptime: 99.9%</p>
+                                <p>Response: 12ms</p>
+                            </div>
+                        </div>
+                        
+                        <!-- PostgreSQL Status -->
+                        <div class="status-card online">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="font-bold text-lg">PostgreSQL</h3>
+                                <i data-lucide="server" class="h-6 w-6 text-green-600"></i>
+                            </div>
+                            <div class="flex items-center mb-2">
+                                <span class="status-indicator status-online"></span>
+                                <span class="font-medium text-green-700">Online</span>
+                            </div>
+                            <div class="text-sm text-gray-600">
+                                <p>Host: localhost:5432</p>
+                                <p>Connections: 15/100</p>
+                                <p>Query time: 8ms</p>
+                            </div>
+                        </div>
+                        
+                        <!-- LangSmith Status -->
+                        <div class="status-card warning">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="font-bold text-lg">LangSmith</h3>
+                                <i data-lucide="brain" class="h-6 w-6 text-orange-600"></i>
+                            </div>
+                            <div class="flex items-center mb-2">
+                                <span class="status-indicator status-warning"></span>
+                                <span class="font-medium text-orange-700">Limited</span>
+                            </div>
+                            <div class="text-sm text-gray-600">
+                                <p>API: api.smith.langchain.com</p>
+                                <p>Rate limit: 80% used</p>
+                                <p>Latency: 245ms</p>
+                            </div>
+                        </div>
+                        
+                        <!-- API Gateway Status -->
+                        <div class="status-card online">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="font-bold text-lg">API Gateway</h3>
+                                <i data-lucide="network" class="h-6 w-6 text-green-600"></i>
+                            </div>
+                            <div class="flex items-center mb-2">
+                                <span class="status-indicator status-online"></span>
+                                <span class="font-medium text-green-700">Healthy</span>
+                            </div>
+                            <div class="text-sm text-gray-600">
+                                <p>Endpoint: /api/v1</p>
+                                <p>Requests/min: 127</p>
+                                <p>Success rate: 99.2%</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Performance Metrics -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                        <!-- System Performance -->
+                        <div class="metric-card">
+                            <h3 class="font-bold text-xl mb-4 flex items-center gap-2">
+                                <i data-lucide="activity" class="h-5 w-5 text-blue-600"></i>
+                                System Performance
+                            </h3>
+                            <div class="space-y-3">
+                                <div class="flex justify-between items-center">
+                                    <span>CPU Usage</span>
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-24 bg-gray-200 rounded-full h-2">
+                                            <div class="bg-blue-600 h-2 rounded-full" style="width: 45%"></div>
+                                        </div>
+                                        <span class="text-sm font-medium">45%</span>
+                                    </div>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span>Memory Usage</span>
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-24 bg-gray-200 rounded-full h-2">
+                                            <div class="bg-green-600 h-2 rounded-full" style="width: 62%"></div>
+                                        </div>
+                                        <span class="text-sm font-medium">62%</span>
+                                    </div>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span>Disk I/O</span>
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-24 bg-gray-200 rounded-full h-2">
+                                            <div class="bg-yellow-600 h-2 rounded-full" style="width: 28%"></div>
+                                        </div>
+                                        <span class="text-sm font-medium">28%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- AI Model Performance -->
+                        <div class="metric-card">
+                            <h3 class="font-bold text-xl mb-4 flex items-center gap-2">
+                                <i data-lucide="zap" class="h-5 w-5 text-purple-600"></i>
+                                AI Model Metrics
+                            </h3>
+                            <div class="space-y-3">
+                                <div class="flex justify-between">
+                                    <span>OpenAI Requests</span>
+                                    <span class="font-bold">1,247</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>Avg Response Time</span>
+                                    <span class="font-bold">1.2s</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>Success Rate</span>
+                                    <span class="font-bold text-green-600">98.5%</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>Token Usage</span>
+                                    <span class="font-bold">156K</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Package Recommendations -->
+                        <div class="metric-card">
+                            <h3 class="font-bold text-xl mb-4 flex items-center gap-2">
+                                <i data-lucide="package" class="h-5 w-5 text-orange-600"></i>
+                                Package Stats
+                            </h3>
+                            <div class="space-y-3">
+                                <div class="flex justify-between">
+                                    <span>Packages Generated</span>
+                                    <span class="font-bold">89</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>Compatibility Checks</span>
+                                    <span class="font-bold">452</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>Success Rate</span>
+                                    <span class="font-bold text-green-600">100%</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>Avg Build Time</span>
+                                    <span class="font-bold">3.4s</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Recent Activity -->
+                    <div class="metric-card">
+                        <h3 class="font-bold text-xl mb-4 flex items-center gap-2">
+                            <i data-lucide="clock" class="h-5 w-5 text-indigo-600"></i>
+                            Recent System Activity
+                        </h3>
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                                    <span>Package generated for Jane Chapman - MIG/MMA Setup</span>
+                                </div>
+                                <span class="text-sm text-gray-500">2 minutes ago</span>
+                            </div>
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
+                                    <span>Quote #Q-2024-0156 created - $11,378.92</span>
+                                </div>
+                                <span class="text-sm text-gray-500">5 minutes ago</span>
+                            </div>
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-3 h-3 bg-orange-500 rounded-full"></div>
+                                    <span>Neo4j compatibility check: 452 relationships verified</span>
+                                </div>
+                                <span class="text-sm text-gray-500">8 minutes ago</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quote Management Section -->
+            <div id="quotes" class="section">
+                <div class="p-8">
+                    <div class="flex items-center justify-between mb-8">
+                        <h1 class="text-white text-4xl font-bold">Quote Management</h1>
+                        <button class="bg-yellow-400 text-black px-6 py-3 rounded-lg font-bold hover:bg-yellow-500 transition-colors">
+                            <i data-lucide="plus" class="h-5 w-5 inline mr-2"></i>
+                            New Quote
+                        </button>
+                    </div>
+                    
+                    <!-- Search and Filters -->
+                    <div class="search-container">
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Search Quotes</label>
+                                <div class="relative">
+                                    <input 
+                                        type="text" 
+                                        id="searchInput"
+                                        placeholder="Quote ID, Customer, or Package..."
+                                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                                    >
+                                    <i data-lucide="search" class="absolute right-3 top-3 h-5 w-5 text-gray-400"></i>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                                <select id="statusFilter" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500">
+                                    <option value="">All Statuses</option>
+                                    <option value="pending">Pending</option>
+                                    <option value="approved">Approved</option>
+                                    <option value="rejected">Rejected</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
+                                <input 
+                                    type="date" 
+                                    id="dateFrom"
+                                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500"
+                                >
+                            </div>
+                            
+                            <div class="flex items-end">
+                                <button 
+                                    onclick="searchQuotes()"
+                                    class="w-full bg-yellow-400 text-black px-4 py-3 rounded-lg font-bold hover:bg-yellow-500 transition-colors"
+                                >
+                                    Search
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center gap-4 text-sm text-gray-600">
+                            <span>Total Quotes: <strong id="totalQuotes">156</strong></span>
+                            <span>•</span>
+                            <span>Pending: <strong id="pendingQuotes">23</strong></span>
+                            <span>•</span>
+                            <span>This Month: <strong id="monthlyQuotes">45</strong></span>
+                        </div>
+                    </div>
+                    
+                    <!-- Quotes List -->
+                    <div id="quotesList" class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                        <!-- Quote cards will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quote Detail Modal -->
+    <div id="quoteModal" class="modal">
+        <div class="modal-content">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold" id="modalQuoteId">Quote Details</h2>
+                <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700">
+                    <i data-lucide="x" class="h-6 w-6"></i>
+                </button>
+            </div>
+            
+            <div id="modalContent">
+                <!-- Modal content will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mock quote data
+        const quotes = [
+            {
+                id: 'Q-2024-0156',
+                customer: 'Jane Chapman',
+                customerEmail: 'jane.chapman@email.com',
+                status: 'pending',
+                total: 11378.92,
+                date: '2024-01-15',
+                package: 'Sparky\'s Choice - MIG/MMA Setup',
+                components: [
+                    { name: 'Wire Feeder', description: 'Standard Wire Feeder', price: 2850.00 },
+                    { name: 'Connection Cable', description: '3m Cable Set', price: 145.00 },
+                    { name: 'Cooling Unit', description: 'Standard Cooling Unit', price: 1890.00 },
+                    { name: 'Power Source', description: 'Multipurpose MIG/MMA Welder 400A', price: 4500.00 }
+                ]
+            },
+            {
+                id: 'Q-2024-0155',
+                customer: 'Mike Johnson',
+                customerEmail: 'mike.johnson@company.com',
+                status: 'approved',
+                total: 8765.50,
+                date: '2024-01-14',
+                package: 'Professional MIG Package',
+                components: [
+                    { name: 'MIG Welder', description: 'Professional 300A MIG Welder', price: 3500.00 },
+                    { name: 'Wire Feeder', description: '4-Roll Professional Feeder', price: 1200.00 }
+                ]
+            },
+            {
+                id: 'Q-2024-0154',
+                customer: 'Sarah Wilson',
+                customerEmail: 'sarah.wilson@fabrication.com',
+                status: 'rejected',
+                total: 15240.00,
+                date: '2024-01-13',
+                package: 'Industrial TIG Setup',
+                components: [
+                    { name: 'TIG Welder', description: 'Industrial 500A TIG Welder', price: 8500.00 },
+                    { name: 'Cooling System', description: 'Industrial Water Cooler', price: 2800.00 }
+                ]
+            }
+        ];
+        
+        let filteredQuotes = [...quotes];
+        let currentSection = 'sparky';
+
+        // Section switching functionality
+        function showSection(sectionId) {
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Remove active class from all sidebar items
+            document.querySelectorAll('.sidebar-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Show selected section
+            document.getElementById(sectionId).classList.add('active');
+            
+            // Add active class to clicked sidebar item
+            document.querySelector(`[data-section="${sectionId}"]`).classList.add('active');
+            
+            currentSection = sectionId;
+            
+            // Initialize section-specific functionality
+            if (sectionId === 'quotes') {
+                renderQuotes();
+                updateStats();
+            }
+        }
+
+        // Sparky functionality
+        function selectProduct(productId) {
+            console.log('Selected product:', productId);
+            event.target.style.background = '#F59E0B';
+            setTimeout(() => {
+                event.target.style.background = 'var(--sparky-gold)';
+            }, 200);
+            
+            addSparkyMessage(`Great choice! I've selected the ${productId} for your package. This fits perfectly with your multipurpose requirements.`);
+        }
+        
+        function addSparkyMessage(message) {
+            const chatContainer = document.querySelector('#sparky .flex-1.flex.flex-col.gap-4.overflow-y-auto');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'flex items-start gap-4';
+            messageDiv.innerHTML = `
+                <div class="sparky-avatar">
+                    <i data-lucide="zap" class="h-6 w-6"></i>
+                </div>
+                <div class="chat-message">
+                    <div class="text-gray-800">${message}</div>
+                </div>
+            `;
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            
+            lucide.createIcons();
+        }
+        
+        function sendMessage() {
+            const input = document.querySelector('.chat-input');
+            const message = input.value.trim();
+            if (message) {
+                const chatContainer = document.querySelector('#sparky .flex-1.flex.flex-col.gap-4.overflow-y-auto');
+                const userDiv = document.createElement('div');
+                userDiv.className = 'flex items-start gap-4 justify-end';
+                userDiv.innerHTML = `
+                    <div class="chat-message">
+                        <div class="text-gray-800">${message}</div>
+                    </div>
+                    <div class="user-avatar">JC</div>
+                `;
+                chatContainer.appendChild(userDiv);
+                
+                input.value = '';
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+                
+                setTimeout(() => {
+                    addSparkyMessage("I understand your question. Let me help you with that welding requirement!");
+                }, 1000);
+            }
+        }
+
+        // Quote management functionality
+        function renderQuotes(quotesToRender = filteredQuotes) {
+            const container = document.getElementById('quotesList');
+            container.innerHTML = '';
+            
+            quotesToRender.forEach(quote => {
+                const statusClass = `status-${quote.status}`;
+                const card = document.createElement('div');
+                card.className = 'quote-card';
+                card.onclick = () => openQuoteDetail(quote.id);
+                
+                card.innerHTML = `
+                    <div class="flex items-start justify-between mb-4">
+                        <div>
+                            <h3 class="font-bold text-lg text-gray-900">${quote.id}</h3>
+                            <p class="text-sm text-gray-600">${quote.customer}</p>
+                        </div>
+                        <span class="status-badge ${statusClass}">${quote.status}</span>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <p class="font-medium text-gray-800">${quote.package}</p>
+                        <p class="text-sm text-gray-600">${quote.date}</p>
+                    </div>
+                    
+                    <div class="flex items-center justify-between">
+                        <span class="text-2xl font-bold text-gray-900">$${quote.total.toLocaleString()}</span>
+                        <button class="text-yellow-600 hover:text-yellow-700 font-medium">
+                            View Details →
+                        </button>
+                    </div>
+                `;
+                
+                container.appendChild(card);
+            });
+        }
+        
+        function searchQuotes() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
+            const dateFrom = document.getElementById('dateFrom').value;
+            
+            filteredQuotes = quotes.filter(quote => {
+                const matchesSearch = !searchTerm || 
+                    quote.id.toLowerCase().includes(searchTerm) ||
+                    quote.customer.toLowerCase().includes(searchTerm) ||
+                    quote.package.toLowerCase().includes(searchTerm);
+                
+                const matchesStatus = !statusFilter || quote.status === statusFilter;
+                const matchesDate = !dateFrom || quote.date >= dateFrom;
+                
+                return matchesSearch && matchesStatus && matchesDate;
+            });
+            
+            renderQuotes(filteredQuotes);
+            updateStats();
+        }
+        
+        function updateStats() {
+            document.getElementById('totalQuotes').textContent = filteredQuotes.length;
+            document.getElementById('pendingQuotes').textContent = 
+                filteredQuotes.filter(q => q.status === 'pending').length;
+            
+            const currentMonth = new Date().toISOString().slice(0, 7);
+            const monthlyCount = filteredQuotes.filter(q => q.date.startsWith(currentMonth)).length;
+            document.getElementById('monthlyQuotes').textContent = monthlyCount;
+        }
+        
+        function openQuoteDetail(quoteId) {
+            const quote = quotes.find(q => q.id === quoteId);
+            if (!quote) return;
+            
+            document.getElementById('modalQuoteId').textContent = `Quote ${quote.id}`;
+            
+            const modalContent = document.getElementById('modalContent');
+            modalContent.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <h3 class="font-bold text-lg mb-3">Customer Information</h3>
+                        <div class="space-y-2">
+                            <p><strong>Name:</strong> ${quote.customer}</p>
+                            <p><strong>Email:</strong> ${quote.customerEmail}</p>
+                            <p><strong>Date:</strong> ${quote.date}</p>
+                            <p><strong>Status:</strong> <span class="status-badge status-${quote.status}">${quote.status}</span></p>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 class="font-bold text-lg mb-3">Package Summary</h3>
+                        <div class="space-y-2">
+                            <p><strong>Package:</strong> ${quote.package}</p>
+                            <p><strong>Components:</strong> ${quote.components.length} items</p>
+                            <p><strong>Total Value:</strong> <span class="text-2xl font-bold text-green-600">$${quote.total.toLocaleString()}</span></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mb-6">
+                    <h3 class="font-bold text-lg mb-3">Package Components</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full border-collapse border border-gray-300">
+                            <thead>
+                                <tr class="bg-gray-50">
+                                    <th class="border border-gray-300 px-4 py-2 text-left">Component</th>
+                                    <th class="border border-gray-300 px-4 py-2 text-left">Description</th>
+                                    <th class="border border-gray-300 px-4 py-2 text-right">Price</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${quote.components.map(component => `
+                                    <tr>
+                                        <td class="border border-gray-300 px-4 py-2 font-medium">${component.name}</td>
+                                        <td class="border border-gray-300 px-4 py-2">${component.description}</td>
+                                        <td class="border border-gray-300 px-4 py-2 text-right font-medium">$${component.price.toLocaleString()}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                            <tfoot>
+                                <tr class="bg-gray-50 font-bold">
+                                    <td class="border border-gray-300 px-4 py-2" colspan="2">Total</td>
+                                    <td class="border border-gray-300 px-4 py-2 text-right">$${quote.total.toLocaleString()}</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="flex gap-4 justify-end">
+                    <button onclick="closeModal()" class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                        Close
+                    </button>
+                    <button class="px-6 py-2 bg-yellow-400 text-black rounded-lg font-medium hover:bg-yellow-500">
+                        Edit Quote
+                    </button>
+                </div>
+            `;
+            
+            document.getElementById('quoteModal').classList.add('show');
+        }
+        
+        function closeModal() {
+            document.getElementById('quoteModal').classList.remove('show');
+        }
+
+        // Initialize
+        lucide.createIcons();
+        
+        // Handle Enter key for chat
+        document.querySelector('.chat-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+        
+        // Handle Enter key for quote search
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchQuotes();
+            }
+        });
+    </script>
+</body>
+</html>

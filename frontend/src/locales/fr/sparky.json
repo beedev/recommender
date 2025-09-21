@@ -1,0 +1,67 @@
+{
+  "title": "Assistant IA Sparky",
+  "subtitle": "Votre compagnon intelligent de soudage",
+  "welcome": "Bonjour ! Je suis Sparky, votre assistant IA de soudage. Comment puis-je vous aider aujourd'hui ?",
+  "placeholder": "Demandez-moi tout sur le soudage, les produits ou les techniques...",
+  "send": "Envoyer",
+  "clear_chat": "Effacer la conversation",
+  "new_conversation": "Nouvelle conversation",
+  "typing": "Sparky tape...",
+  "thinking": "Laissez-moi réfléchir à cela...",
+  "error": "Désolé, j'ai rencontré une erreur. Veuillez réessayer.",
+  "offline": "Je suis actuellement hors ligne. Veuillez vérifier votre connexion.",
+  "personality": {
+    "title": "Personnalité",
+    "friendly": "Amical",
+    "professional": "Professionnel",
+    "technical": "Technique",
+    "enthusiastic": "Enthousiaste",
+    "concise": "Concis"
+  },
+  "recommendations": {
+    "title": "Recommandations",
+    "subtitle": "Basé sur notre conversation",
+    "view_product": "Voir le produit",
+    "learn_more": "En savoir plus",
+    "add_to_cart": "Ajouter au panier",
+    "confidence": "Confiance",
+    "no_recommendations": "Aucune recommandation pour le moment. Commencez à discuter avec Sparky !"
+  },
+  "conversation": {
+    "history": "Historique des conversations",
+    "delete": "Supprimer la conversation",
+    "rename": "Renommer la conversation",
+    "export": "Exporter la conversation",
+    "share": "Partager la conversation"
+  },
+  "feedback": {
+    "helpful": "Cela a-t-il été utile ?",
+    "yes": "Oui, utile",
+    "no": "Pas utile",
+    "improve": "Comment puis-je m'améliorer ?",
+    "submit": "Soumettre les commentaires",
+    "thank_you": "Merci pour vos commentaires !"
+  },
+  "examples": {
+    "title": "Essayez de demander à Sparky :",
+    "welding_technique": "Quelle est la meilleure technique de soudage pour l'acier inoxydable ?",
+    "equipment_recommendation": "Recommandez un poste MIG pour le travail automobile",
+    "safety_question": "Quel équipement de sécurité ai-je besoin pour le soudage en hauteur ?",
+    "troubleshooting": "Pourquoi ai-je de la porosité dans mes soudures ?"
+  },
+  "features": {
+    "title": "Ce avec quoi je peux aider :",
+    "product_recommendations": "Recommandations de produits",
+    "welding_techniques": "Techniques de soudage et meilleures pratiques",
+    "safety_guidance": "Conseils de sécurité et conformité",
+    "troubleshooting": "Dépannage des problèmes de soudage",
+    "technical_support": "Spécifications techniques et support",
+    "training": "Ressources de formation et tutoriels"
+  },
+  "status": {
+    "online": "En ligne et prêt à aider",
+    "offline": "Actuellement hors ligne",
+    "connecting": "Connexion...",
+    "error": "Erreur de connexion"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "powersources": {
+    "0465350883": "Warrior 500i",
+    "0465350884": "Warrior 400i",
+    "0445555880": "Warrior 750i 380-460V, CE",
+    "0445250880": "Renegade ES 300i with cables",
+    "0445100880": "Renegade ES 300i",
+    "0446200880": "Aristo 500ix"
+  },
+  "validation_settings": {
+    "run_category_consistency": true,
+    "require_golden_package_presence": true,
+    "min_gin_discovery_threshold": 10
+  },
+  "output_settings": {
+    "generate_simplified_catalog": true,
+    "include_synthetic_products": true,
+    "create_backup": false
+  },
+  "last_updated": "2025-09-20T15:59:23.885268"
+}

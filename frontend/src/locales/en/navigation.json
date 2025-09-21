@@ -1,0 +1,35 @@
+{
+  "sparky": "Sparky AI",
+  "dashboard": "Dashboard",
+  "inventory": "Inventory",
+  "products": "Products",
+  "orders": "Orders",
+  "customers": "Customers",
+  "analytics": "Analytics",
+  "reports": "Reports",
+  "settings": "Settings",
+  "system": "System Dashboard",
+  "help": "Help & Support",
+  "profile": "Profile",
+  "logout": "Logout",
+  "menu": "Menu",
+  "close_menu": "Close Menu",
+  "search_placeholder": "Search products, orders, customers...",
+  "notifications": "Notifications",
+  "mark_all_read": "Mark all as read",
+  "no_notifications": "No notifications",
+  "view_all": "View all",
+  "breadcrumb_home": "Home",
+  "sidebar": {
+    "main": "Main",
+    "management": "Management",
+    "tools": "Tools",
+    "support": "Support"
+  },
+  "footer": {
+    "copyright": "© 2024 ESAB. All rights reserved.",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "contact": "Contact Us"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "sparky": "Sparky AI",
+  "dashboard": "Panel",
+  "inventory": "Inventario",
+  "products": "Productos",
+  "orders": "Pedidos",
+  "customers": "Clientes",
+  "analytics": "Análisis",
+  "reports": "Reportes",
+  "settings": "Configuración",
+  "system": "Panel del Sistema",
+  "help": "Ayuda y Soporte",
+  "profile": "Perfil",
+  "logout": "Cerrar Sesión",
+  "menu": "Menú",
+  "close_menu": "Cerrar Menú",
+  "search_placeholder": "Buscar productos, pedidos, clientes...",
+  "notifications": "Notificaciones",
+  "mark_all_read": "Marcar todo como leído",
+  "no_notifications": "Sin notificaciones",
+  "view_all": "Ver todo"
+}

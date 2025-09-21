@@ -1,0 +1,86 @@
+{
+  "title": "Sparky AI Assistant",
+  "subtitle": "Your intelligent welding companion",
+  "welcome": "Hello! I'm Sparky, your AI welding assistant. How can I help you today?",
+  "placeholder": "Ask me anything about welding, products, or techniques...",
+  "send": "Send",
+  "clear_chat": "Clear Chat",
+  "new_conversation": "New Conversation",
+  "typing": "Sparky is typing...",
+  "thinking": "Let me think about that...",
+  "error": "Sorry, I encountered an error. Please try again.",
+  "offline": "I'm currently offline. Please check your connection.",
+  "personality": {
+    "title": "Personality",
+    "friendly": "Friendly",
+    "professional": "Professional",
+    "technical": "Technical",
+    "enthusiastic": "Enthusiastic",
+    "concise": "Concise"
+  },
+  "recommendations": {
+    "title": "Recommendations",
+    "subtitle": "Based on our conversation",
+    "view_product": "View Product",
+    "learn_more": "Learn More",
+    "add_to_cart": "Add to Cart",
+    "confidence": "Confidence",
+    "no_recommendations": "No recommendations yet. Start chatting with Sparky!"
+  },
+  "conversation": {
+    "history": "Conversation History",
+    "delete": "Delete Conversation",
+    "rename": "Rename Conversation",
+    "export": "Export Conversation",
+    "share": "Share Conversation"
+  },
+  "feedback": {
+    "helpful": "Was this helpful?",
+    "yes": "Yes, helpful",
+    "no": "Not helpful",
+    "improve": "How can I improve?",
+    "submit": "Submit Feedback",
+    "thank_you": "Thank you for your feedback!"
+  },
+  "examples": {
+    "title": "Try asking Sparky:",
+    "welding_technique": "What's the best welding technique for stainless steel?",
+    "equipment_recommendation": "Recommend a MIG welder for automotive work",
+    "safety_question": "What safety equipment do I need for overhead welding?",
+    "troubleshooting": "Why am I getting porosity in my welds?"
+  },
+  "features": {
+    "title": "What I can help with:",
+    "product_recommendations": "Product recommendations",
+    "welding_techniques": "Welding techniques & best practices",
+    "safety_guidance": "Safety guidance & compliance",
+    "troubleshooting": "Troubleshooting welding issues",
+    "technical_support": "Technical specifications & support",
+    "training": "Training resources & tutorials"
+  },
+  "status": {
+    "online": "Online and ready to help",
+    "offline": "Currently offline",
+    "connecting": "Connecting...",
+    "error": "Connection error"
+  },
+  "voice": {
+    "listen": "Listen",
+    "stop_listening": "Stop listening",
+    "speak": "Speak",
+    "not_supported": "Voice not supported in this browser"
+  },
+  "advanced": {
+    "technical_level": "Technical Level",
+    "beginner": "Beginner",
+    "intermediate": "Intermediate",
+    "expert": "Expert",
+    "response_length": "Response Length",
+    "short": "Short",
+    "medium": "Medium",
+    "long": "Detailed",
+    "include_products": "Include product suggestions",
+    "include_safety": "Include safety reminders",
+    "custom_instructions": "Custom instructions"
+  }
+}

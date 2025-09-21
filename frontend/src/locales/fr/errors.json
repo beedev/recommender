@@ -1,0 +1,17 @@
+{
+  "generic_error": "Une erreur s'est produite",
+  "network_error": "Erreur de réseau",
+  "server_error": "Erreur du serveur",
+  "not_found": "Non trouvé",
+  "unauthorized": "Non autorisé",
+  "forbidden": "Interdit",
+  "validation_error": "Erreur de validation",
+  "required_field": "Ce champ est requis",
+  "invalid_email": "Email invalide",
+  "invalid_password": "Mot de passe invalide",
+  "password_mismatch": "Les mots de passe ne correspondent pas",
+  "connection_lost": "Connexion perdue",
+  "timeout": "Délai d'attente dépassé",
+  "try_again": "Réessayer",
+  "contact_support": "Contacter le support"
+}

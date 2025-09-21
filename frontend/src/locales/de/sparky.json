@@ -1,0 +1,67 @@
+{
+  "title": "Sparky KI-Assistent",
+  "subtitle": "Ihr intelligenter Schweißbegleiter",
+  "welcome": "Hallo! Ich bin Sparky, Ihr KI-Schweißassistent. Wie kann ich Ihnen heute helfen?",
+  "placeholder": "Fragen Sie mich alles über Schweißen, Produkte oder Techniken...",
+  "send": "Senden",
+  "clear_chat": "Chat löschen",
+  "new_conversation": "Neue Unterhaltung",
+  "typing": "Sparky tippt...",
+  "thinking": "Lassen Sie mich darüber nachdenken...",
+  "error": "Entschuldigung, ich bin auf einen Fehler gestoßen. Bitte versuchen Sie es erneut.",
+  "offline": "Ich bin derzeit offline. Bitte überprüfen Sie Ihre Verbindung.",
+  "personality": {
+    "title": "Persönlichkeit",
+    "friendly": "Freundlich",
+    "professional": "Professionell",
+    "technical": "Technisch",
+    "enthusiastic": "Enthusiastisch",
+    "concise": "Prägnant"
+  },
+  "recommendations": {
+    "title": "Empfehlungen",
+    "subtitle": "Basierend auf unserem Gespräch",
+    "view_product": "Produkt anzeigen",
+    "learn_more": "Mehr erfahren",
+    "add_to_cart": "In den Warenkorb",
+    "confidence": "Vertrauen",
+    "no_recommendations": "Noch keine Empfehlungen. Beginnen Sie ein Gespräch mit Sparky!"
+  },
+  "conversation": {
+    "history": "Gesprächsverlauf",
+    "delete": "Unterhaltung löschen",
+    "rename": "Unterhaltung umbenennen",
+    "export": "Unterhaltung exportieren",
+    "share": "Unterhaltung teilen"
+  },
+  "feedback": {
+    "helpful": "War das hilfreich?",
+    "yes": "Ja, hilfreich",
+    "no": "Nicht hilfreich",
+    "improve": "Wie kann ich mich verbessern?",
+    "submit": "Feedback senden",
+    "thank_you": "Vielen Dank für Ihr Feedback!"
+  },
+  "examples": {
+    "title": "Versuchen Sie Sparky zu fragen:",
+    "welding_technique": "Was ist die beste Schweißtechnik für Edelstahl?",
+    "equipment_recommendation": "Empfehlen Sie ein MIG-Schweißgerät für Automobilarbeiten",
+    "safety_question": "Welche Sicherheitsausrüstung brauche ich für Überkopfschweißen?",
+    "troubleshooting": "Warum bekomme ich Porosität in meinen Schweißnähten?"
+  },
+  "features": {
+    "title": "Womit ich helfen kann:",
+    "product_recommendations": "Produktempfehlungen",
+    "welding_techniques": "Schweißtechniken und bewährte Praktiken",
+    "safety_guidance": "Sicherheitsleitfaden und Compliance",
+    "troubleshooting": "Fehlerbehebung bei Schweißproblemen",
+    "technical_support": "Technische Spezifikationen und Support",
+    "training": "Schulungsressourcen und Tutorials"
+  },
+  "status": {
+    "online": "Online und bereit zu helfen",
+    "offline": "Derzeit offline",
+    "connecting": "Verbindung wird hergestellt...",
+    "error": "Verbindungsfehler"
+  }
+}

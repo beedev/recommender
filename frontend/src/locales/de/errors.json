@@ -1,0 +1,17 @@
+{
+  "generic_error": "Ein Fehler ist aufgetreten",
+  "network_error": "Netzwerkfehler",
+  "server_error": "Serverfehler",
+  "not_found": "Nicht gefunden",
+  "unauthorized": "Nicht autorisiert",
+  "forbidden": "Verboten",
+  "validation_error": "Validierungsfehler",
+  "required_field": "Dieses Feld ist erforderlich",
+  "invalid_email": "Ungültige E-Mail",
+  "invalid_password": "Ungültiges Passwort",
+  "password_mismatch": "Passwörter stimmen nicht überein",
+  "connection_lost": "Verbindung verloren",
+  "timeout": "Zeitüberschreitung",
+  "try_again": "Erneut versuchen",
+  "contact_support": "Support kontaktieren"
+}

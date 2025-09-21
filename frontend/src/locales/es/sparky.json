@@ -1,0 +1,29 @@
+{
+  "title": "Asistente Sparky AI",
+  "subtitle": "Tu compañero inteligente de soldadura",
+  "welcome": "¡Hola! Soy Sparky, tu asistente de soldadura AI. ¿Cómo puedo ayudarte hoy?",
+  "placeholder": "Pregúntame sobre soldadura, productos o técnicas...",
+  "send": "Enviar",
+  "clear_chat": "Limpiar Chat",
+  "new_conversation": "Nueva Conversación",
+  "typing": "Sparky está escribiendo...",
+  "thinking": "Déjame pensar en eso...",
+  "error": "Lo siento, encontré un error. Por favor intenta de nuevo.",
+  "offline": "Estoy desconectado. Por favor verifica tu conexión.",
+  "personality": {
+    "title": "Personalidad",
+    "friendly": "Amigable",
+    "professional": "Profesional",
+    "technical": "Técnico",
+    "enthusiastic": "Entusiasta",
+    "concise": "Conciso"
+  },
+  "recommendations": {
+    "title": "Recomendaciones",
+    "subtitle": "Basado en nuestra conversación",
+    "view_product": "Ver Producto",
+    "learn_more": "Aprender Más",
+    "add_to_cart": "Agregar al Carrito",
+    "confidence": "Confianza"
+  }
+}
