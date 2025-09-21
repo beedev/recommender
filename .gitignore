@@ -78,6 +78,9 @@ yarn-error.log*
 # Archives
 Archive/
 
+# Large datasets
+Datasets/
+
 # Session context files
 SESSION_CONTEXT_*.md
 *session-is-being-continued*.txt
