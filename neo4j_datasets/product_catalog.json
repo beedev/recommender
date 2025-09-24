@@ -1,17 +1,16 @@
 {
   "metadata": {
-    "total_products": 248,
-    "existing_products": 191,
+    "total_products": 247,
+    "existing_products": 190,
     "synthetic_products": 57,
     "target_powersources": [
       "0445555880",
-      "0445250880",
-      "0446200880",
-      "0465350883",
       "0465350884",
-      "0445100880"
+      "0446200880",
+      "0445250880",
+      "0465350883"
     ],
-    "generated_date": "2025-09-20",
+    "generated_date": "2025-09-22",
     "source": "Enhanced catalog from ENG.json + synthetic products"
   },
   "products": [
@@ -594,21 +593,21 @@
     {
       "gin": "00Material",
       "name": "Unknown 00Material",
-      "description": "SG-Unknown product. Used with Warrior 500i, Warrior 750i 380-460V CE, Warrior 400i",
+      "description": "SG-Unknown product. Used with Warrior 400i, Warrior 750i 380-460V CE, Warrior 500i",
       "category": "Unknown",
       "source": "synthetic",
       "discovery_sources": [
         "ruleset_0445555880_Decision flow_Unnamed: 11",
-        "ruleset_0465350883_Decision flow_Unnamed: 11",
-        "ruleset_0465350884_Decision flow_Unnamed: 11"
+        "ruleset_0465350884_Decision flow_Unnamed: 11",
+        "ruleset_0465350883_Decision flow_Unnamed: 11"
       ],
       "is_available": true,
       "ruleset_context": {
-        "description": "Used with Warrior 500i, Warrior 750i 380-460V CE, Warrior 400i",
+        "description": "Used with Warrior 400i, Warrior 750i 380-460V CE, Warrior 500i",
         "powersources": [
-          "0465350883",
+          "0465350884",
           "0445555880",
-          "0465350884"
+          "0465350883"
         ],
         "rule_types": [
           "general_compatibility"
@@ -617,12 +616,12 @@
           "Decision flow_Unnamed: 11"
         ],
         "specs": {},
-        "compatibility_info": "Compatible with PowerSources: 0465350883, 0445555880, 0465350884"
+        "compatibility_info": "Compatible with PowerSources: 0465350884, 0445555880, 0465350883"
       },
       "compatible_powersources": [
-        "0465350883",
+        "0465350884",
         "0445555880",
-        "0465350884"
+        "0465350883"
       ],
       "usage_frequency": 3,
       "specifications": {},
@@ -632,19 +631,19 @@
     {
       "gin": "0156602001",
       "name": "Feeder Accessory 0156602001",
-      "description": "SG-FeederAccessory product. Used with Warrior 500i, Warrior 400i. Wire feeder component",
+      "description": "SG-FeederAccessory product. Used with Warrior 400i, Warrior 500i. Wire feeder component",
       "category": "FeederAccessory",
       "source": "synthetic",
       "discovery_sources": [
-        "ruleset_0465350883_Feeder Wears_GIN Feeder Wears",
-        "ruleset_0465350884_Feeder Wears_GIN Feeder Wears"
+        "ruleset_0465350884_Feeder Wears_GIN Feeder Wears",
+        "ruleset_0465350883_Feeder Wears_GIN Feeder Wears"
       ],
       "is_available": true,
       "ruleset_context": {
-        "description": "Used with Warrior 500i, Warrior 400i. Wire feeder component",
+        "description": "Used with Warrior 400i, Warrior 500i. Wire feeder component",
         "powersources": [
-          "0465350883",
-          "0465350884"
+          "0465350884",
+          "0465350883"
         ],
         "rule_types": [
           "feeder_compatibility"
@@ -653,11 +652,11 @@
           "Feeder Wears_GIN Feeder Wears"
         ],
         "specs": {},
-        "compatibility_info": "Compatible with PowerSources: 0465350883, 0465350884"
+        "compatibility_info": "Compatible with PowerSources: 0465350884, 0465350883"
       },
       "compatible_powersources": [
-        "0465350883",
-        "0465350884"
+        "0465350884",
+        "0465350883"
       ],
       "usage_frequency": 2,
       "specifications": {},
@@ -1379,121 +1378,6 @@
           "createdDate": "11-09-2024 21:53:59",
           "modifiedBy": "deldridge@esab.com_user",
           "modifiedDate": "19-09-2024 10:11:06"
-        },
-        "status": "active",
-        "type": "sku",
-        "version": "1.0"
-      }
-    },
-    {
-      "gin": "0445100880",
-      "name": "Renegade ES 300i incl 3 m mains cable and plug",
-      "description": "<p>Renegade ES 300i is an inverter based MMA/Stick and LiveTIG machine with extreme power to weight ratio. The compact format makes it easy to carry and bring to any jobsite. Combined with high duty cycle and the ability to run the machine on long mains and welding cable makes this a superior welding machine for both on-and off site applications.</p><p><br></p><p>The machine has an automatic input voltage sensor and can operate with any input voltage between 230 V and 480 V 3-phase.</p>",
-      "category": "PowerSource",
-      "available": true,
-      "source": "catalog",
-      "original_data": {
-        "change_type": "update",
-        "data": {
-          "attributes": {
-            "Available": "true",
-            "GIN": "0445100880",
-            "GINName": "Renegade ES 300i incl 3 m mains cable and plug",
-            "Imageurl": "https://assets.esab.com/assetbank-esab/servlet/file?contentDispositionFilename=mut4973273547856821065.jpg&signature=6e532f626c63444a78735477684c6363324a46764d4d774550796e777234526f6f30792b34516849664a33474b645462504d6a77486442315470725258593259616e552f546e676433315637592f6b4b45756c2f5734376c635877443975766e695441786e6e4d364e666f3d&contentDisposition=inline&contentIdentifier=c9e/clB8KOToRnWYke1P8lg5QUS5NXCp.jpg&contentStoreIdentifier=4",
-            "category": [
-              "Product Hierarchy>>Welding Equipment>>STICK Welders (SMAW)"
-            ],
-            "countrydisplay": [
-              "GBR",
-              "DNK",
-              "EST",
-              "ROM",
-              "SVK"
-            ],
-            "datasheeturl": "https://assets.esab.com/assetbank-esab/assetfile/13772.pdf",
-            "description": "<p>Renegade ES 300i is an inverter based MMA/Stick and LiveTIG machine with extreme power to weight ratio. The compact format makes it easy to carry and bring to any jobsite. Combined with high duty cycle and the ability to run the machine on long mains and welding cable makes this a superior welding machine for both on-and off site applications.</p><p><br></p><p>The machine has an automatic input voltage sensor and can operate with any input voltage between 230 V and 480 V 3-phase.</p>",
-            "specs": {
-              "arcdatapowerconditionalstatment": [],
-              "arcdatapowerinputvoltage": [
-                "230 VAC",
-                "230-480 VAC",
-                "230 VAC",
-                "230-480 VAC"
-              ],
-              "arcdatapowerweldingprocess": [
-                "SMAW/MMA (Stick) ",
-                "SMAW/MMA (Stick) ",
-                "GTAW (TIG) ",
-                "GTAW (TIG) "
-              ],
-              "dimensions": [
-                "460x200x320 mm"
-              ],
-              "efficiencyatmaxcurrent": [],
-              "enclosureclass": [
-                "IP23"
-              ],
-              "energysavemode": [],
-              "inputvoltage": [
-                "230 VAC ±10 %,1 ,50/60 Hz",
-                "230-480 VAC ±10 %,3 ,50/60 Hz"
-              ],
-              "maxsettinga": [
-                "5 A",
-                "5 A",
-                "5 A",
-                "5 A"
-              ],
-              "maxspooldiameter": null,
-              "minsettinga": [
-                "200 A",
-                "300 A",
-                "200 A",
-                "300 A"
-              ],
-              "opencircuitvoltage": [],
-              "operatingtemp": null,
-              "powerfactoratmaxcurrent": [],
-              "ratedKVA": [
-                "11.3 kVA"
-              ],
-              "settingrangea": [
-                "5-200 A",
-                "5-300 A",
-                "5-200 A",
-                "5-300 A"
-              ],
-              "settingrangev": [
-                "20-28 V",
-                "20-32 V",
-                "10-18 V",
-                "10-22 V"
-              ],
-              "standards": [],
-              "supplyplug": [],
-              "voltagerange": null,
-              "weight": [
-                "15 kg"
-              ],
-              "weldingoutput": [
-                "Stick (MMA)-300 Amp,32.0 V@ 40 % Duty Cycle",
-                "Stick (MMA)-250 Amp,30.0 V@ 60 % Duty Cycle",
-                "Stick (MMA)-200 Amp,28.0 V@ 100 % Duty Cycle",
-                "TIG (GTAW)-300 Amp,22.0 V@ 60 % Duty Cycle",
-                "TIG (GTAW)-250 Amp,20.0 V@ 100 % Duty Cycle"
-              ],
-              "wirediameter": null,
-              "wirefeedspeed": null
-            }
-          }
-        },
-        "id": "mdm-sku-31631",
-        "last_modified": "06-11-2024 15:26:57",
-        "name": "Renegade ES 300i incl 3 m mains cable and plug",
-        "properties": {
-          "createdDate": "02-03-2022 22:44:02",
-          "modifiedBy": "Harish.Babu@esab.co.in_user",
-          "modifiedDate": "06-11-2024 15:26:57"
         },
         "status": "active",
         "type": "sku",
@@ -7676,21 +7560,21 @@
     {
       "gin": "0455072002",
       "name": "Feeder Accessory 0455072002",
-      "description": "SG-FeederAccessory product. Used with Warrior 500i, Warrior 400i. Wire feeder component",
+      "description": "SG-FeederAccessory product. Used with Warrior 400i, Warrior 500i. Wire feeder component",
       "category": "FeederAccessory",
       "source": "synthetic",
       "discovery_sources": [
-        "ruleset_0465350883_Feeder Wears_GIN Feeder Wears",
-        "ruleset_0465350883_Feeder Wears_GIN Feeder Wears",
         "ruleset_0465350884_Feeder Wears_GIN Feeder Wears",
-        "ruleset_0465350884_Feeder Wears_GIN Feeder Wears"
+        "ruleset_0465350884_Feeder Wears_GIN Feeder Wears",
+        "ruleset_0465350883_Feeder Wears_GIN Feeder Wears",
+        "ruleset_0465350883_Feeder Wears_GIN Feeder Wears"
       ],
       "is_available": true,
       "ruleset_context": {
-        "description": "Used with Warrior 500i, Warrior 400i. Wire feeder component",
+        "description": "Used with Warrior 400i, Warrior 500i. Wire feeder component",
         "powersources": [
-          "0465350883",
-          "0465350884"
+          "0465350884",
+          "0465350883"
         ],
         "rule_types": [
           "feeder_compatibility"
@@ -7699,11 +7583,11 @@
           "Feeder Wears_GIN Feeder Wears"
         ],
         "specs": {},
-        "compatibility_info": "Compatible with PowerSources: 0465350883, 0465350884"
+        "compatibility_info": "Compatible with PowerSources: 0465350884, 0465350883"
       },
       "compatible_powersources": [
-        "0465350883",
-        "0465350884"
+        "0465350884",
+        "0465350883"
       ],
       "usage_frequency": 4,
       "specifications": {},
@@ -7713,19 +7597,19 @@
     {
       "gin": "0456615001",
       "name": "Feeder Accessory 0456615001",
-      "description": "SG-FeederAccessory product. Used with Warrior 500i, Warrior 400i. Wire feeder component",
+      "description": "SG-FeederAccessory product. Used with Warrior 400i, Warrior 500i. Wire feeder component",
       "category": "FeederAccessory",
       "source": "synthetic",
       "discovery_sources": [
-        "ruleset_0465350883_Feeder Wears_GIN Feeder Wears",
-        "ruleset_0465350884_Feeder Wears_GIN Feeder Wears"
+        "ruleset_0465350884_Feeder Wears_GIN Feeder Wears",
+        "ruleset_0465350883_Feeder Wears_GIN Feeder Wears"
       ],
       "is_available": true,
       "ruleset_context": {
-        "description": "Used with Warrior 500i, Warrior 400i. Wire feeder component",
+        "description": "Used with Warrior 400i, Warrior 500i. Wire feeder component",
         "powersources": [
-          "0465350883",
-          "0465350884"
+          "0465350884",
+          "0465350883"
         ],
         "rule_types": [
           "feeder_compatibility"
@@ -7734,11 +7618,11 @@
           "Feeder Wears_GIN Feeder Wears"
         ],
         "specs": {},
-        "compatibility_info": "Compatible with PowerSources: 0465350883, 0465350884"
+        "compatibility_info": "Compatible with PowerSources: 0465350884, 0465350883"
       },
       "compatible_powersources": [
-        "0465350883",
-        "0465350884"
+        "0465350884",
+        "0465350883"
       ],
       "usage_frequency": 2,
       "specifications": {},
@@ -8099,19 +7983,19 @@
     {
       "gin": "0458824001",
       "name": "Feeder Accessory 0458824001",
-      "description": "SG-FeederAccessory product. Used with Warrior 500i, Warrior 400i. Wire feeder component",
+      "description": "SG-FeederAccessory product. Used with Warrior 400i, Warrior 500i. Wire feeder component",
       "category": "FeederAccessory",
       "source": "synthetic",
       "discovery_sources": [
-        "ruleset_0465350883_Feeder Wears_GIN Feeder Wears",
-        "ruleset_0465350884_Feeder Wears_GIN Feeder Wears"
+        "ruleset_0465350884_Feeder Wears_GIN Feeder Wears",
+        "ruleset_0465350883_Feeder Wears_GIN Feeder Wears"
       ],
       "is_available": true,
       "ruleset_context": {
-        "description": "Used with Warrior 500i, Warrior 400i. Wire feeder component",
+        "description": "Used with Warrior 400i, Warrior 500i. Wire feeder component",
         "powersources": [
-          "0465350883",
-          "0465350884"
+          "0465350884",
+          "0465350883"
         ],
         "rule_types": [
           "feeder_compatibility"
@@ -8120,11 +8004,11 @@
           "Feeder Wears_GIN Feeder Wears"
         ],
         "specs": {},
-        "compatibility_info": "Compatible with PowerSources: 0465350883, 0465350884"
+        "compatibility_info": "Compatible with PowerSources: 0465350884, 0465350883"
       },
       "compatible_powersources": [
-        "0465350883",
-        "0465350884"
+        "0465350884",
+        "0465350883"
       ],
       "usage_frequency": 2,
       "specifications": {},
@@ -8245,19 +8129,19 @@
     {
       "gin": "0458824003",
       "name": "Feeder Accessory 0458824003",
-      "description": "SG-FeederAccessory product. Used with Warrior 500i, Warrior 400i. Wire feeder component",
+      "description": "SG-FeederAccessory product. Used with Warrior 400i, Warrior 500i. Wire feeder component",
       "category": "FeederAccessory",
       "source": "synthetic",
       "discovery_sources": [
-        "ruleset_0465350883_Feeder Wears_GIN Feeder Wears",
-        "ruleset_0465350884_Feeder Wears_GIN Feeder Wears"
+        "ruleset_0465350884_Feeder Wears_GIN Feeder Wears",
+        "ruleset_0465350883_Feeder Wears_GIN Feeder Wears"
       ],
       "is_available": true,
       "ruleset_context": {
-        "description": "Used with Warrior 500i, Warrior 400i. Wire feeder component",
+        "description": "Used with Warrior 400i, Warrior 500i. Wire feeder component",
         "powersources": [
-          "0465350883",
-          "0465350884"
+          "0465350884",
+          "0465350883"
         ],
         "rule_types": [
           "feeder_compatibility"
@@ -8266,11 +8150,11 @@
           "Feeder Wears_GIN Feeder Wears"
         ],
         "specs": {},
-        "compatibility_info": "Compatible with PowerSources: 0465350883, 0465350884"
+        "compatibility_info": "Compatible with PowerSources: 0465350884, 0465350883"
       },
       "compatible_powersources": [
-        "0465350883",
-        "0465350884"
+        "0465350884",
+        "0465350883"
       ],
       "usage_frequency": 2,
       "specifications": {},
@@ -8280,19 +8164,19 @@
     {
       "gin": "0458825001",
       "name": "Feeder Accessory 0458825001",
-      "description": "SG-FeederAccessory product. Used with Warrior 500i, Warrior 400i. Wire feeder component",
+      "description": "SG-FeederAccessory product. Used with Warrior 400i, Warrior 500i. Wire feeder component",
       "category": "FeederAccessory",
       "source": "synthetic",
       "discovery_sources": [
-        "ruleset_0465350883_Feeder Wears_GIN Feeder Wears",
-        "ruleset_0465350884_Feeder Wears_GIN Feeder Wears"
+        "ruleset_0465350884_Feeder Wears_GIN Feeder Wears",
+        "ruleset_0465350883_Feeder Wears_GIN Feeder Wears"
       ],
       "is_available": true,
       "ruleset_context": {
-        "description": "Used with Warrior 500i, Warrior 400i. Wire feeder component",
+        "description": "Used with Warrior 400i, Warrior 500i. Wire feeder component",
         "powersources": [
-          "0465350883",
-          "0465350884"
+          "0465350884",
+          "0465350883"
         ],
         "rule_types": [
           "feeder_compatibility"
@@ -8301,11 +8185,11 @@
           "Feeder Wears_GIN Feeder Wears"
         ],
         "specs": {},
-        "compatibility_info": "Compatible with PowerSources: 0465350883, 0465350884"
+        "compatibility_info": "Compatible with PowerSources: 0465350884, 0465350883"
       },
       "compatible_powersources": [
-        "0465350883",
-        "0465350884"
+        "0465350884",
+        "0465350883"
       ],
       "usage_frequency": 2,
       "specifications": {},
@@ -8315,19 +8199,19 @@
     {
       "gin": "0458825002",
       "name": "Feeder Accessory 0458825002",
-      "description": "SG-FeederAccessory product. Used with Warrior 500i, Warrior 400i. Wire feeder component",
+      "description": "SG-FeederAccessory product. Used with Warrior 400i, Warrior 500i. Wire feeder component",
       "category": "FeederAccessory",
       "source": "synthetic",
       "discovery_sources": [
-        "ruleset_0465350883_Feeder Wears_GIN Feeder Wears",
-        "ruleset_0465350884_Feeder Wears_GIN Feeder Wears"
+        "ruleset_0465350884_Feeder Wears_GIN Feeder Wears",
+        "ruleset_0465350883_Feeder Wears_GIN Feeder Wears"
       ],
       "is_available": true,
       "ruleset_context": {
-        "description": "Used with Warrior 500i, Warrior 400i. Wire feeder component",
+        "description": "Used with Warrior 400i, Warrior 500i. Wire feeder component",
         "powersources": [
-          "0465350883",
-          "0465350884"
+          "0465350884",
+          "0465350883"
         ],
         "rule_types": [
           "feeder_compatibility"
@@ -8336,11 +8220,11 @@
           "Feeder Wears_GIN Feeder Wears"
         ],
         "specs": {},
-        "compatibility_info": "Compatible with PowerSources: 0465350883, 0465350884"
+        "compatibility_info": "Compatible with PowerSources: 0465350884, 0465350883"
       },
       "compatible_powersources": [
-        "0465350883",
-        "0465350884"
+        "0465350884",
+        "0465350883"
       ],
       "usage_frequency": 2,
       "specifications": {},
@@ -8350,19 +8234,19 @@
     {
       "gin": "0458825003",
       "name": "Feeder Accessory 0458825003",
-      "description": "SG-FeederAccessory product. Used with Warrior 500i, Warrior 400i. Wire feeder component",
+      "description": "SG-FeederAccessory product. Used with Warrior 400i, Warrior 500i. Wire feeder component",
       "category": "FeederAccessory",
       "source": "synthetic",
       "discovery_sources": [
-        "ruleset_0465350883_Feeder Wears_GIN Feeder Wears",
-        "ruleset_0465350884_Feeder Wears_GIN Feeder Wears"
+        "ruleset_0465350884_Feeder Wears_GIN Feeder Wears",
+        "ruleset_0465350883_Feeder Wears_GIN Feeder Wears"
       ],
       "is_available": true,
       "ruleset_context": {
-        "description": "Used with Warrior 500i, Warrior 400i. Wire feeder component",
+        "description": "Used with Warrior 400i, Warrior 500i. Wire feeder component",
         "powersources": [
-          "0465350883",
-          "0465350884"
+          "0465350884",
+          "0465350883"
         ],
         "rule_types": [
           "feeder_compatibility"
@@ -8371,11 +8255,11 @@
           "Feeder Wears_GIN Feeder Wears"
         ],
         "specs": {},
-        "compatibility_info": "Compatible with PowerSources: 0465350883, 0465350884"
+        "compatibility_info": "Compatible with PowerSources: 0465350884, 0465350883"
       },
       "compatible_powersources": [
-        "0465350883",
-        "0465350884"
+        "0465350884",
+        "0465350883"
       ],
       "usage_frequency": 2,
       "specifications": {},
@@ -8457,19 +8341,19 @@
     {
       "gin": "0459052001",
       "name": "Feeder Accessory 0459052001",
-      "description": "SG-FeederAccessory product. Used with Warrior 500i, Warrior 400i. Wire feeder component",
+      "description": "SG-FeederAccessory product. Used with Warrior 400i, Warrior 500i. Wire feeder component",
       "category": "FeederAccessory",
       "source": "synthetic",
       "discovery_sources": [
-        "ruleset_0465350883_Feeder Wears_GIN Feeder Wears",
-        "ruleset_0465350884_Feeder Wears_GIN Feeder Wears"
+        "ruleset_0465350884_Feeder Wears_GIN Feeder Wears",
+        "ruleset_0465350883_Feeder Wears_GIN Feeder Wears"
       ],
       "is_available": true,
       "ruleset_context": {
-        "description": "Used with Warrior 500i, Warrior 400i. Wire feeder component",
+        "description": "Used with Warrior 400i, Warrior 500i. Wire feeder component",
         "powersources": [
-          "0465350883",
-          "0465350884"
+          "0465350884",
+          "0465350883"
         ],
         "rule_types": [
           "feeder_compatibility"
@@ -8478,11 +8362,11 @@
           "Feeder Wears_GIN Feeder Wears"
         ],
         "specs": {},
-        "compatibility_info": "Compatible with PowerSources: 0465350883, 0465350884"
+        "compatibility_info": "Compatible with PowerSources: 0465350884, 0465350883"
       },
       "compatible_powersources": [
-        "0465350883",
-        "0465350884"
+        "0465350884",
+        "0465350883"
       ],
       "usage_frequency": 2,
       "specifications": {},
@@ -8492,19 +8376,19 @@
     {
       "gin": "0459052002",
       "name": "Feeder Accessory 0459052002",
-      "description": "SG-FeederAccessory product. Used with Warrior 500i, Warrior 400i. Wire feeder component",
+      "description": "SG-FeederAccessory product. Used with Warrior 400i, Warrior 500i. Wire feeder component",
       "category": "FeederAccessory",
       "source": "synthetic",
       "discovery_sources": [
-        "ruleset_0465350883_Feeder Wears_GIN Feeder Wears",
-        "ruleset_0465350884_Feeder Wears_GIN Feeder Wears"
+        "ruleset_0465350884_Feeder Wears_GIN Feeder Wears",
+        "ruleset_0465350883_Feeder Wears_GIN Feeder Wears"
       ],
       "is_available": true,
       "ruleset_context": {
-        "description": "Used with Warrior 500i, Warrior 400i. Wire feeder component",
+        "description": "Used with Warrior 400i, Warrior 500i. Wire feeder component",
         "powersources": [
-          "0465350883",
-          "0465350884"
+          "0465350884",
+          "0465350883"
         ],
         "rule_types": [
           "feeder_compatibility"
@@ -8513,11 +8397,11 @@
           "Feeder Wears_GIN Feeder Wears"
         ],
         "specs": {},
-        "compatibility_info": "Compatible with PowerSources: 0465350883, 0465350884"
+        "compatibility_info": "Compatible with PowerSources: 0465350884, 0465350883"
       },
       "compatible_powersources": [
-        "0465350883",
-        "0465350884"
+        "0465350884",
+        "0465350883"
       ],
       "usage_frequency": 2,
       "specifications": {},
@@ -8527,19 +8411,19 @@
     {
       "gin": "0459052003",
       "name": "Feeder Accessory 0459052003",
-      "description": "SG-FeederAccessory product. Used with Warrior 500i, Warrior 400i. Wire feeder component",
+      "description": "SG-FeederAccessory product. Used with Warrior 400i, Warrior 500i. Wire feeder component",
       "category": "FeederAccessory",
       "source": "synthetic",
       "discovery_sources": [
-        "ruleset_0465350883_Feeder Wears_GIN Feeder Wears",
-        "ruleset_0465350884_Feeder Wears_GIN Feeder Wears"
+        "ruleset_0465350884_Feeder Wears_GIN Feeder Wears",
+        "ruleset_0465350883_Feeder Wears_GIN Feeder Wears"
       ],
       "is_available": true,
       "ruleset_context": {
-        "description": "Used with Warrior 500i, Warrior 400i. Wire feeder component",
+        "description": "Used with Warrior 400i, Warrior 500i. Wire feeder component",
         "powersources": [
-          "0465350883",
-          "0465350884"
+          "0465350884",
+          "0465350883"
         ],
         "rule_types": [
           "feeder_compatibility"
@@ -8548,11 +8432,11 @@
           "Feeder Wears_GIN Feeder Wears"
         ],
         "specs": {},
-        "compatibility_info": "Compatible with PowerSources: 0465350883, 0465350884"
+        "compatibility_info": "Compatible with PowerSources: 0465350884, 0465350883"
       },
       "compatible_powersources": [
-        "0465350883",
-        "0465350884"
+        "0465350884",
+        "0465350883"
       ],
       "usage_frequency": 2,
       "specifications": {},
@@ -8562,19 +8446,19 @@
     {
       "gin": "0459052013",
       "name": "Feeder Accessory 0459052013",
-      "description": "SG-FeederAccessory product. Used with Warrior 500i, Warrior 400i. Wire feeder component",
+      "description": "SG-FeederAccessory product. Used with Warrior 400i, Warrior 500i. Wire feeder component",
       "category": "FeederAccessory",
       "source": "synthetic",
       "discovery_sources": [
-        "ruleset_0465350883_Feeder Wears_GIN Feeder Wears",
-        "ruleset_0465350884_Feeder Wears_GIN Feeder Wears"
+        "ruleset_0465350884_Feeder Wears_GIN Feeder Wears",
+        "ruleset_0465350883_Feeder Wears_GIN Feeder Wears"
       ],
       "is_available": true,
       "ruleset_context": {
-        "description": "Used with Warrior 500i, Warrior 400i. Wire feeder component",
+        "description": "Used with Warrior 400i, Warrior 500i. Wire feeder component",
         "powersources": [
-          "0465350883",
-          "0465350884"
+          "0465350884",
+          "0465350883"
         ],
         "rule_types": [
           "feeder_compatibility"
@@ -8583,11 +8467,11 @@
           "Feeder Wears_GIN Feeder Wears"
         ],
         "specs": {},
-        "compatibility_info": "Compatible with PowerSources: 0465350883, 0465350884"
+        "compatibility_info": "Compatible with PowerSources: 0465350884, 0465350883"
       },
       "compatible_powersources": [
-        "0465350883",
-        "0465350884"
+        "0465350884",
+        "0465350883"
       ],
       "usage_frequency": 2,
       "specifications": {},
@@ -11600,28 +11484,28 @@
     {
       "gin": "0460160880",
       "name": "Interconnector Cable 0460160880",
-      "description": "SG-Interconnector product. Used with Warrior 500i, Warrior 750i 380-460V CE, Warrior 400i. Connectivity/interconnection component",
+      "description": "SG-Interconnector product. Used with Warrior 400i, Warrior 750i 380-460V CE, Warrior 500i. Connectivity/interconnection component",
       "category": "Interconnector",
       "source": "synthetic",
       "discovery_sources": [
         "ruleset_0445555880_Interconn_GIN Interconn",
         "ruleset_0445555880_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
-        "ruleset_0465350884_Interconn_GIN Interconn"
+        "ruleset_0465350884_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn"
       ],
       "is_available": true,
       "ruleset_context": {
-        "description": "Used with Warrior 500i, Warrior 750i 380-460V CE, Warrior 400i. Connectivity/interconnection component",
+        "description": "Used with Warrior 400i, Warrior 750i 380-460V CE, Warrior 500i. Connectivity/interconnection component",
         "powersources": [
-          "0465350883",
+          "0465350884",
           "0445555880",
-          "0465350884"
+          "0465350883"
         ],
         "rule_types": [
           "connectivity_compatibility"
@@ -11630,12 +11514,12 @@
           "Interconn_GIN Interconn"
         ],
         "specs": {},
-        "compatibility_info": "Compatible with PowerSources: 0465350883, 0445555880, 0465350884"
+        "compatibility_info": "Compatible with PowerSources: 0465350884, 0445555880, 0465350883"
       },
       "compatible_powersources": [
-        "0465350883",
+        "0465350884",
         "0445555880",
-        "0465350884"
+        "0465350883"
       ],
       "usage_frequency": 10,
       "specifications": {},
@@ -11645,28 +11529,28 @@
     {
       "gin": "0460160881",
       "name": "Interconnector Cable 0460160881",
-      "description": "SG-Interconnector product. Used with Warrior 500i, Warrior 750i 380-460V CE, Warrior 400i. Connectivity/interconnection component",
+      "description": "SG-Interconnector product. Used with Warrior 400i, Warrior 750i 380-460V CE, Warrior 500i. Connectivity/interconnection component",
       "category": "Interconnector",
       "source": "synthetic",
       "discovery_sources": [
         "ruleset_0445555880_Interconn_GIN Interconn",
         "ruleset_0445555880_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
-        "ruleset_0465350884_Interconn_GIN Interconn"
+        "ruleset_0465350884_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn"
       ],
       "is_available": true,
       "ruleset_context": {
-        "description": "Used with Warrior 500i, Warrior 750i 380-460V CE, Warrior 400i. Connectivity/interconnection component",
+        "description": "Used with Warrior 400i, Warrior 750i 380-460V CE, Warrior 500i. Connectivity/interconnection component",
         "powersources": [
-          "0465350883",
+          "0465350884",
           "0445555880",
-          "0465350884"
+          "0465350883"
         ],
         "rule_types": [
           "connectivity_compatibility"
@@ -11675,12 +11559,12 @@
           "Interconn_GIN Interconn"
         ],
         "specs": {},
-        "compatibility_info": "Compatible with PowerSources: 0465350883, 0445555880, 0465350884"
+        "compatibility_info": "Compatible with PowerSources: 0465350884, 0445555880, 0465350883"
       },
       "compatible_powersources": [
-        "0465350883",
+        "0465350884",
         "0445555880",
-        "0465350884"
+        "0465350883"
       ],
       "usage_frequency": 10,
       "specifications": {},
@@ -11690,28 +11574,28 @@
     {
       "gin": "0460160882",
       "name": "Interconnector Cable 0460160882",
-      "description": "SG-Interconnector product. Used with Warrior 500i, Warrior 750i 380-460V CE, Warrior 400i. Connectivity/interconnection component",
+      "description": "SG-Interconnector product. Used with Warrior 400i, Warrior 750i 380-460V CE, Warrior 500i. Connectivity/interconnection component",
       "category": "Interconnector",
       "source": "synthetic",
       "discovery_sources": [
         "ruleset_0445555880_Interconn_GIN Interconn",
         "ruleset_0445555880_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
-        "ruleset_0465350884_Interconn_GIN Interconn"
+        "ruleset_0465350884_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn"
       ],
       "is_available": true,
       "ruleset_context": {
-        "description": "Used with Warrior 500i, Warrior 750i 380-460V CE, Warrior 400i. Connectivity/interconnection component",
+        "description": "Used with Warrior 400i, Warrior 750i 380-460V CE, Warrior 500i. Connectivity/interconnection component",
         "powersources": [
-          "0465350883",
+          "0465350884",
           "0445555880",
-          "0465350884"
+          "0465350883"
         ],
         "rule_types": [
           "connectivity_compatibility"
@@ -11720,12 +11604,12 @@
           "Interconn_GIN Interconn"
         ],
         "specs": {},
-        "compatibility_info": "Compatible with PowerSources: 0465350883, 0445555880, 0465350884"
+        "compatibility_info": "Compatible with PowerSources: 0465350884, 0445555880, 0465350883"
       },
       "compatible_powersources": [
-        "0465350883",
+        "0465350884",
         "0445555880",
-        "0465350884"
+        "0465350883"
       ],
       "usage_frequency": 10,
       "specifications": {},
@@ -11735,28 +11619,28 @@
     {
       "gin": "0460160883",
       "name": "Interconnector Cable 0460160883",
-      "description": "SG-Interconnector product. Used with Warrior 500i, Warrior 750i 380-460V CE, Warrior 400i. Connectivity/interconnection component",
+      "description": "SG-Interconnector product. Used with Warrior 400i, Warrior 750i 380-460V CE, Warrior 500i. Connectivity/interconnection component",
       "category": "Interconnector",
       "source": "synthetic",
       "discovery_sources": [
         "ruleset_0445555880_Interconn_GIN Interconn",
         "ruleset_0445555880_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
-        "ruleset_0465350884_Interconn_GIN Interconn"
+        "ruleset_0465350884_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn"
       ],
       "is_available": true,
       "ruleset_context": {
-        "description": "Used with Warrior 500i, Warrior 750i 380-460V CE, Warrior 400i. Connectivity/interconnection component",
+        "description": "Used with Warrior 400i, Warrior 750i 380-460V CE, Warrior 500i. Connectivity/interconnection component",
         "powersources": [
-          "0465350883",
+          "0465350884",
           "0445555880",
-          "0465350884"
+          "0465350883"
         ],
         "rule_types": [
           "connectivity_compatibility"
@@ -11765,12 +11649,12 @@
           "Interconn_GIN Interconn"
         ],
         "specs": {},
-        "compatibility_info": "Compatible with PowerSources: 0465350883, 0445555880, 0465350884"
+        "compatibility_info": "Compatible with PowerSources: 0465350884, 0445555880, 0465350883"
       },
       "compatible_powersources": [
-        "0465350883",
+        "0465350884",
         "0445555880",
-        "0465350884"
+        "0465350883"
       ],
       "usage_frequency": 10,
       "specifications": {},
@@ -11780,28 +11664,28 @@
     {
       "gin": "0460160884",
       "name": "Interconnector Cable 0460160884",
-      "description": "SG-Interconnector product. Used with Warrior 500i, Warrior 750i 380-460V CE, Warrior 400i. Connectivity/interconnection component",
+      "description": "SG-Interconnector product. Used with Warrior 400i, Warrior 750i 380-460V CE, Warrior 500i. Connectivity/interconnection component",
       "category": "Interconnector",
       "source": "synthetic",
       "discovery_sources": [
         "ruleset_0445555880_Interconn_GIN Interconn",
         "ruleset_0445555880_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
-        "ruleset_0465350884_Interconn_GIN Interconn"
+        "ruleset_0465350884_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn"
       ],
       "is_available": true,
       "ruleset_context": {
-        "description": "Used with Warrior 500i, Warrior 750i 380-460V CE, Warrior 400i. Connectivity/interconnection component",
+        "description": "Used with Warrior 400i, Warrior 750i 380-460V CE, Warrior 500i. Connectivity/interconnection component",
         "powersources": [
-          "0465350883",
+          "0465350884",
           "0445555880",
-          "0465350884"
+          "0465350883"
         ],
         "rule_types": [
           "connectivity_compatibility"
@@ -11810,12 +11694,12 @@
           "Interconn_GIN Interconn"
         ],
         "specs": {},
-        "compatibility_info": "Compatible with PowerSources: 0465350883, 0445555880, 0465350884"
+        "compatibility_info": "Compatible with PowerSources: 0465350884, 0445555880, 0465350883"
       },
       "compatible_powersources": [
-        "0465350883",
+        "0465350884",
         "0445555880",
-        "0465350884"
+        "0465350883"
       ],
       "usage_frequency": 10,
       "specifications": {},
@@ -11825,28 +11709,28 @@
     {
       "gin": "0460160885",
       "name": "Interconnector Cable 0460160885",
-      "description": "SG-Interconnector product. Used with Warrior 500i, Warrior 750i 380-460V CE, Warrior 400i. Connectivity/interconnection component",
+      "description": "SG-Interconnector product. Used with Warrior 400i, Warrior 750i 380-460V CE, Warrior 500i. Connectivity/interconnection component",
       "category": "Interconnector",
       "source": "synthetic",
       "discovery_sources": [
         "ruleset_0445555880_Interconn_GIN Interconn",
         "ruleset_0445555880_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
-        "ruleset_0465350884_Interconn_GIN Interconn"
+        "ruleset_0465350884_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn"
       ],
       "is_available": true,
       "ruleset_context": {
-        "description": "Used with Warrior 500i, Warrior 750i 380-460V CE, Warrior 400i. Connectivity/interconnection component",
+        "description": "Used with Warrior 400i, Warrior 750i 380-460V CE, Warrior 500i. Connectivity/interconnection component",
         "powersources": [
-          "0465350883",
+          "0465350884",
           "0445555880",
-          "0465350884"
+          "0465350883"
         ],
         "rule_types": [
           "connectivity_compatibility"
@@ -11855,12 +11739,12 @@
           "Interconn_GIN Interconn"
         ],
         "specs": {},
-        "compatibility_info": "Compatible with PowerSources: 0465350883, 0445555880, 0465350884"
+        "compatibility_info": "Compatible with PowerSources: 0465350884, 0445555880, 0465350883"
       },
       "compatible_powersources": [
-        "0465350883",
+        "0465350884",
         "0445555880",
-        "0465350884"
+        "0465350883"
       ],
       "usage_frequency": 10,
       "specifications": {},
@@ -11870,28 +11754,28 @@
     {
       "gin": "0460160890",
       "name": "Interconnector Cable 0460160890",
-      "description": "SG-Interconnector product. Used with Warrior 500i, Warrior 750i 380-460V CE, Warrior 400i. Connectivity/interconnection component",
+      "description": "SG-Interconnector product. Used with Warrior 400i, Warrior 750i 380-460V CE, Warrior 500i. Connectivity/interconnection component",
       "category": "Interconnector",
       "source": "synthetic",
       "discovery_sources": [
         "ruleset_0445555880_Interconn_GIN Interconn",
         "ruleset_0445555880_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
-        "ruleset_0465350884_Interconn_GIN Interconn"
+        "ruleset_0465350884_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn"
       ],
       "is_available": true,
       "ruleset_context": {
-        "description": "Used with Warrior 500i, Warrior 750i 380-460V CE, Warrior 400i. Connectivity/interconnection component",
+        "description": "Used with Warrior 400i, Warrior 750i 380-460V CE, Warrior 500i. Connectivity/interconnection component",
         "powersources": [
-          "0465350883",
+          "0465350884",
           "0445555880",
-          "0465350884"
+          "0465350883"
         ],
         "rule_types": [
           "connectivity_compatibility"
@@ -11900,12 +11784,12 @@
           "Interconn_GIN Interconn"
         ],
         "specs": {},
-        "compatibility_info": "Compatible with PowerSources: 0465350883, 0445555880, 0465350884"
+        "compatibility_info": "Compatible with PowerSources: 0465350884, 0445555880, 0465350883"
       },
       "compatible_powersources": [
-        "0465350883",
+        "0465350884",
         "0445555880",
-        "0465350884"
+        "0465350883"
       ],
       "usage_frequency": 10,
       "specifications": {},
@@ -11915,28 +11799,28 @@
     {
       "gin": "0460160891",
       "name": "Interconnector Cable 0460160891",
-      "description": "SG-Interconnector product. Used with Warrior 500i, Warrior 750i 380-460V CE, Warrior 400i. Connectivity/interconnection component",
+      "description": "SG-Interconnector product. Used with Warrior 400i, Warrior 750i 380-460V CE, Warrior 500i. Connectivity/interconnection component",
       "category": "Interconnector",
       "source": "synthetic",
       "discovery_sources": [
         "ruleset_0445555880_Interconn_GIN Interconn",
         "ruleset_0445555880_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
-        "ruleset_0465350884_Interconn_GIN Interconn"
+        "ruleset_0465350884_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn"
       ],
       "is_available": true,
       "ruleset_context": {
-        "description": "Used with Warrior 500i, Warrior 750i 380-460V CE, Warrior 400i. Connectivity/interconnection component",
+        "description": "Used with Warrior 400i, Warrior 750i 380-460V CE, Warrior 500i. Connectivity/interconnection component",
         "powersources": [
-          "0465350883",
+          "0465350884",
           "0445555880",
-          "0465350884"
+          "0465350883"
         ],
         "rule_types": [
           "connectivity_compatibility"
@@ -11945,12 +11829,12 @@
           "Interconn_GIN Interconn"
         ],
         "specs": {},
-        "compatibility_info": "Compatible with PowerSources: 0465350883, 0445555880, 0465350884"
+        "compatibility_info": "Compatible with PowerSources: 0465350884, 0445555880, 0465350883"
       },
       "compatible_powersources": [
-        "0465350883",
+        "0465350884",
         "0445555880",
-        "0465350884"
+        "0465350883"
       ],
       "usage_frequency": 10,
       "specifications": {},
@@ -11960,7 +11844,7 @@
     {
       "gin": "0460160892",
       "name": "Interconnector Cable 0460160892",
-      "description": "SG-Interconnector product. Used with Warrior 500i, Warrior 750i 380-460V CE, Warrior 400i. Connectivity/interconnection component",
+      "description": "SG-Interconnector product. Used with Warrior 400i, Warrior 750i 380-460V CE, Warrior 500i. Connectivity/interconnection component",
       "category": "Interconnector",
       "source": "synthetic",
       "discovery_sources": [
@@ -11969,22 +11853,22 @@
         "golden_package_0445555880",
         "ruleset_0445555880_Interconn_GIN Interconn",
         "ruleset_0445555880_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
-        "ruleset_0465350884_Interconn_GIN Interconn"
+        "ruleset_0465350884_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn"
       ],
       "is_available": true,
       "ruleset_context": {
-        "description": "Used with Warrior 500i, Warrior 750i 380-460V CE, Warrior 400i. Connectivity/interconnection component",
+        "description": "Used with Warrior 400i, Warrior 750i 380-460V CE, Warrior 500i. Connectivity/interconnection component",
         "powersources": [
-          "0465350883",
+          "0465350884",
           "0445555880",
-          "0465350884"
+          "0465350883"
         ],
         "rule_types": [
           "connectivity_compatibility"
@@ -11993,12 +11877,12 @@
           "Interconn_GIN Interconn"
         ],
         "specs": {},
-        "compatibility_info": "Compatible with PowerSources: 0465350883, 0445555880, 0465350884"
+        "compatibility_info": "Compatible with PowerSources: 0465350884, 0445555880, 0465350883"
       },
       "compatible_powersources": [
-        "0465350883",
+        "0465350884",
         "0445555880",
-        "0465350884"
+        "0465350883"
       ],
       "usage_frequency": 13,
       "specifications": {},
@@ -12008,28 +11892,28 @@
     {
       "gin": "0460160893",
       "name": "Interconnector Cable 0460160893",
-      "description": "SG-Interconnector product. Used with Warrior 500i, Warrior 750i 380-460V CE, Warrior 400i. Connectivity/interconnection component",
+      "description": "SG-Interconnector product. Used with Warrior 400i, Warrior 750i 380-460V CE, Warrior 500i. Connectivity/interconnection component",
       "category": "Interconnector",
       "source": "synthetic",
       "discovery_sources": [
         "ruleset_0445555880_Interconn_GIN Interconn",
         "ruleset_0445555880_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
-        "ruleset_0465350884_Interconn_GIN Interconn"
+        "ruleset_0465350884_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn"
       ],
       "is_available": true,
       "ruleset_context": {
-        "description": "Used with Warrior 500i, Warrior 750i 380-460V CE, Warrior 400i. Connectivity/interconnection component",
+        "description": "Used with Warrior 400i, Warrior 750i 380-460V CE, Warrior 500i. Connectivity/interconnection component",
         "powersources": [
-          "0465350883",
+          "0465350884",
           "0445555880",
-          "0465350884"
+          "0465350883"
         ],
         "rule_types": [
           "connectivity_compatibility"
@@ -12038,12 +11922,12 @@
           "Interconn_GIN Interconn"
         ],
         "specs": {},
-        "compatibility_info": "Compatible with PowerSources: 0465350883, 0445555880, 0465350884"
+        "compatibility_info": "Compatible with PowerSources: 0465350884, 0445555880, 0465350883"
       },
       "compatible_powersources": [
-        "0465350883",
+        "0465350884",
         "0445555880",
-        "0465350884"
+        "0465350883"
       ],
       "usage_frequency": 10,
       "specifications": {},
@@ -12053,28 +11937,28 @@
     {
       "gin": "0460160894",
       "name": "Interconnector Cable 0460160894",
-      "description": "SG-Interconnector product. Used with Warrior 500i, Warrior 750i 380-460V CE, Warrior 400i. Connectivity/interconnection component",
+      "description": "SG-Interconnector product. Used with Warrior 400i, Warrior 750i 380-460V CE, Warrior 500i. Connectivity/interconnection component",
       "category": "Interconnector",
       "source": "synthetic",
       "discovery_sources": [
         "ruleset_0445555880_Interconn_GIN Interconn",
         "ruleset_0445555880_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
-        "ruleset_0465350884_Interconn_GIN Interconn"
+        "ruleset_0465350884_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn"
       ],
       "is_available": true,
       "ruleset_context": {
-        "description": "Used with Warrior 500i, Warrior 750i 380-460V CE, Warrior 400i. Connectivity/interconnection component",
+        "description": "Used with Warrior 400i, Warrior 750i 380-460V CE, Warrior 500i. Connectivity/interconnection component",
         "powersources": [
-          "0465350883",
+          "0465350884",
           "0445555880",
-          "0465350884"
+          "0465350883"
         ],
         "rule_types": [
           "connectivity_compatibility"
@@ -12083,12 +11967,12 @@
           "Interconn_GIN Interconn"
         ],
         "specs": {},
-        "compatibility_info": "Compatible with PowerSources: 0465350883, 0445555880, 0465350884"
+        "compatibility_info": "Compatible with PowerSources: 0465350884, 0445555880, 0465350883"
       },
       "compatible_powersources": [
-        "0465350883",
+        "0465350884",
         "0445555880",
-        "0465350884"
+        "0465350883"
       ],
       "usage_frequency": 10,
       "specifications": {},
@@ -12098,28 +11982,28 @@
     {
       "gin": "0460160895",
       "name": "Interconnector Cable 0460160895",
-      "description": "SG-Interconnector product. Used with Warrior 500i, Warrior 750i 380-460V CE, Warrior 400i. Connectivity/interconnection component",
+      "description": "SG-Interconnector product. Used with Warrior 400i, Warrior 750i 380-460V CE, Warrior 500i. Connectivity/interconnection component",
       "category": "Interconnector",
       "source": "synthetic",
       "discovery_sources": [
         "ruleset_0445555880_Interconn_GIN Interconn",
         "ruleset_0445555880_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
-        "ruleset_0465350884_Interconn_GIN Interconn"
+        "ruleset_0465350884_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn"
       ],
       "is_available": true,
       "ruleset_context": {
-        "description": "Used with Warrior 500i, Warrior 750i 380-460V CE, Warrior 400i. Connectivity/interconnection component",
+        "description": "Used with Warrior 400i, Warrior 750i 380-460V CE, Warrior 500i. Connectivity/interconnection component",
         "powersources": [
-          "0465350883",
+          "0465350884",
           "0445555880",
-          "0465350884"
+          "0465350883"
         ],
         "rule_types": [
           "connectivity_compatibility"
@@ -12128,12 +12012,12 @@
           "Interconn_GIN Interconn"
         ],
         "specs": {},
-        "compatibility_info": "Compatible with PowerSources: 0465350883, 0445555880, 0465350884"
+        "compatibility_info": "Compatible with PowerSources: 0465350884, 0445555880, 0465350883"
       },
       "compatible_powersources": [
-        "0465350883",
+        "0465350884",
         "0445555880",
-        "0465350884"
+        "0465350883"
       ],
       "usage_frequency": 10,
       "specifications": {},
@@ -12143,28 +12027,28 @@
     {
       "gin": "0460160980",
       "name": "Interconnector Cable 0460160980",
-      "description": "SG-Interconnector product. Used with Warrior 500i, Warrior 750i 380-460V CE, Warrior 400i. Connectivity/interconnection component",
+      "description": "SG-Interconnector product. Used with Warrior 400i, Warrior 750i 380-460V CE, Warrior 500i. Connectivity/interconnection component",
       "category": "Interconnector",
       "source": "synthetic",
       "discovery_sources": [
         "ruleset_0445555880_Interconn_GIN Interconn",
         "ruleset_0445555880_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
-        "ruleset_0465350884_Interconn_GIN Interconn"
+        "ruleset_0465350884_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn"
       ],
       "is_available": true,
       "ruleset_context": {
-        "description": "Used with Warrior 500i, Warrior 750i 380-460V CE, Warrior 400i. Connectivity/interconnection component",
+        "description": "Used with Warrior 400i, Warrior 750i 380-460V CE, Warrior 500i. Connectivity/interconnection component",
         "powersources": [
-          "0465350883",
+          "0465350884",
           "0445555880",
-          "0465350884"
+          "0465350883"
         ],
         "rule_types": [
           "connectivity_compatibility"
@@ -12173,12 +12057,12 @@
           "Interconn_GIN Interconn"
         ],
         "specs": {},
-        "compatibility_info": "Compatible with PowerSources: 0465350883, 0445555880, 0465350884"
+        "compatibility_info": "Compatible with PowerSources: 0465350884, 0445555880, 0465350883"
       },
       "compatible_powersources": [
-        "0465350883",
+        "0465350884",
         "0445555880",
-        "0465350884"
+        "0465350883"
       ],
       "usage_frequency": 10,
       "specifications": {},
@@ -12188,28 +12072,28 @@
     {
       "gin": "0460160981",
       "name": "Interconnector Cable 0460160981",
-      "description": "SG-Interconnector product. Used with Warrior 500i, Warrior 750i 380-460V CE, Warrior 400i. Connectivity/interconnection component",
+      "description": "SG-Interconnector product. Used with Warrior 400i, Warrior 750i 380-460V CE, Warrior 500i. Connectivity/interconnection component",
       "category": "Interconnector",
       "source": "synthetic",
       "discovery_sources": [
         "ruleset_0445555880_Interconn_GIN Interconn",
         "ruleset_0445555880_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
-        "ruleset_0465350884_Interconn_GIN Interconn"
+        "ruleset_0465350884_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn"
       ],
       "is_available": true,
       "ruleset_context": {
-        "description": "Used with Warrior 500i, Warrior 750i 380-460V CE, Warrior 400i. Connectivity/interconnection component",
+        "description": "Used with Warrior 400i, Warrior 750i 380-460V CE, Warrior 500i. Connectivity/interconnection component",
         "powersources": [
-          "0465350883",
+          "0465350884",
           "0445555880",
-          "0465350884"
+          "0465350883"
         ],
         "rule_types": [
           "connectivity_compatibility"
@@ -12218,12 +12102,12 @@
           "Interconn_GIN Interconn"
         ],
         "specs": {},
-        "compatibility_info": "Compatible with PowerSources: 0465350883, 0445555880, 0465350884"
+        "compatibility_info": "Compatible with PowerSources: 0465350884, 0445555880, 0465350883"
       },
       "compatible_powersources": [
-        "0465350883",
+        "0465350884",
         "0445555880",
-        "0465350884"
+        "0465350883"
       ],
       "usage_frequency": 10,
       "specifications": {},
@@ -12233,28 +12117,28 @@
     {
       "gin": "0460160982",
       "name": "Interconnector Cable 0460160982",
-      "description": "SG-Interconnector product. Used with Warrior 500i, Warrior 750i 380-460V CE, Warrior 400i. Connectivity/interconnection component",
+      "description": "SG-Interconnector product. Used with Warrior 400i, Warrior 750i 380-460V CE, Warrior 500i. Connectivity/interconnection component",
       "category": "Interconnector",
       "source": "synthetic",
       "discovery_sources": [
         "ruleset_0445555880_Interconn_GIN Interconn",
         "ruleset_0445555880_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
-        "ruleset_0465350884_Interconn_GIN Interconn"
+        "ruleset_0465350884_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn"
       ],
       "is_available": true,
       "ruleset_context": {
-        "description": "Used with Warrior 500i, Warrior 750i 380-460V CE, Warrior 400i. Connectivity/interconnection component",
+        "description": "Used with Warrior 400i, Warrior 750i 380-460V CE, Warrior 500i. Connectivity/interconnection component",
         "powersources": [
-          "0465350883",
+          "0465350884",
           "0445555880",
-          "0465350884"
+          "0465350883"
         ],
         "rule_types": [
           "connectivity_compatibility"
@@ -12263,12 +12147,12 @@
           "Interconn_GIN Interconn"
         ],
         "specs": {},
-        "compatibility_info": "Compatible with PowerSources: 0465350883, 0445555880, 0465350884"
+        "compatibility_info": "Compatible with PowerSources: 0465350884, 0445555880, 0465350883"
       },
       "compatible_powersources": [
-        "0465350883",
+        "0465350884",
         "0445555880",
-        "0465350884"
+        "0465350883"
       ],
       "usage_frequency": 10,
       "specifications": {},
@@ -12278,28 +12162,28 @@
     {
       "gin": "0460160983",
       "name": "Interconnector Cable 0460160983",
-      "description": "SG-Interconnector product. Used with Warrior 500i, Warrior 750i 380-460V CE, Warrior 400i. Connectivity/interconnection component",
+      "description": "SG-Interconnector product. Used with Warrior 400i, Warrior 750i 380-460V CE, Warrior 500i. Connectivity/interconnection component",
       "category": "Interconnector",
       "source": "synthetic",
       "discovery_sources": [
         "ruleset_0445555880_Interconn_GIN Interconn",
         "ruleset_0445555880_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
-        "ruleset_0465350884_Interconn_GIN Interconn"
+        "ruleset_0465350884_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn"
       ],
       "is_available": true,
       "ruleset_context": {
-        "description": "Used with Warrior 500i, Warrior 750i 380-460V CE, Warrior 400i. Connectivity/interconnection component",
+        "description": "Used with Warrior 400i, Warrior 750i 380-460V CE, Warrior 500i. Connectivity/interconnection component",
         "powersources": [
-          "0465350883",
+          "0465350884",
           "0445555880",
-          "0465350884"
+          "0465350883"
         ],
         "rule_types": [
           "connectivity_compatibility"
@@ -12308,12 +12192,12 @@
           "Interconn_GIN Interconn"
         ],
         "specs": {},
-        "compatibility_info": "Compatible with PowerSources: 0465350883, 0445555880, 0465350884"
+        "compatibility_info": "Compatible with PowerSources: 0465350884, 0445555880, 0465350883"
       },
       "compatible_powersources": [
-        "0465350883",
+        "0465350884",
         "0445555880",
-        "0465350884"
+        "0465350883"
       ],
       "usage_frequency": 10,
       "specifications": {},
@@ -12323,28 +12207,28 @@
     {
       "gin": "0460160984",
       "name": "Interconnector Cable 0460160984",
-      "description": "SG-Interconnector product. Used with Warrior 500i, Warrior 750i 380-460V CE, Warrior 400i. Connectivity/interconnection component",
+      "description": "SG-Interconnector product. Used with Warrior 400i, Warrior 750i 380-460V CE, Warrior 500i. Connectivity/interconnection component",
       "category": "Interconnector",
       "source": "synthetic",
       "discovery_sources": [
         "ruleset_0445555880_Interconn_GIN Interconn",
         "ruleset_0445555880_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
-        "ruleset_0465350884_Interconn_GIN Interconn"
+        "ruleset_0465350884_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn"
       ],
       "is_available": true,
       "ruleset_context": {
-        "description": "Used with Warrior 500i, Warrior 750i 380-460V CE, Warrior 400i. Connectivity/interconnection component",
+        "description": "Used with Warrior 400i, Warrior 750i 380-460V CE, Warrior 500i. Connectivity/interconnection component",
         "powersources": [
-          "0465350883",
+          "0465350884",
           "0445555880",
-          "0465350884"
+          "0465350883"
         ],
         "rule_types": [
           "connectivity_compatibility"
@@ -12353,12 +12237,12 @@
           "Interconn_GIN Interconn"
         ],
         "specs": {},
-        "compatibility_info": "Compatible with PowerSources: 0465350883, 0445555880, 0465350884"
+        "compatibility_info": "Compatible with PowerSources: 0465350884, 0445555880, 0465350883"
       },
       "compatible_powersources": [
-        "0465350883",
+        "0465350884",
         "0445555880",
-        "0465350884"
+        "0465350883"
       ],
       "usage_frequency": 10,
       "specifications": {},
@@ -12368,28 +12252,28 @@
     {
       "gin": "0460160985",
       "name": "Interconnector Cable 0460160985",
-      "description": "SG-Interconnector product. Used with Warrior 500i, Warrior 750i 380-460V CE, Warrior 400i. Connectivity/interconnection component",
+      "description": "SG-Interconnector product. Used with Warrior 400i, Warrior 750i 380-460V CE, Warrior 500i. Connectivity/interconnection component",
       "category": "Interconnector",
       "source": "synthetic",
       "discovery_sources": [
         "ruleset_0445555880_Interconn_GIN Interconn",
         "ruleset_0445555880_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
-        "ruleset_0465350884_Interconn_GIN Interconn"
+        "ruleset_0465350884_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn"
       ],
       "is_available": true,
       "ruleset_context": {
-        "description": "Used with Warrior 500i, Warrior 750i 380-460V CE, Warrior 400i. Connectivity/interconnection component",
+        "description": "Used with Warrior 400i, Warrior 750i 380-460V CE, Warrior 500i. Connectivity/interconnection component",
         "powersources": [
-          "0465350883",
+          "0465350884",
           "0445555880",
-          "0465350884"
+          "0465350883"
         ],
         "rule_types": [
           "connectivity_compatibility"
@@ -12398,12 +12282,12 @@
           "Interconn_GIN Interconn"
         ],
         "specs": {},
-        "compatibility_info": "Compatible with PowerSources: 0465350883, 0445555880, 0465350884"
+        "compatibility_info": "Compatible with PowerSources: 0465350884, 0445555880, 0465350883"
       },
       "compatible_powersources": [
-        "0465350883",
+        "0465350884",
         "0445555880",
-        "0465350884"
+        "0465350883"
       ],
       "usage_frequency": 10,
       "specifications": {},
@@ -12413,28 +12297,28 @@
     {
       "gin": "0460160990",
       "name": "Interconnector Cable 0460160990",
-      "description": "SG-Interconnector product. Used with Warrior 500i, Warrior 750i 380-460V CE, Warrior 400i. Connectivity/interconnection component",
+      "description": "SG-Interconnector product. Used with Warrior 400i, Warrior 750i 380-460V CE, Warrior 500i. Connectivity/interconnection component",
       "category": "Interconnector",
       "source": "synthetic",
       "discovery_sources": [
         "ruleset_0445555880_Interconn_GIN Interconn",
         "ruleset_0445555880_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
-        "ruleset_0465350884_Interconn_GIN Interconn"
+        "ruleset_0465350884_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn"
       ],
       "is_available": true,
       "ruleset_context": {
-        "description": "Used with Warrior 500i, Warrior 750i 380-460V CE, Warrior 400i. Connectivity/interconnection component",
+        "description": "Used with Warrior 400i, Warrior 750i 380-460V CE, Warrior 500i. Connectivity/interconnection component",
         "powersources": [
-          "0465350883",
+          "0465350884",
           "0445555880",
-          "0465350884"
+          "0465350883"
         ],
         "rule_types": [
           "connectivity_compatibility"
@@ -12443,12 +12327,12 @@
           "Interconn_GIN Interconn"
         ],
         "specs": {},
-        "compatibility_info": "Compatible with PowerSources: 0465350883, 0445555880, 0465350884"
+        "compatibility_info": "Compatible with PowerSources: 0465350884, 0445555880, 0465350883"
       },
       "compatible_powersources": [
-        "0465350883",
+        "0465350884",
         "0445555880",
-        "0465350884"
+        "0465350883"
       ],
       "usage_frequency": 10,
       "specifications": {},
@@ -12458,28 +12342,28 @@
     {
       "gin": "0460160991",
       "name": "Interconnector Cable 0460160991",
-      "description": "SG-Interconnector product. Used with Warrior 500i, Warrior 750i 380-460V CE, Warrior 400i. Connectivity/interconnection component",
+      "description": "SG-Interconnector product. Used with Warrior 400i, Warrior 750i 380-460V CE, Warrior 500i. Connectivity/interconnection component",
       "category": "Interconnector",
       "source": "synthetic",
       "discovery_sources": [
         "ruleset_0445555880_Interconn_GIN Interconn",
         "ruleset_0445555880_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
-        "ruleset_0465350884_Interconn_GIN Interconn"
+        "ruleset_0465350884_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn"
       ],
       "is_available": true,
       "ruleset_context": {
-        "description": "Used with Warrior 500i, Warrior 750i 380-460V CE, Warrior 400i. Connectivity/interconnection component",
+        "description": "Used with Warrior 400i, Warrior 750i 380-460V CE, Warrior 500i. Connectivity/interconnection component",
         "powersources": [
-          "0465350883",
+          "0465350884",
           "0445555880",
-          "0465350884"
+          "0465350883"
         ],
         "rule_types": [
           "connectivity_compatibility"
@@ -12488,12 +12372,12 @@
           "Interconn_GIN Interconn"
         ],
         "specs": {},
-        "compatibility_info": "Compatible with PowerSources: 0465350883, 0445555880, 0465350884"
+        "compatibility_info": "Compatible with PowerSources: 0465350884, 0445555880, 0465350883"
       },
       "compatible_powersources": [
-        "0465350883",
+        "0465350884",
         "0445555880",
-        "0465350884"
+        "0465350883"
       ],
       "usage_frequency": 10,
       "specifications": {},
@@ -12503,28 +12387,28 @@
     {
       "gin": "0460160992",
       "name": "Interconnector Cable 0460160992",
-      "description": "SG-Interconnector product. Used with Warrior 500i, Warrior 750i 380-460V CE, Warrior 400i. Connectivity/interconnection component",
+      "description": "SG-Interconnector product. Used with Warrior 400i, Warrior 750i 380-460V CE, Warrior 500i. Connectivity/interconnection component",
       "category": "Interconnector",
       "source": "synthetic",
       "discovery_sources": [
         "ruleset_0445555880_Interconn_GIN Interconn",
         "ruleset_0445555880_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
-        "ruleset_0465350884_Interconn_GIN Interconn"
+        "ruleset_0465350884_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn"
       ],
       "is_available": true,
       "ruleset_context": {
-        "description": "Used with Warrior 500i, Warrior 750i 380-460V CE, Warrior 400i. Connectivity/interconnection component",
+        "description": "Used with Warrior 400i, Warrior 750i 380-460V CE, Warrior 500i. Connectivity/interconnection component",
         "powersources": [
-          "0465350883",
+          "0465350884",
           "0445555880",
-          "0465350884"
+          "0465350883"
         ],
         "rule_types": [
           "connectivity_compatibility"
@@ -12533,12 +12417,12 @@
           "Interconn_GIN Interconn"
         ],
         "specs": {},
-        "compatibility_info": "Compatible with PowerSources: 0465350883, 0445555880, 0465350884"
+        "compatibility_info": "Compatible with PowerSources: 0465350884, 0445555880, 0465350883"
       },
       "compatible_powersources": [
-        "0465350883",
+        "0465350884",
         "0445555880",
-        "0465350884"
+        "0465350883"
       ],
       "usage_frequency": 10,
       "specifications": {},
@@ -12548,28 +12432,28 @@
     {
       "gin": "0460160993",
       "name": "Interconnector Cable 0460160993",
-      "description": "SG-Interconnector product. Used with Warrior 500i, Warrior 750i 380-460V CE, Warrior 400i. Connectivity/interconnection component",
+      "description": "SG-Interconnector product. Used with Warrior 400i, Warrior 750i 380-460V CE, Warrior 500i. Connectivity/interconnection component",
       "category": "Interconnector",
       "source": "synthetic",
       "discovery_sources": [
         "ruleset_0445555880_Interconn_GIN Interconn",
         "ruleset_0445555880_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
-        "ruleset_0465350884_Interconn_GIN Interconn"
+        "ruleset_0465350884_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn"
       ],
       "is_available": true,
       "ruleset_context": {
-        "description": "Used with Warrior 500i, Warrior 750i 380-460V CE, Warrior 400i. Connectivity/interconnection component",
+        "description": "Used with Warrior 400i, Warrior 750i 380-460V CE, Warrior 500i. Connectivity/interconnection component",
         "powersources": [
-          "0465350883",
+          "0465350884",
           "0445555880",
-          "0465350884"
+          "0465350883"
         ],
         "rule_types": [
           "connectivity_compatibility"
@@ -12578,12 +12462,12 @@
           "Interconn_GIN Interconn"
         ],
         "specs": {},
-        "compatibility_info": "Compatible with PowerSources: 0465350883, 0445555880, 0465350884"
+        "compatibility_info": "Compatible with PowerSources: 0465350884, 0445555880, 0465350883"
       },
       "compatible_powersources": [
-        "0465350883",
+        "0465350884",
         "0445555880",
-        "0465350884"
+        "0465350883"
       ],
       "usage_frequency": 10,
       "specifications": {},
@@ -12593,28 +12477,28 @@
     {
       "gin": "0460160994",
       "name": "Interconnector Cable 0460160994",
-      "description": "SG-Interconnector product. Used with Warrior 500i, Warrior 750i 380-460V CE, Warrior 400i. Connectivity/interconnection component",
+      "description": "SG-Interconnector product. Used with Warrior 400i, Warrior 750i 380-460V CE, Warrior 500i. Connectivity/interconnection component",
       "category": "Interconnector",
       "source": "synthetic",
       "discovery_sources": [
         "ruleset_0445555880_Interconn_GIN Interconn",
         "ruleset_0445555880_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
-        "ruleset_0465350884_Interconn_GIN Interconn"
+        "ruleset_0465350884_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn"
       ],
       "is_available": true,
       "ruleset_context": {
-        "description": "Used with Warrior 500i, Warrior 750i 380-460V CE, Warrior 400i. Connectivity/interconnection component",
+        "description": "Used with Warrior 400i, Warrior 750i 380-460V CE, Warrior 500i. Connectivity/interconnection component",
         "powersources": [
-          "0465350883",
+          "0465350884",
           "0445555880",
-          "0465350884"
+          "0465350883"
         ],
         "rule_types": [
           "connectivity_compatibility"
@@ -12623,12 +12507,12 @@
           "Interconn_GIN Interconn"
         ],
         "specs": {},
-        "compatibility_info": "Compatible with PowerSources: 0465350883, 0445555880, 0465350884"
+        "compatibility_info": "Compatible with PowerSources: 0465350884, 0445555880, 0465350883"
       },
       "compatible_powersources": [
-        "0465350883",
+        "0465350884",
         "0445555880",
-        "0465350884"
+        "0465350883"
       ],
       "usage_frequency": 10,
       "specifications": {},
@@ -12638,28 +12522,28 @@
     {
       "gin": "0460160995",
       "name": "Interconnector Cable 0460160995",
-      "description": "SG-Interconnector product. Used with Warrior 500i, Warrior 750i 380-460V CE, Warrior 400i. Connectivity/interconnection component",
+      "description": "SG-Interconnector product. Used with Warrior 400i, Warrior 750i 380-460V CE, Warrior 500i. Connectivity/interconnection component",
       "category": "Interconnector",
       "source": "synthetic",
       "discovery_sources": [
         "ruleset_0445555880_Interconn_GIN Interconn",
         "ruleset_0445555880_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
-        "ruleset_0465350883_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
         "ruleset_0465350884_Interconn_GIN Interconn",
-        "ruleset_0465350884_Interconn_GIN Interconn"
+        "ruleset_0465350884_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn",
+        "ruleset_0465350883_Interconn_GIN Interconn"
       ],
       "is_available": true,
       "ruleset_context": {
-        "description": "Used with Warrior 500i, Warrior 750i 380-460V CE, Warrior 400i. Connectivity/interconnection component",
+        "description": "Used with Warrior 400i, Warrior 750i 380-460V CE, Warrior 500i. Connectivity/interconnection component",
         "powersources": [
-          "0465350883",
+          "0465350884",
           "0445555880",
-          "0465350884"
+          "0465350883"
         ],
         "rule_types": [
           "connectivity_compatibility"
@@ -12668,12 +12552,12 @@
           "Interconn_GIN Interconn"
         ],
         "specs": {},
-        "compatibility_info": "Compatible with PowerSources: 0465350883, 0445555880, 0465350884"
+        "compatibility_info": "Compatible with PowerSources: 0465350884, 0445555880, 0465350883"
       },
       "compatible_powersources": [
-        "0465350883",
+        "0465350884",
         "0445555880",
-        "0465350884"
+        "0465350883"
       ],
       "usage_frequency": 10,
       "specifications": {},
@@ -13781,21 +13665,21 @@
     {
       "gin": "0469837880",
       "name": "Feeder Accessory 0469837880",
-      "description": "SG-FeederAccessory product. Used with Warrior 500i, Warrior 400i. Wire feeder component",
+      "description": "SG-FeederAccessory product. Used with Warrior 400i, Warrior 500i. Wire feeder component",
       "category": "FeederAccessory",
       "source": "synthetic",
       "discovery_sources": [
-        "ruleset_0465350883_Feeder Wears_GIN Feeder Wears",
-        "ruleset_0465350883_Feeder Wears_GIN Feeder Wears",
         "ruleset_0465350884_Feeder Wears_GIN Feeder Wears",
-        "ruleset_0465350884_Feeder Wears_GIN Feeder Wears"
+        "ruleset_0465350884_Feeder Wears_GIN Feeder Wears",
+        "ruleset_0465350883_Feeder Wears_GIN Feeder Wears",
+        "ruleset_0465350883_Feeder Wears_GIN Feeder Wears"
       ],
       "is_available": true,
       "ruleset_context": {
-        "description": "Used with Warrior 500i, Warrior 400i. Wire feeder component",
+        "description": "Used with Warrior 400i, Warrior 500i. Wire feeder component",
         "powersources": [
-          "0465350883",
-          "0465350884"
+          "0465350884",
+          "0465350883"
         ],
         "rule_types": [
           "feeder_compatibility"
@@ -13804,11 +13688,11 @@
           "Feeder Wears_GIN Feeder Wears"
         ],
         "specs": {},
-        "compatibility_info": "Compatible with PowerSources: 0465350883, 0465350884"
+        "compatibility_info": "Compatible with PowerSources: 0465350884, 0465350883"
       },
       "compatible_powersources": [
-        "0465350883",
-        "0465350884"
+        "0465350884",
+        "0465350883"
       ],
       "usage_frequency": 4,
       "specifications": {},
@@ -13818,19 +13702,19 @@
     {
       "gin": "0469837881",
       "name": "Feeder Accessory 0469837881",
-      "description": "SG-FeederAccessory product. Used with Warrior 500i, Warrior 400i. Wire feeder component",
+      "description": "SG-FeederAccessory product. Used with Warrior 400i, Warrior 500i. Wire feeder component",
       "category": "FeederAccessory",
       "source": "synthetic",
       "discovery_sources": [
-        "ruleset_0465350883_Feeder Wears_GIN Feeder Wears",
-        "ruleset_0465350884_Feeder Wears_GIN Feeder Wears"
+        "ruleset_0465350884_Feeder Wears_GIN Feeder Wears",
+        "ruleset_0465350883_Feeder Wears_GIN Feeder Wears"
       ],
       "is_available": true,
       "ruleset_context": {
-        "description": "Used with Warrior 500i, Warrior 400i. Wire feeder component",
+        "description": "Used with Warrior 400i, Warrior 500i. Wire feeder component",
         "powersources": [
-          "0465350883",
-          "0465350884"
+          "0465350884",
+          "0465350883"
         ],
         "rule_types": [
           "feeder_compatibility"
@@ -13839,11 +13723,11 @@
           "Feeder Wears_GIN Feeder Wears"
         ],
         "specs": {},
-        "compatibility_info": "Compatible with PowerSources: 0465350883, 0465350884"
+        "compatibility_info": "Compatible with PowerSources: 0465350884, 0465350883"
       },
       "compatible_powersources": [
-        "0465350883",
-        "0465350884"
+        "0465350884",
+        "0465350883"
       ],
       "usage_frequency": 2,
       "specifications": {},
@@ -16233,25 +16117,25 @@
     {
       "gin": "0Interconn",
       "name": "Unknown 0Interconn",
-      "description": "SG-Unknown product. Used with Warrior 750i 380-460V CE, Renegade ES 300i, Aristo 500ix, Warrior 500i, Warrior 400i",
+      "description": "SG-Unknown product. Used with Warrior 400i, Warrior 750i 380-460V CE, Aristo 500ix, Renegade ES 300i, Warrior 500i",
       "category": "Unknown",
       "source": "synthetic",
       "discovery_sources": [
         "ruleset_0445555880_Decision flow_Unnamed: 1",
-        "ruleset_0445250880_Decision flow_Unnamed: 1",
+        "ruleset_0465350884_Decision flow_Unnamed: 1",
         "ruleset_0446200880_Decision flow_Unnamed: 1",
-        "ruleset_0465350883_Decision flow_Unnamed: 1",
-        "ruleset_0465350884_Decision flow_Unnamed: 1"
+        "ruleset_0445250880_Decision flow_Unnamed: 1",
+        "ruleset_0465350883_Decision flow_Unnamed: 1"
       ],
       "is_available": true,
       "ruleset_context": {
-        "description": "Used with Warrior 750i 380-460V CE, Renegade ES 300i, Aristo 500ix, Warrior 500i, Warrior 400i",
+        "description": "Used with Warrior 400i, Warrior 750i 380-460V CE, Aristo 500ix, Renegade ES 300i, Warrior 500i",
         "powersources": [
+          "0465350884",
           "0445555880",
-          "0445250880",
           "0446200880",
-          "0465350883",
-          "0465350884"
+          "0445250880",
+          "0465350883"
         ],
         "rule_types": [
           "general_compatibility"
@@ -16260,14 +16144,14 @@
           "Decision flow_Unnamed: 1"
         ],
         "specs": {},
-        "compatibility_info": "Compatible with PowerSources: 0445555880, 0445250880, 0446200880, 0465350883, 0465350884"
+        "compatibility_info": "Compatible with PowerSources: 0465350884, 0445555880, 0446200880, 0445250880, 0465350883"
       },
       "compatible_powersources": [
+        "0465350884",
         "0445555880",
-        "0445250880",
         "0446200880",
-        "0465350883",
-        "0465350884"
+        "0445250880",
+        "0465350883"
       ],
       "usage_frequency": 5,
       "specifications": {},
@@ -16277,25 +16161,25 @@
     {
       "gin": "Connectivity",
       "name": "Unknown Connectivity",
-      "description": "SG-Unknown product. Used with Warrior 750i 380-460V CE, Renegade ES 300i, Aristo 500ix, Warrior 500i, Warrior 400i",
+      "description": "SG-Unknown product. Used with Warrior 400i, Warrior 750i 380-460V CE, Aristo 500ix, Renegade ES 300i, Warrior 500i",
       "category": "Unknown",
       "source": "synthetic",
       "discovery_sources": [
         "ruleset_0445555880_Decision flow_Unnamed: 6",
-        "ruleset_0445250880_Decision flow_Unnamed: 6",
+        "ruleset_0465350884_Decision flow_Unnamed: 6",
         "ruleset_0446200880_Decision flow_Unnamed: 6",
-        "ruleset_0465350883_Decision flow_Unnamed: 6",
-        "ruleset_0465350884_Decision flow_Unnamed: 6"
+        "ruleset_0445250880_Decision flow_Unnamed: 6",
+        "ruleset_0465350883_Decision flow_Unnamed: 6"
       ],
       "is_available": true,
       "ruleset_context": {
-        "description": "Used with Warrior 750i 380-460V CE, Renegade ES 300i, Aristo 500ix, Warrior 500i, Warrior 400i",
+        "description": "Used with Warrior 400i, Warrior 750i 380-460V CE, Aristo 500ix, Renegade ES 300i, Warrior 500i",
         "powersources": [
+          "0465350884",
           "0445555880",
-          "0445250880",
           "0446200880",
-          "0465350883",
-          "0465350884"
+          "0445250880",
+          "0465350883"
         ],
         "rule_types": [
           "general_compatibility"
@@ -16304,14 +16188,14 @@
           "Decision flow_Unnamed: 6"
         ],
         "specs": {},
-        "compatibility_info": "Compatible with PowerSources: 0445555880, 0445250880, 0446200880, 0465350883, 0465350884"
+        "compatibility_info": "Compatible with PowerSources: 0465350884, 0445555880, 0446200880, 0445250880, 0465350883"
       },
       "compatible_powersources": [
+        "0465350884",
         "0445555880",
-        "0445250880",
         "0446200880",
-        "0465350883",
-        "0465350884"
+        "0445250880",
+        "0465350883"
       ],
       "usage_frequency": 5,
       "specifications": {},
@@ -16321,7 +16205,7 @@
     {
       "gin": "F000000002",
       "name": "No Cooler Available",
-      "description": "SG-Integrated component placeholder - No Cooler Available. Used with Warrior 750i 380-460V CE, Renegade ES 300i, Aristo 500ix, Warrior 500i, Warrior 400i. Compatible accessory component. Torch system component. Connectivity/interconnection component. Commonly used component",
+      "description": "SG-Integrated component placeholder - No Cooler Available. Used with Warrior 400i, Warrior 750i 380-460V CE, Aristo 500ix, Renegade ES 300i, Warrior 500i. Compatible accessory component. Torch system component. Connectivity/interconnection component. Commonly used component",
       "category": "Cooler",
       "source": "synthetic",
       "discovery_sources": [
@@ -16361,201 +16245,288 @@
         "ruleset_0445555880_Torches_GIN Cooler",
         "ruleset_0445555880_Torches_GIN Cooler",
         "ruleset_0445555880_Torches_GIN Cooler",
+        "ruleset_0465350884_Init_GIN Cooler",
+        "ruleset_0465350884_Init_GIN Cooler",
+        "ruleset_0465350884_Init_GIN Cooler",
+        "ruleset_0465350884_Init_GIN Cooler",
+        "ruleset_0465350884_Init_GIN Cooler",
+        "ruleset_0465350884_Init_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Interconn_GIN Cooler",
+        "ruleset_0465350884_Torches_GIN Cooler",
+        "ruleset_0465350884_Torches_GIN Cooler",
+        "ruleset_0465350884_Torches_GIN Cooler",
+        "ruleset_0465350884_Torches_GIN Cooler",
+        "ruleset_0465350884_Torches_GIN Cooler",
+        "ruleset_0465350884_Torches_GIN Cooler",
+        "ruleset_0465350884_Torches_GIN Cooler",
+        "ruleset_0465350884_Torches_GIN Cooler",
+        "ruleset_0465350884_Torches_GIN Cooler",
+        "ruleset_0446200880_Init_GIN Cooler",
+        "ruleset_0446200880_Init_GIN Cooler",
+        "ruleset_0446200880_Init_GIN Cooler",
+        "ruleset_0446200880_Init_GIN Cooler",
+        "ruleset_0446200880_Init_GIN Cooler",
+        "ruleset_0446200880_Init_GIN Cooler",
+        "ruleset_0446200880_Init_GIN Cooler",
+        "ruleset_0446200880_Init_GIN Cooler",
+        "ruleset_0446200880_Init_GIN Cooler",
+        "ruleset_0446200880_Init_GIN Cooler",
+        "ruleset_0446200880_Interconn_GIN Cooler",
+        "ruleset_0446200880_Interconn_GIN Cooler",
+        "ruleset_0446200880_Interconn_GIN Cooler",
+        "ruleset_0446200880_Interconn_GIN Cooler",
+        "ruleset_0446200880_Interconn_GIN Cooler",
+        "ruleset_0446200880_Interconn_GIN Cooler",
+        "ruleset_0446200880_Interconn_GIN Cooler",
+        "ruleset_0446200880_Interconn_GIN Cooler",
+        "ruleset_0446200880_Interconn_GIN Cooler",
+        "ruleset_0446200880_Interconn_GIN Cooler",
+        "ruleset_0446200880_Interconn_GIN Cooler",
+        "ruleset_0446200880_Interconn_GIN Cooler",
+        "ruleset_0446200880_Interconn_GIN Cooler",
+        "ruleset_0446200880_Interconn_GIN Cooler",
+        "ruleset_0446200880_Interconn_GIN Cooler",
+        "ruleset_0446200880_Interconn_GIN Cooler",
+        "ruleset_0446200880_Interconn_GIN Cooler",
+        "ruleset_0446200880_Interconn_GIN Cooler",
+        "ruleset_0446200880_Interconn_GIN Cooler",
+        "ruleset_0446200880_Interconn_GIN Cooler",
+        "ruleset_0446200880_Interconn_GIN Cooler",
+        "ruleset_0446200880_Interconn_GIN Cooler",
+        "ruleset_0446200880_Interconn_GIN Cooler",
+        "ruleset_0446200880_Interconn_GIN Cooler",
+        "ruleset_0446200880_Interconn_GIN Cooler",
+        "ruleset_0446200880_Interconn_GIN Cooler",
+        "ruleset_0446200880_Interconn_GIN Cooler",
+        "ruleset_0446200880_Interconn_GIN Cooler",
+        "ruleset_0446200880_Interconn_GIN Cooler",
+        "ruleset_0446200880_Interconn_GIN Cooler",
+        "ruleset_0446200880_Interconn_GIN Cooler",
+        "ruleset_0446200880_Interconn_GIN Cooler",
+        "ruleset_0446200880_Interconn_GIN Cooler",
+        "ruleset_0446200880_Interconn_GIN Cooler",
+        "ruleset_0446200880_Interconn_GIN Cooler",
+        "ruleset_0446200880_Interconn_GIN Cooler",
+        "ruleset_0446200880_Interconn_GIN Cooler",
+        "ruleset_0446200880_Interconn_GIN Cooler",
+        "ruleset_0446200880_Interconn_GIN Cooler",
+        "ruleset_0446200880_Interconn_GIN Cooler",
+        "ruleset_0446200880_Interconn_GIN Cooler",
+        "ruleset_0446200880_Interconn_GIN Cooler",
+        "ruleset_0446200880_Interconn_GIN Cooler",
+        "ruleset_0446200880_Interconn_GIN Cooler",
+        "ruleset_0446200880_Interconn_GIN Cooler",
+        "ruleset_0446200880_Interconn_GIN Cooler",
+        "ruleset_0446200880_Interconn_GIN Cooler",
+        "ruleset_0446200880_Interconn_GIN Cooler",
+        "ruleset_0446200880_Interconn_GIN Cooler",
+        "ruleset_0446200880_Interconn_GIN Cooler",
+        "ruleset_0446200880_Interconn_GIN Cooler",
+        "ruleset_0446200880_Interconn_GIN Cooler",
+        "ruleset_0446200880_Interconn_GIN Cooler",
+        "ruleset_0446200880_Interconn_GIN Cooler",
+        "ruleset_0446200880_Interconn_GIN Cooler",
+        "ruleset_0446200880_Interconn_GIN Cooler",
+        "ruleset_0446200880_Interconn_GIN Cooler",
+        "ruleset_0446200880_Interconn_GIN Cooler",
+        "ruleset_0446200880_Interconn_GIN Cooler",
+        "ruleset_0446200880_Interconn_GIN Cooler",
+        "ruleset_0446200880_Interconn_GIN Cooler",
+        "ruleset_0446200880_Interconn_GIN Cooler",
+        "ruleset_0446200880_Interconn_GIN Cooler",
+        "ruleset_0446200880_Interconn_GIN Cooler",
+        "ruleset_0446200880_Interconn_GIN Cooler",
+        "ruleset_0446200880_Interconn_GIN Cooler",
+        "ruleset_0446200880_Interconn_GIN Cooler",
+        "ruleset_0446200880_Interconn_GIN Cooler",
+        "ruleset_0446200880_Interconn_GIN Cooler",
+        "ruleset_0446200880_Interconn_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
+        "ruleset_0446200880_Torches_GIN Cooler",
         "ruleset_0445250880_Torches_GIN Cooler",
         "ruleset_0445250880_Torches_GIN Cooler",
         "ruleset_0445250880_Torches_GIN Cooler",
         "ruleset_0445250880_Torches_GIN Cooler",
-        "ruleset_0446200880_Init_GIN Cooler",
-        "ruleset_0446200880_Init_GIN Cooler",
-        "ruleset_0446200880_Init_GIN Cooler",
-        "ruleset_0446200880_Init_GIN Cooler",
-        "ruleset_0446200880_Init_GIN Cooler",
-        "ruleset_0446200880_Init_GIN Cooler",
-        "ruleset_0446200880_Init_GIN Cooler",
-        "ruleset_0446200880_Init_GIN Cooler",
-        "ruleset_0446200880_Init_GIN Cooler",
-        "ruleset_0446200880_Init_GIN Cooler",
-        "ruleset_0446200880_Interconn_GIN Cooler",
-        "ruleset_0446200880_Interconn_GIN Cooler",
-        "ruleset_0446200880_Interconn_GIN Cooler",
-        "ruleset_0446200880_Interconn_GIN Cooler",
-        "ruleset_0446200880_Interconn_GIN Cooler",
-        "ruleset_0446200880_Interconn_GIN Cooler",
-        "ruleset_0446200880_Interconn_GIN Cooler",
-        "ruleset_0446200880_Interconn_GIN Cooler",
-        "ruleset_0446200880_Interconn_GIN Cooler",
-        "ruleset_0446200880_Interconn_GIN Cooler",
-        "ruleset_0446200880_Interconn_GIN Cooler",
-        "ruleset_0446200880_Interconn_GIN Cooler",
-        "ruleset_0446200880_Interconn_GIN Cooler",
-        "ruleset_0446200880_Interconn_GIN Cooler",
-        "ruleset_0446200880_Interconn_GIN Cooler",
-        "ruleset_0446200880_Interconn_GIN Cooler",
-        "ruleset_0446200880_Interconn_GIN Cooler",
-        "ruleset_0446200880_Interconn_GIN Cooler",
-        "ruleset_0446200880_Interconn_GIN Cooler",
-        "ruleset_0446200880_Interconn_GIN Cooler",
-        "ruleset_0446200880_Interconn_GIN Cooler",
-        "ruleset_0446200880_Interconn_GIN Cooler",
-        "ruleset_0446200880_Interconn_GIN Cooler",
-        "ruleset_0446200880_Interconn_GIN Cooler",
-        "ruleset_0446200880_Interconn_GIN Cooler",
-        "ruleset_0446200880_Interconn_GIN Cooler",
-        "ruleset_0446200880_Interconn_GIN Cooler",
-        "ruleset_0446200880_Interconn_GIN Cooler",
-        "ruleset_0446200880_Interconn_GIN Cooler",
-        "ruleset_0446200880_Interconn_GIN Cooler",
-        "ruleset_0446200880_Interconn_GIN Cooler",
-        "ruleset_0446200880_Interconn_GIN Cooler",
-        "ruleset_0446200880_Interconn_GIN Cooler",
-        "ruleset_0446200880_Interconn_GIN Cooler",
-        "ruleset_0446200880_Interconn_GIN Cooler",
-        "ruleset_0446200880_Interconn_GIN Cooler",
-        "ruleset_0446200880_Interconn_GIN Cooler",
-        "ruleset_0446200880_Interconn_GIN Cooler",
-        "ruleset_0446200880_Interconn_GIN Cooler",
-        "ruleset_0446200880_Interconn_GIN Cooler",
-        "ruleset_0446200880_Interconn_GIN Cooler",
-        "ruleset_0446200880_Interconn_GIN Cooler",
-        "ruleset_0446200880_Interconn_GIN Cooler",
-        "ruleset_0446200880_Interconn_GIN Cooler",
-        "ruleset_0446200880_Interconn_GIN Cooler",
-        "ruleset_0446200880_Interconn_GIN Cooler",
-        "ruleset_0446200880_Interconn_GIN Cooler",
-        "ruleset_0446200880_Interconn_GIN Cooler",
-        "ruleset_0446200880_Interconn_GIN Cooler",
-        "ruleset_0446200880_Interconn_GIN Cooler",
-        "ruleset_0446200880_Interconn_GIN Cooler",
-        "ruleset_0446200880_Interconn_GIN Cooler",
-        "ruleset_0446200880_Interconn_GIN Cooler",
-        "ruleset_0446200880_Interconn_GIN Cooler",
-        "ruleset_0446200880_Interconn_GIN Cooler",
-        "ruleset_0446200880_Interconn_GIN Cooler",
-        "ruleset_0446200880_Interconn_GIN Cooler",
-        "ruleset_0446200880_Interconn_GIN Cooler",
-        "ruleset_0446200880_Interconn_GIN Cooler",
-        "ruleset_0446200880_Interconn_GIN Cooler",
-        "ruleset_0446200880_Interconn_GIN Cooler",
-        "ruleset_0446200880_Interconn_GIN Cooler",
-        "ruleset_0446200880_Interconn_GIN Cooler",
-        "ruleset_0446200880_Interconn_GIN Cooler",
-        "ruleset_0446200880_Interconn_GIN Cooler",
-        "ruleset_0446200880_Interconn_GIN Cooler",
-        "ruleset_0446200880_Interconn_GIN Cooler",
-        "ruleset_0446200880_Interconn_GIN Cooler",
-        "ruleset_0446200880_Interconn_GIN Cooler",
-        "ruleset_0446200880_Interconn_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
-        "ruleset_0446200880_Torches_GIN Cooler",
         "ruleset_0465350883_Init_GIN Cooler",
         "ruleset_0465350883_Init_GIN Cooler",
         "ruleset_0465350883_Init_GIN Cooler",
@@ -16642,126 +16613,39 @@
         "ruleset_0465350883_Torches_GIN Cooler",
         "ruleset_0465350883_Torches_GIN Cooler",
         "ruleset_0465350883_Torches_GIN Cooler",
-        "ruleset_0465350883_Torches_GIN Cooler",
-        "ruleset_0465350884_Init_GIN Cooler",
-        "ruleset_0465350884_Init_GIN Cooler",
-        "ruleset_0465350884_Init_GIN Cooler",
-        "ruleset_0465350884_Init_GIN Cooler",
-        "ruleset_0465350884_Init_GIN Cooler",
-        "ruleset_0465350884_Init_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Interconn_GIN Cooler",
-        "ruleset_0465350884_Torches_GIN Cooler",
-        "ruleset_0465350884_Torches_GIN Cooler",
-        "ruleset_0465350884_Torches_GIN Cooler",
-        "ruleset_0465350884_Torches_GIN Cooler",
-        "ruleset_0465350884_Torches_GIN Cooler",
-        "ruleset_0465350884_Torches_GIN Cooler",
-        "ruleset_0465350884_Torches_GIN Cooler",
-        "ruleset_0465350884_Torches_GIN Cooler",
-        "ruleset_0465350884_Torches_GIN Cooler"
+        "ruleset_0465350883_Torches_GIN Cooler"
       ],
       "is_available": false,
       "ruleset_context": {
-        "description": "Used with Warrior 750i 380-460V CE, Renegade ES 300i, Aristo 500ix, Warrior 500i, Warrior 400i. Compatible accessory component. Torch system component. Connectivity/interconnection component. Commonly used component",
+        "description": "Used with Warrior 400i, Warrior 750i 380-460V CE, Aristo 500ix, Renegade ES 300i, Warrior 500i. Compatible accessory component. Torch system component. Connectivity/interconnection component. Commonly used component",
         "powersources": [
+          "0465350884",
           "0445555880",
-          "0445250880",
           "0446200880",
-          "0465350883",
-          "0465350884"
+          "0445250880",
+          "0465350883"
         ],
         "rule_types": [
-          "torch_compatibility",
+          "connectivity_compatibility",
           "accessory_compatibility",
-          "general_compatibility",
-          "connectivity_compatibility"
+          "torch_compatibility",
+          "general_compatibility"
         ],
         "sheet_types": [
           "Init_GIN Cooler",
+          "Interconn_GIN Cooler",
           "Torches_GIN Cooler",
-          "PSource Mandatory Accessories_GIN Cooler",
-          "Interconn_GIN Cooler"
+          "PSource Mandatory Accessories_GIN Cooler"
         ],
         "specs": {},
-        "compatibility_info": "Compatible with PowerSources: 0445555880, 0445250880, 0446200880, 0465350883, 0465350884"
+        "compatibility_info": "Compatible with PowerSources: 0465350884, 0445555880, 0446200880, 0445250880, 0465350883"
       },
       "compatible_powersources": [
+        "0465350884",
         "0445555880",
-        "0445250880",
         "0446200880",
-        "0465350883",
-        "0465350884"
+        "0445250880",
+        "0465350883"
       ],
       "usage_frequency": 405,
       "specifications": {},
@@ -16771,41 +16655,41 @@
     {
       "gin": "F000000003",
       "name": "No Torch Available",
-      "description": "SG-Integrated component placeholder - No Torch Available. Used with Renegade ES 300i, Aristo 500ix. Torch system component",
+      "description": "SG-Integrated component placeholder - No Torch Available. Used with Aristo 500ix, Renegade ES 300i. Torch system component",
       "category": "Torch",
       "source": "synthetic",
       "discovery_sources": [
         "golden_package_0445250880",
+        "ruleset_0446200880_Torches_GIN Torches",
+        "ruleset_0446200880_Torches_GIN Torches",
+        "ruleset_0446200880_Torches_GIN Torches",
+        "ruleset_0446200880_Torches_GIN Torches",
+        "ruleset_0446200880_Torches_GIN Torches",
+        "ruleset_0446200880_Torches_GIN Torches",
+        "ruleset_0446200880_Torches_GIN Torches",
+        "ruleset_0446200880_Torches_GIN Torches",
+        "ruleset_0446200880_Torches_GIN Torches",
+        "ruleset_0446200880_Torches_GIN Torches",
+        "ruleset_0446200880_Torches_GIN Torches",
+        "ruleset_0446200880_Torches_GIN Torches",
+        "ruleset_0446200880_Torches_GIN Torches",
+        "ruleset_0446200880_Torches_GIN Torches",
+        "ruleset_0446200880_Torches_GIN Torches",
+        "ruleset_0446200880_Torches_GIN Torches",
+        "ruleset_0446200880_Torches_GIN Torches",
+        "ruleset_0446200880_Torches_GIN Torches",
+        "ruleset_0446200880_Torches_GIN Torches",
         "ruleset_0445250880_Torches_GIN Torches",
         "ruleset_0445250880_Torches_GIN Torches",
         "ruleset_0445250880_Torches_GIN Torches",
-        "ruleset_0445250880_Torches_GIN Torches",
-        "ruleset_0446200880_Torches_GIN Torches",
-        "ruleset_0446200880_Torches_GIN Torches",
-        "ruleset_0446200880_Torches_GIN Torches",
-        "ruleset_0446200880_Torches_GIN Torches",
-        "ruleset_0446200880_Torches_GIN Torches",
-        "ruleset_0446200880_Torches_GIN Torches",
-        "ruleset_0446200880_Torches_GIN Torches",
-        "ruleset_0446200880_Torches_GIN Torches",
-        "ruleset_0446200880_Torches_GIN Torches",
-        "ruleset_0446200880_Torches_GIN Torches",
-        "ruleset_0446200880_Torches_GIN Torches",
-        "ruleset_0446200880_Torches_GIN Torches",
-        "ruleset_0446200880_Torches_GIN Torches",
-        "ruleset_0446200880_Torches_GIN Torches",
-        "ruleset_0446200880_Torches_GIN Torches",
-        "ruleset_0446200880_Torches_GIN Torches",
-        "ruleset_0446200880_Torches_GIN Torches",
-        "ruleset_0446200880_Torches_GIN Torches",
-        "ruleset_0446200880_Torches_GIN Torches"
+        "ruleset_0445250880_Torches_GIN Torches"
       ],
       "is_available": false,
       "ruleset_context": {
-        "description": "Used with Renegade ES 300i, Aristo 500ix. Torch system component",
+        "description": "Used with Aristo 500ix, Renegade ES 300i. Torch system component",
         "powersources": [
-          "0445250880",
-          "0446200880"
+          "0446200880",
+          "0445250880"
         ],
         "rule_types": [
           "torch_compatibility"
@@ -16814,11 +16698,11 @@
           "Torches_GIN Torches"
         ],
         "specs": {},
-        "compatibility_info": "Compatible with PowerSources: 0445250880, 0446200880"
+        "compatibility_info": "Compatible with PowerSources: 0446200880, 0445250880"
       },
       "compatible_powersources": [
-        "0445250880",
-        "0446200880"
+        "0446200880",
+        "0445250880"
       ],
       "usage_frequency": 24,
       "specifications": {},
@@ -16959,17 +16843,17 @@
         ],
         "rule_types": [
           "accessory_compatibility",
-          "feeder_compatibility",
-          "torch_compatibility"
+          "torch_compatibility",
+          "feeder_compatibility"
         ],
         "sheet_types": [
-          "Remotes_GIN Feeder",
           "Connectivity_GIN Feeder",
-          "Feeder Wears_GIN Feeder",
-          "Torches_GIN Feeder",
           "Init_GIN Feeder",
-          "Interconn_GIN Feeder",
+          "Feeder Wears_GIN Feeder",
           "Feeder Accessories_GIN Feeder",
+          "Torches_GIN Feeder",
+          "Remotes_GIN Feeder",
+          "Interconn_GIN Feeder",
           "Remote conditional Accessories_GIN Feeder"
         ],
         "specs": {},

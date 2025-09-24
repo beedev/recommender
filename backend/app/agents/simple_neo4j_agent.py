@@ -166,8 +166,8 @@ class SimpleNeo4jAgent:
         
         # Add sales frequency and ordering
         query_parts.extend([
-            "OPTIONAL MATCH (p)<-[:PURCHASED]-(order:Order)",
-            "WITH p, COUNT(order) as sales_frequency",
+            "OPTIONAL MATCH (p)<-[:CONTAINS]-(t:Transaction)",
+            "WITH p, COUNT(DISTINCT t.order_id) as sales_frequency",
             "RETURN p.product_id as product_id,",
             "       p.name as product_name,", 
             "       p.category as category,",
@@ -200,9 +200,9 @@ class SimpleNeo4jAgent:
         
         query = f"""
         MATCH (p:Product {{product_id: $power_source_id, category: 'PowerSource'}})
-        MATCH (p)-[:COMPATIBLE_WITH]->(comp:Product {{category: $component_category}})
-        OPTIONAL MATCH (comp)<-[:PURCHASED]-(order:Order)
-        WITH comp, COUNT(order) as sales_frequency
+        MATCH (p)-[:DETERMINES]->(comp:Product {{category: $component_category}})
+        OPTIONAL MATCH (comp)<-[:CONTAINS]-(t:Transaction)
+        WITH comp, COUNT(DISTINCT t.order_id) as sales_frequency
         RETURN comp.product_id as product_id,
                comp.name as product_name,
                comp.category as category,
@@ -1019,35 +1019,50 @@ Identify which categories are needed:"""
             Complete 7+ category welding package or None if insufficient data
         """
         try:
-            logger.info(f"🎯 EXPERT MODE: Forming comprehensive package for PowerSource: {power_source.product_name}")
+            logger.info(f"🎯 TRINITY-FIRST MODE: Forming package for user-selected PowerSource: {power_source.product_name}")
             
-            # Step 1: Find most popular compatible feeder
-            top_feeder = await self._find_most_popular_compatible_component(power_source.product_id, "Feeder")
-            logger.info(f"📡 Trinity Step 1: Top Feeder = {top_feeder.product_name if top_feeder else 'None'}")
+            # TRINITY-FIRST STEP 1: Generate all possible Trinity combinations
+            trinity_combinations = await self._generate_trinity_combinations(power_source.product_id)
+            logger.info(f"🔍 Generated {len(trinity_combinations)} possible Trinity combinations")
             
-            # Step 2: Find most popular compatible cooler
-            top_cooler = await self._find_most_popular_compatible_component(power_source.product_id, "Cooler")
-            logger.info(f"❄️ Trinity Step 2: Top Cooler = {top_cooler.product_name if top_cooler else 'None'}")
+            # TRINITY-FIRST STEP 2: Calculate Trinity popularity (orders containing all 3 components)
+            most_popular_trinity = await self._find_most_popular_trinity(trinity_combinations)
+            if not most_popular_trinity:
+                logger.warning("❌ No Trinity combinations found, falling back to individual components")
+                return None
             
-            # Step 3: Form trinity (PowerSource + Feeder + Cooler)
-            trinity = {
-                "power_source": power_source,
-                "feeder": top_feeder,
-                "cooler": top_cooler
-            }
+            logger.info(f"🏆 Most Popular Trinity: PS={power_source.product_name}, F={most_popular_trinity['feeder'].product_name}, C={most_popular_trinity['cooler'].product_name} ({most_popular_trinity['trinity_frequency']} orders)")
             
-            # Step 4: Find most popular combo from sales history with this trinity
-            combo_products = await self._find_sales_history_combo(trinity)
-            logger.info(f"📊 Sales History: Found {len(combo_products)} products from popular combos")
+            # TRINITY-FIRST STEP 3: Find accessories purchased WITH this specific Trinity
+            trinity_accessories = await self._find_trinity_based_accessories(
+                power_source.product_id, 
+                most_popular_trinity['feeder'].product_id,
+                most_popular_trinity['cooler'].product_id
+            )
+            
+            # Combine Trinity components with accessories
+            combo_products = [
+                power_source,  # User's explicitly selected PowerSource
+                most_popular_trinity['feeder'],
+                most_popular_trinity['cooler']
+            ] + trinity_accessories
+            logger.info(f"🎯 Trinity-Based Products: Found {len(combo_products)} products (3 Trinity + {len(trinity_accessories)} accessories)")
             
             # Step 5: Consolidate by category (choose most popular if multiple in same category)
-            consolidated_package = await self._consolidate_by_category_popularity(combo_products)
+            # TRINITY-FIRST: Pass user's selected PowerSource ID to prevent substitution
+            consolidated_package = await self._consolidate_by_category_popularity(combo_products, power_source.product_id)
             logger.info(f"🔄 Consolidated: {len(consolidated_package)} unique categories")
             
             # Step 6: If less than 7 categories, use golden package fallback
             if len(consolidated_package) < 7:
                 logger.info(f"📦 Golden Package: Current {len(consolidated_package)} < 7, using fallback")
-                final_package = await self._complete_with_golden_package(trinity, consolidated_package)
+                # Create trinity structure with power_source for golden package completion
+                trinity_with_powersource = {
+                    "power_source": power_source,
+                    "feeder": most_popular_trinity['feeder'],
+                    "cooler": most_popular_trinity['cooler']
+                }
+                final_package = await self._complete_with_golden_package(trinity_with_powersource, consolidated_package)
             else:
                 final_package = consolidated_package
                 
@@ -1094,20 +1109,21 @@ Identify which categories are needed:"""
             
             logger.info(f"🔍 Sales History Analysis: Trinity IDs - PS: {power_source_id}, F: {feeder_id}, C: {cooler_id}")
             
-            # First check if we have any Order data at all
-            order_count_query = "MATCH (o:Order) RETURN count(o) as total_orders"
+            # First check if we have any Transaction data at all
+            order_count_query = "MATCH (t:Transaction) RETURN count(DISTINCT t.order_id) as total_orders"
             order_count_result = await self.neo4j_repo.execute_query(order_count_query, {})
             total_orders = order_count_result[0]["total_orders"] if order_count_result else 0
             logger.info(f"🔍 Database Check: Total orders in database: {total_orders}")
             
             # Find orders that contain this trinity combination
             query = """
-            MATCH (order:Order)-[:PURCHASED]->(ps:Product {product_id: $power_source_id})
-            MATCH (order)-[:PURCHASED]->(f:Product {product_id: $feeder_id})
-            MATCH (order)-[:PURCHASED]->(c:Product {product_id: $cooler_id})
-            MATCH (order)-[:PURCHASED]->(other:Product)
-            WHERE NOT other.product_id IN [$power_source_id, $feeder_id, $cooler_id]
-            WITH other, COUNT(order) as purchase_frequency
+            MATCH (t1:Transaction)-[:CONTAINS]->(ps:Product {product_id: $power_source_id})
+            MATCH (t2:Transaction)-[:CONTAINS]->(f:Product {product_id: $feeder_id})
+            MATCH (t3:Transaction)-[:CONTAINS]->(c:Product {product_id: $cooler_id})
+            MATCH (t_other:Transaction)-[:CONTAINS]->(other:Product)
+            WHERE t1.order_id = t2.order_id AND t2.order_id = t3.order_id AND t3.order_id = t_other.order_id
+              AND NOT other.product_id IN [$power_source_id, $feeder_id, $cooler_id]
+            WITH other, COUNT(DISTINCT t_other.order_id) as purchase_frequency
             RETURN other.product_id as product_id,
                    other.name as product_name,
                    other.category as category,
@@ -1152,8 +1168,10 @@ Identify which categories are needed:"""
             # Return just the trinity if sales history fails
             return [comp for comp in [trinity["power_source"], trinity["feeder"], trinity["cooler"]] if comp]
 
-    async def _consolidate_by_category_popularity(self, products: List[WeldingPackageComponent]) -> Dict[str, WeldingPackageComponent]:
-        """Consolidate products by category, choosing most popular if multiple in same category"""
+    async def _consolidate_by_category_popularity(self, products: List[WeldingPackageComponent], user_selected_powersource_id: str = None) -> Dict[str, WeldingPackageComponent]:
+        """Consolidate products by category, choosing most popular if multiple in same category
+        RESPECTS USER INTENT: Never substitutes user-explicitly-selected PowerSource
+        """
         try:
             category_products = {}
             
@@ -1163,7 +1181,18 @@ Identify which categories are needed:"""
                 if category not in category_products:
                     category_products[category] = product
                 else:
-                    # Choose the one with higher sales frequency
+                    # TRINITY-FIRST RULE: Respect user's explicit PowerSource choice
+                    if category == "PowerSource" and user_selected_powersource_id and product.product_id == user_selected_powersource_id:
+                        # Keep user's explicitly selected PowerSource regardless of sales frequency
+                        category_products[category] = product
+                        logger.info(f"✅ USER INTENT RESPECTED: Keeping user-selected PowerSource {product.product_name}")
+                        continue
+                    elif category == "PowerSource" and user_selected_powersource_id and category_products[category].product_id == user_selected_powersource_id:
+                        # Don't replace user's explicitly selected PowerSource
+                        logger.info(f"✅ USER INTENT PROTECTED: Not replacing user-selected PowerSource {category_products[category].product_name}")
+                        continue
+                    
+                    # For all other categories, choose the one with higher sales frequency
                     current = category_products[category]
                     # Handle None values for sales_frequency comparison
                     product_sales = product.sales_frequency or 0
@@ -1235,10 +1264,18 @@ Identify which categories are needed:"""
         try:
             # Extract components by category
             power_source = package_dict.get("PowerSource")
-            feeders = [comp for cat, comp in package_dict.items() if "feeder" in cat.lower()]
-            coolers = [comp for cat, comp in package_dict.items() if "cooler" in cat.lower()]
+            feeders = [comp for cat, comp in package_dict.items() if "feeder" in cat.lower() and "accessory" not in cat.lower()]
+            coolers = [comp for cat, comp in package_dict.items() if "cooler" in cat.lower() and "accessory" not in cat.lower()]
             consumables = [comp for cat, comp in package_dict.items() if "consumable" in cat.lower()]
-            accessories = [comp for cat, comp in package_dict.items() if "accessory" in cat.lower()]
+            
+            # All non-core components go to accessories (including Torch, Interconnector, and *Accessory components)
+            core_categories = {"PowerSource"}
+            feeder_categories = {cat for cat in package_dict.keys() if "feeder" in cat.lower() and "accessory" not in cat.lower()}
+            cooler_categories = {cat for cat in package_dict.keys() if "cooler" in cat.lower() and "accessory" not in cat.lower()}
+            consumable_categories = {cat for cat in package_dict.keys() if "consumable" in cat.lower()}
+            
+            excluded_categories = core_categories | feeder_categories | cooler_categories | consumable_categories
+            accessories = [comp for cat, comp in package_dict.items() if cat not in excluded_categories]
             
             # Calculate total price
             total_price = sum(comp.price or 0.0 for comp in package_dict.values())
@@ -1382,4 +1419,513 @@ Identify which categories are needed:"""
             
         except Exception as e:
             logger.error(f"Error forming welding package: {e}")
+            return None
+    
+    # ========================================
+    # TRINITY-FIRST ARCHITECTURE METHODS
+    # ========================================
+    
+    async def _generate_trinity_combinations(self, powersource_id: str) -> List[Dict]:
+        """Generate all possible Trinity combinations for a PowerSource using DETERMINES relationships"""
+        try:
+            # Get all compatible feeders using DETERMINES relationships
+            feeders_query = """
+            MATCH (ps:Product {gin: $ps_id})-[:DETERMINES]->(f:Product)
+            WHERE f.category = 'Feeder'
+            RETURN f.gin as feeder_id, f.name as feeder_name
+            ORDER BY f.name
+            """
+            
+            # Get all compatible coolers using DETERMINES relationships
+            coolers_query = """
+            MATCH (ps:Product {gin: $ps_id})-[:DETERMINES]->(c:Product)
+            WHERE c.category = 'Cooler'
+            RETURN c.gin as cooler_id, c.name as cooler_name
+            ORDER BY c.name
+            """
+            
+            feeders = await self.neo4j_repo.execute_query(feeders_query, {"ps_id": powersource_id})
+            coolers = await self.neo4j_repo.execute_query(coolers_query, {"ps_id": powersource_id})
+            
+            logger.info(f"🔧 Found {len(feeders)} compatible feeders and {len(coolers)} compatible coolers")
+            
+            # Generate all combinations
+            combinations = []
+            for feeder in feeders:
+                for cooler in coolers:
+                    combination = {
+                        "powersource_id": powersource_id,
+                        "feeder_id": feeder["feeder_id"],
+                        "feeder_name": feeder["feeder_name"],
+                        "cooler_id": cooler["cooler_id"],
+                        "cooler_name": cooler["cooler_name"]
+                    }
+                    combinations.append(combination)
+            
+            return combinations
+            
+        except Exception as e:
+            logger.error(f"Error generating Trinity combinations: {e}")
+            return []
+    
+    async def _find_most_popular_trinity(self, trinity_combinations: List[Dict]) -> Optional[Dict]:
+        """Find the Trinity combination with highest sales frequency using FORMS_TRINITY relationships
+        Uses new Trinity-First architecture for fast queries
+        """
+        try:
+            logger.info(f"🚀 TRINITY-FIRST: Using FORMS_TRINITY relationships for fast Trinity discovery")
+            
+            # Get PowerSource ID from first combination (they all have same PowerSource)
+            if not trinity_combinations:
+                return None
+                
+            powersource_id = trinity_combinations[0]["powersource_id"]
+            
+            # Fast Trinity popularity query using FORMS_TRINITY relationships
+            trinity_popularity_query = """
+            MATCH (t:Transaction)-[trinity:FORMS_TRINITY]->(ps:Product {gin: $powersource_id})
+            MATCH (f:Product {gin: trinity.feeder_gin})
+            MATCH (c:Product {gin: trinity.cooler_gin})
+            RETURN trinity.feeder_gin as feeder_gin, 
+                   trinity.cooler_gin as cooler_gin,
+                   f.name as feeder_name,
+                   c.name as cooler_name,
+                   count(*) as trinity_frequency
+            ORDER BY trinity_frequency DESC
+            LIMIT 1
+            """
+            
+            result = await self.neo4j_repo.execute_query(trinity_popularity_query, {
+                "powersource_id": powersource_id
+            })
+            
+            if not result or not result[0]:
+                logger.warning("❌ No Trinity combinations found in FORMS_TRINITY relationships")
+                return None
+            
+            top_trinity = result[0]
+            frequency = top_trinity["trinity_frequency"]
+            
+            logger.info(f"🏆 Most Popular Trinity: F={top_trinity['feeder_name'][:30]}...+C={top_trinity['cooler_name'][:30]}... = {frequency} orders")
+            
+            # Create component objects for the best Trinity
+            best_trinity = {
+                "feeder": WeldingPackageComponent(
+                    product_id=top_trinity["feeder_gin"],
+                    product_name=top_trinity["feeder_name"],
+                    category="Feeder",
+                    sales_frequency=frequency,  # Trinity-based frequency
+                    compatibility_score=1.0
+                ),
+                "cooler": WeldingPackageComponent(
+                    product_id=top_trinity["cooler_gin"],
+                    product_name=top_trinity["cooler_name"],
+                    category="Cooler",
+                    sales_frequency=frequency,  # Trinity-based frequency
+                    compatibility_score=1.0
+                ),
+                "trinity_frequency": frequency
+            }
+            
+            return best_trinity
+            
+        except Exception as e:
+            logger.error(f"Error finding most popular Trinity: {e}")
+            return None
+    
+    async def _find_trinity_based_accessories(self, powersource_id: str, feeder_id: str, cooler_id: str) -> List[WeldingPackageComponent]:
+        """Find accessories that are purchased WITH this specific Trinity combination using FORMS_TRINITY relationships"""
+        try:
+            logger.info(f"🚀 TRINITY-FIRST: Finding accessories for Trinity using FORMS_TRINITY relationships")
+            logger.info(f"🔍 DEBUG: Looking for accessories with Trinity PS={powersource_id}, F={feeder_id}, C={cooler_id}")
+            
+            # Fast Trinity-based accessories query using FORMS_TRINITY relationships
+            trinity_accessories_query = """
+            // Find Transaction nodes that have this specific Trinity
+            MATCH (trinity_t:Transaction)-[trinity:FORMS_TRINITY]->(ps:Product {gin: $ps_id})
+            WHERE trinity.feeder_gin = $feeder_id AND trinity.cooler_gin = $cooler_id
+            
+            // Find ALL Transaction nodes with the same order_id (since Transaction nodes are per-product)
+            MATCH (all_t:Transaction {order_id: trinity_t.order_id})-[:CONTAINS]->(accessory:Product)
+            WHERE accessory.gin <> $ps_id AND accessory.gin <> $feeder_id AND accessory.gin <> $cooler_id
+            
+            // Count co-occurrence with this Trinity
+            WITH accessory, COUNT(DISTINCT trinity_t.order_id) as trinity_cooccurrence
+            RETURN accessory.gin as product_id,
+                   accessory.name as product_name,
+                   accessory.category as category,
+                   accessory.subcategory as subcategory,
+                   accessory.price as price,
+                   accessory.description as description,
+                   trinity_cooccurrence
+            ORDER BY trinity_cooccurrence DESC, accessory.category ASC
+            LIMIT 15
+            """
+            
+            results = await self.neo4j_repo.execute_query(trinity_accessories_query, {
+                "ps_id": powersource_id,
+                "feeder_id": feeder_id,
+                "cooler_id": cooler_id
+            })
+            
+            logger.info(f"🔍 DEBUG: Trinity accessories query returned {len(results)} results")
+            
+            # If no accessories found, debug the Trinity relationship
+            if not results:
+                debug_query = """
+                MATCH (t:Transaction)-[trinity:FORMS_TRINITY]->(ps:Product {gin: $ps_id})
+                WHERE trinity.feeder_gin = $feeder_id AND trinity.cooler_gin = $cooler_id
+                RETURN count(t) as trinity_transactions, 
+                       collect(DISTINCT t.order_id)[0..3] as sample_orders
+                """
+                debug_result = await self.neo4j_repo.execute_query(debug_query, {
+                    "ps_id": powersource_id,
+                    "feeder_id": feeder_id,
+                    "cooler_id": cooler_id
+                })
+                if debug_result:
+                    logger.info(f"🔍 DEBUG: Found {debug_result[0]['trinity_transactions']} transactions with this Trinity")
+                    logger.info(f"🔍 DEBUG: Sample order IDs: {debug_result[0]['sample_orders']}")
+                    
+                    # Check what products exist in those orders
+                    if debug_result[0]['trinity_transactions'] > 0:
+                        products_query = """
+                        MATCH (trinity_t:Transaction)-[trinity:FORMS_TRINITY]->(ps:Product {gin: $ps_id})
+                        WHERE trinity.feeder_gin = $feeder_id AND trinity.cooler_gin = $cooler_id
+                        WITH trinity_t LIMIT 1
+                        MATCH (all_t:Transaction {order_id: trinity_t.order_id})-[:CONTAINS]->(p:Product)
+                        RETURN p.gin, p.name, p.category
+                        ORDER BY p.category
+                        """
+                        products_result = await self.neo4j_repo.execute_query(products_query, {
+                            "ps_id": powersource_id,
+                            "feeder_id": feeder_id,
+                            "cooler_id": cooler_id
+                        })
+                        logger.info(f"🔍 DEBUG: Products in sample Trinity order: {[(r['p.gin'], r['p.name'], r['p.category']) for r in products_result]}")
+            
+            accessories = []
+            for result in results:
+                accessory = WeldingPackageComponent(
+                    product_id=result["product_id"],
+                    product_name=result["product_name"],
+                    category=result["category"],
+                    subcategory=result["subcategory"],
+                    price=result["price"],
+                    description=result["description"],
+                    sales_frequency=result["trinity_cooccurrence"],  # Trinity-based co-occurrence
+                    compatibility_score=0.9
+                )
+                accessories.append(accessory)
+                logger.info(f"🔗 Trinity Accessory: {accessory.product_name} ({accessory.category}) = {accessory.sales_frequency} orders with Trinity")
+            
+            return accessories
+            
+        except Exception as e:
+            logger.error(f"Error finding Trinity-based accessories: {e}")
+            return []
+    
+    # =============================================================================
+    # VECTOR COMPATIBILITY SEARCH WITH SMART FALLBACK
+    # =============================================================================
+    
+    async def find_compatible_products_with_fallback(
+        self,
+        compatibility_query: str,
+        target_product_id: Optional[str] = None,
+        category_filter: Optional[str] = None,
+        limit: int = 10
+    ) -> Tuple[List[WeldingPackageComponent], str]:
+        """
+        Vector-first compatibility search with intelligent fallback.
+        
+        Args:
+            compatibility_query: Natural language compatibility query
+            target_product_id: Optional specific product to find compatibility for
+            category_filter: Optional category to filter results
+            limit: Maximum number of results
+            
+        Returns:
+            Tuple of (results, method_used)
+        """
+        logger.info(f"🔍 Vector compatibility search: '{compatibility_query}' (threshold: {settings.VECTOR_CONFIDENCE_THRESHOLD})")
+        
+        try:
+            # Step 1: Try vector similarity search first
+            vector_results = await self._vector_compatibility_search(
+                compatibility_query=compatibility_query,
+                target_product_id=target_product_id,
+                category_filter=category_filter,
+                limit=settings.VECTOR_SEARCH_LIMIT
+            )
+            
+            # Step 2: Filter by confidence threshold
+            high_confidence_results = [
+                result for result in vector_results 
+                if result.compatibility_score >= settings.VECTOR_CONFIDENCE_THRESHOLD
+            ]
+            
+            if high_confidence_results and len(high_confidence_results) >= min(3, limit):
+                logger.info(f"✅ Vector search success: {len(high_confidence_results)} results above {settings.VECTOR_CONFIDENCE_THRESHOLD} threshold")
+                return high_confidence_results[:limit], "vector_high_confidence"
+            
+            # Step 3: Fallback to rules-based search if vector confidence is low
+            if settings.ENABLE_COMPATIBILITY_FALLBACK:
+                logger.info(f"⚠️ Vector search low confidence ({len(high_confidence_results)} results), trying fallback...")
+                
+                fallback_results = await self._rules_based_compatibility_search(
+                    compatibility_query=compatibility_query,
+                    target_product_id=target_product_id,
+                    category_filter=category_filter,
+                    limit=limit
+                )
+                
+                if fallback_results:
+                    logger.info(f"✅ Fallback search success: {len(fallback_results)} results")
+                    return fallback_results, "rules_fallback"
+            
+            # Step 4: Return vector results even if low confidence (better than nothing)
+            if vector_results:
+                logger.info(f"⚠️ Returning {len(vector_results)} vector results with mixed confidence")
+                return vector_results[:limit], "vector_low_confidence" 
+            
+            logger.warning("❌ No compatibility results found with any method")
+            return [], "no_results"
+            
+        except Exception as e:
+            logger.error(f"Error in compatibility search: {e}")
+            return [], "error"
+    
+    async def _vector_compatibility_search(
+        self,
+        compatibility_query: str,
+        target_product_id: Optional[str] = None,
+        category_filter: Optional[str] = None,
+        limit: int = 20
+    ) -> List[WeldingPackageComponent]:
+        """
+        Pure vector similarity search for compatibility.
+        """
+        try:
+            # Enhance query with target product context if provided
+            if target_product_id:
+                target_product = await self._get_product_context(target_product_id)
+                if target_product:
+                    enhanced_query = f"{target_product['name']} compatible {compatibility_query}"
+                else:
+                    enhanced_query = f"compatible with product {target_product_id} {compatibility_query}"
+            else:
+                enhanced_query = f"compatible {compatibility_query}"
+            
+            logger.info(f"🎯 Enhanced vector query: '{enhanced_query}'")
+            
+            # Generate query embedding
+            query_embedding = self.embedding_generator.query_embedding(enhanced_query)
+            
+            # Build vector search query
+            vector_query = """
+            CALL db.index.vector.queryNodes($indexName, $numberOfNearestNeighbours, $query)
+            YIELD node as product, score
+            WHERE 1=1
+            """
+            
+            parameters = {
+                "indexName": "product_embeddings",
+                "numberOfNearestNeighbours": limit,
+                "query": query_embedding
+            }
+            
+            # Add category filter if specified
+            if category_filter:
+                vector_query += " AND product.category = $category_filter"
+                parameters["category_filter"] = category_filter
+            
+            # Exclude target product if specified
+            if target_product_id:
+                vector_query += " AND product.product_id <> $target_product_id"
+                parameters["target_product_id"] = target_product_id
+            
+            vector_query += """
+            RETURN product.product_id as product_id,
+                   product.name as product_name,
+                   product.category as category,
+                   product.subcategory as subcategory,
+                   product.description as description,
+                   product.specifications_json as specifications,
+                   score as similarity_score
+            ORDER BY score DESC
+            """
+            
+            # Execute vector search
+            results = await self.neo4j_repo.execute_query(vector_query, parameters)
+            
+            # Convert to WeldingPackageComponent objects
+            components = []
+            for result in results:
+                component = WeldingPackageComponent(
+                    product_id=result["product_id"],
+                    product_name=result["product_name"],
+                    category=result["category"],
+                    subcategory=result["subcategory"],
+                    description=result["description"],
+                    compatibility_score=result["similarity_score"],
+                    sales_frequency=0  # Could enhance with sales data later
+                )
+                components.append(component)
+                logger.debug(f"🔍 Vector result: {component.product_name} (score: {component.compatibility_score:.3f})")
+            
+            return components
+            
+        except Exception as e:
+            logger.error(f"Vector compatibility search error: {e}")
+            return []
+    
+    async def _rules_based_compatibility_search(
+        self,
+        compatibility_query: str,
+        target_product_id: Optional[str] = None,
+        category_filter: Optional[str] = None,
+        limit: int = 10
+    ) -> List[WeldingPackageComponent]:
+        """
+        Fallback rules-based compatibility search using text matching.
+        """
+        try:
+            logger.info("🔧 Using rules-based fallback search")
+            
+            # Extract key terms from query for text matching
+            key_terms = self._extract_key_terms(compatibility_query)
+            logger.info(f"🔑 Key terms extracted: {key_terms}")
+            
+            # Build text-based search query
+            search_query = "MATCH (p:Product) WHERE 1=1"
+            parameters = {}
+            conditions = []
+            
+            # Add category filter
+            if category_filter:
+                conditions.append("p.category = $category_filter")
+                parameters["category_filter"] = category_filter
+            
+            # Exclude target product
+            if target_product_id:
+                conditions.append("p.product_id <> $target_product_id")
+                parameters["target_product_id"] = target_product_id
+            
+            # Add text matching conditions
+            if key_terms:
+                text_conditions = []
+                for i, term in enumerate(key_terms):
+                    param_name = f"term_{i}"
+                    text_conditions.append(
+                        f"(p.name CONTAINS ${param_name} OR p.description CONTAINS ${param_name} OR p.specifications_json CONTAINS ${param_name})"
+                    )
+                    parameters[param_name] = term
+                
+                if text_conditions:
+                    conditions.append(f"({' OR '.join(text_conditions)})")
+            
+            # Apply conditions
+            if conditions:
+                search_query += " AND " + " AND ".join(conditions)
+            
+            search_query += """
+            RETURN p.product_id as product_id,
+                   p.name as product_name,
+                   p.category as category,
+                   p.subcategory as subcategory,
+                   p.description as description,
+                   p.specifications_json as specifications
+            ORDER BY p.name
+            LIMIT $limit
+            """
+            
+            parameters["limit"] = limit
+            
+            # Execute search
+            results = await self.neo4j_repo.execute_query(search_query, parameters)
+            
+            # Convert to components with basic compatibility scoring
+            components = []
+            for result in results:
+                # Basic compatibility score based on term matches
+                score = self._calculate_basic_compatibility_score(result, key_terms)
+                
+                component = WeldingPackageComponent(
+                    product_id=result["product_id"],
+                    product_name=result["product_name"],
+                    category=result["category"],
+                    subcategory=result["subcategory"],
+                    description=result["description"],
+                    compatibility_score=score,
+                    sales_frequency=0
+                )
+                components.append(component)
+            
+            # Sort by compatibility score
+            components.sort(key=lambda x: x.compatibility_score, reverse=True)
+            
+            return components
+            
+        except Exception as e:
+            logger.error(f"Rules-based compatibility search error: {e}")
+            return []
+    
+    def _extract_key_terms(self, query: str) -> List[str]:
+        """Extract key terms from compatibility query for text matching."""
+        # Simple keyword extraction - could be enhanced with NLP
+        import re
+        
+        # Common welding terms to look for
+        welding_terms = [
+            "MIG", "TIG", "STICK", "GMAW", "GTAW", "SMAW", "FCAW",
+            "aluminum", "steel", "stainless", "carbon",
+            "marine", "outdoor", "indoor", "portable", "heavy", "duty",
+            "feeder", "cooler", "torch", "wire", "electrode",
+            "amperage", "voltage", "power", "current"
+        ]
+        
+        query_lower = query.lower()
+        found_terms = []
+        
+        for term in welding_terms:
+            if term.lower() in query_lower:
+                found_terms.append(term)
+        
+        # Also extract quoted phrases
+        quoted_phrases = re.findall(r'"([^"]+)"', query)
+        found_terms.extend(quoted_phrases)
+        
+        return list(set(found_terms))  # Remove duplicates
+    
+    def _calculate_basic_compatibility_score(self, product_result: Dict, key_terms: List[str]) -> float:
+        """Calculate basic compatibility score based on term matching."""
+        if not key_terms:
+            return 0.5  # Default score
+        
+        # Check how many terms match in product data
+        product_text = " ".join([
+            product_result.get("product_name", ""),
+            product_result.get("description", ""),
+            product_result.get("specifications", "")
+        ]).lower()
+        
+        matches = sum(1 for term in key_terms if term.lower() in product_text)
+        score = min(0.9, 0.3 + (matches / len(key_terms)) * 0.6)  # Scale to 0.3-0.9
+        
+        return score
+    
+    async def _get_product_context(self, product_id: str) -> Optional[Dict[str, Any]]:
+        """Get basic product information for context enhancement."""
+        try:
+            query = """
+            MATCH (p:Product {product_id: $product_id})
+            RETURN p.name as name, p.category as category, p.description as description
+            """
+            
+            result = await self.neo4j_repo.execute_query(query, {"product_id": product_id})
+            return result[0] if result else None
+            
+        except Exception as e:
+            logger.warning(f"Could not get product context for {product_id}: {e}")
             return None

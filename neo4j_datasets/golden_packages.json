@@ -3,13 +3,12 @@
     "total_packages": 7,
     "target_powersources": [
       "0445555880",
-      "0445250880",
-      "0446200880",
-      "0465350883",
       "0465350884",
-      "0445100880"
+      "0446200880",
+      "0445250880",
+      "0465350883"
     ],
-    "generated_date": "2025-09-20",
+    "generated_date": "2025-09-22",
     "source": "Filtered from golden_pkg_format_V2.xlsx"
   },
   "golden_packages": [

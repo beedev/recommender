@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Health Dashboard - ESAB Agentic AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <style>
+        :root {
+            --esab-gold: #EAB308;
+            --esab-dark: #1F2937;
+            --esab-copper: #B45309;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #8B4513 0%, #D2691E 30%, #654321 100%);
+            min-height: 100vh;
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+        
+        .status-online { @apply bg-green-500 shadow-green-500/50; }
+        .status-offline { @apply bg-red-500 shadow-red-500/50; }
+        .status-warning { @apply bg-yellow-500 shadow-yellow-500/50; }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+            box-shadow: 0 0 8px currentColor;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .esab-card {
+            background: rgba(255, 255, 255, 0.95);
+            border: 2px solid var(--esab-gold);
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .esab-button {
+            background: var(--esab-gold);
+            color: black;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        
+        .esab-button:hover {
+            background: var(--esab-copper);
+            transform: translateY(-1px);
+        }
+        
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+        
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="bg-yellow-400 p-4 shadow-lg">
+        <div class="container mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-6">
+                <div class="bg-black px-6 py-2 transform -skew-x-12">
+                    <span class="font-black text-yellow-400 text-xl transform skew-x-12 inline-block">ESAB</span>
+                </div>
+                <h1 class="text-black font-bold text-xl">System Health Dashboard</h1>
+                <div id="systemStatus" class="flex items-center gap-2">
+                    <span class="status-indicator status-offline"></span>
+                    <span id="statusText" class="text-sm font-medium">Checking...</span>
+                </div>
+            </div>
+            
+            <!-- Navigation Links -->
+            <div class="flex items-center gap-4">
+                <a href="frontend_prototype.html" class="nav-link bg-black text-yellow-400 px-4 py-2 rounded-lg font-medium">
+                    <i data-lucide="message-square" class="w-4 h-4 inline mr-2"></i>
+                    Back to Chat
+                </a>
+                <button id="refreshAllBtn" class="esab-button px-4 py-2 rounded-lg">
+                    <i data-lucide="refresh-cw" class="w-4 h-4 inline mr-2"></i>
+                    Refresh All
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container mx-auto p-6">
+        <div class="max-width-7xl mx-auto">
+            
+            <!-- Overview Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <!-- Overall System Status -->
+                <div class="esab-card p-6 text-center">
+                    <div class="mb-4">
+                        <div id="overallStatusIndicator" class="status-indicator status-offline mx-auto mb-2" style="width: 24px; height: 24px;"></div>
+                        <h3 class="text-xl font-bold text-gray-900">System Status</h3>
+                        <p id="overallStatusText" class="text-gray-600">Checking...</p>
+                    </div>
+                </div>
+                
+                <!-- Performance Summary -->
+                <div class="esab-card p-6 text-center">
+                    <div class="mb-4">
+                        <i data-lucide="zap" class="w-8 h-8 text-orange-500 mx-auto mb-2"></i>
+                        <h3 class="text-xl font-bold text-gray-900">Performance</h3>
+                        <p id="avgResponseTime" class="text-2xl font-bold text-orange-600">-</p>
+                        <p class="text-gray-600">Average Response</p>
+                    </div>
+                </div>
+                
+                <!-- Request Statistics -->
+                <div class="esab-card p-6 text-center">
+                    <div class="mb-4">
+                        <i data-lucide="activity" class="w-8 h-8 text-blue-500 mx-auto mb-2"></i>
+                        <h3 class="text-xl font-bold text-gray-900">Requests</h3>
+                        <p id="totalRequests" class="text-2xl font-bold text-blue-600">0</p>
+                        <p class="text-gray-600">Total Today</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Detailed Health Information -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                
+                <!-- System Health -->
+                <div class="esab-card p-6">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                        <i data-lucide="activity" class="w-5 h-5 text-green-600"></i>
+                        System Health
+                    </h3>
+                    <div id="healthStatus" class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span>Backend API</span>
+                            <div class="flex items-center gap-2">
+                                <span id="apiStatus" class="status-indicator status-offline"></span>
+                                <span id="apiStatusText" class="text-sm">Checking...</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span>Neo4j Database</span>
+                            <div class="flex items-center gap-2">
+                                <span id="neo4jStatus" class="status-indicator status-offline"></span>
+                                <span id="neo4jStatusText" class="text-sm">Checking...</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span>PostgreSQL</span>
+                            <div class="flex items-center gap-2">
+                                <span id="postgresStatus" class="status-indicator status-offline"></span>
+                                <span id="postgresStatusText" class="text-sm">Checking...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Performance Metrics -->
+                <div class="esab-card p-6">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                        <i data-lucide="zap" class="w-5 h-5 text-orange-600"></i>
+                        Performance Metrics
+                    </h3>
+                    <div id="performanceMetrics" class="space-y-3">
+                        <div class="flex justify-between">
+                            <span>Response Time</span>
+                            <span id="responseTime" class="font-medium">-</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Requests</span>
+                            <span id="requestCount" class="font-medium">0</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Success Rate</span>
+                            <span id="successRate" class="font-medium text-green-600">-</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Uptime</span>
+                            <span id="uptimeDisplay" class="font-medium">-</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- System Information -->
+                <div class="esab-card p-6">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                        <i data-lucide="info" class="w-5 h-5 text-gray-600"></i>
+                        System Information
+                    </h3>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between">
+                            <span>Frontend Version</span>
+                            <span class="font-medium">1.0.0</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Session ID</span>
+                            <span class="font-medium text-xs" id="sessionIdDisplay">-</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Last Check</span>
+                            <span class="font-medium" id="lastCheckTime">-</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Environment</span>
+                            <span class="font-medium" id="environmentInfo">Development</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- API Endpoints Status -->
+                <div class="esab-card p-6">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                        <i data-lucide="globe" class="w-5 h-5 text-blue-600"></i>
+                        API Endpoints
+                    </h3>
+                    <div class="space-y-3 text-sm">
+                        <div class="flex justify-between items-center">
+                            <span>/api/v1/health/</span>
+                            <div class="flex items-center gap-2">
+                                <span class="px-2 py-1 bg-green-100 text-green-800 rounded text-xs">GET</span>
+                                <span id="healthEndpointStatus" class="status-indicator status-offline" style="width: 8px; height: 8px;"></span>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span>/api/v1/health/detailed</span>
+                            <div class="flex items-center gap-2">
+                                <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">GET</span>
+                                <span id="detailedEndpointStatus" class="status-indicator status-offline" style="width: 8px; height: 8px;"></span>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span>/api/v1/enterprise/recommendations</span>
+                            <div class="flex items-center gap-2">
+                                <span class="px-2 py-1 bg-purple-100 text-purple-800 rounded text-xs">POST</span>
+                                <span id="enterpriseEndpointStatus" class="status-indicator status-offline" style="width: 8px; height: 8px;"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Database Details -->
+                <div class="esab-card p-6">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                        <i data-lucide="database" class="w-5 h-5 text-purple-600"></i>
+                        Database Status
+                    </h3>
+                    <div id="databaseDetails" class="space-y-3 text-sm">
+                        <div class="p-3 bg-gray-50 rounded">
+                            <div class="font-medium">Neo4j Graph Database</div>
+                            <div id="neo4jDetails" class="text-gray-600 mt-1">Connection status: Checking...</div>
+                        </div>
+                        <div class="p-3 bg-gray-50 rounded">
+                            <div class="font-medium">PostgreSQL Database</div>
+                            <div id="postgresDetails" class="text-gray-600 mt-1">Connection status: Checking...</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Quick Actions -->
+                <div class="esab-card p-6">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                        <i data-lucide="settings" class="w-5 h-5 text-gray-600"></i>
+                        Quick Actions
+                    </h3>
+                    <div class="space-y-3">
+                        <button id="refreshHealthBtn" class="w-full px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+                            <i data-lucide="refresh-cw" class="w-4 h-4 inline mr-2"></i>
+                            Refresh Health Status
+                        </button>
+                        <button id="clearMetricsBtn" class="w-full px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors">
+                            <i data-lucide="trash-2" class="w-4 h-4 inline mr-2"></i>
+                            Clear Metrics
+                        </button>
+                        <button id="testEndpointBtn" class="w-full px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors">
+                            <i data-lucide="play-circle" class="w-4 h-4 inline mr-2"></i>
+                            Test API Endpoint
+                        </button>
+                        <button id="downloadLogsBtn" class="w-full px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors">
+                            <i data-lucide="download" class="w-4 h-4 inline mr-2"></i>
+                            Download Logs
+                        </button>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class HealthDashboard {
+            constructor() {
+                this.baseURL = 'http://localhost:8000';
+                this.sessionId = `health_dashboard_${Date.now()}`;
+                this.requestCount = 0;
+                this.successCount = 0;
+                this.startTime = Date.now();
+                this.responseTimeHistory = [];
+                
+                this.init();
+            }
+            
+            init() {
+                this.setupEventListeners();
+                this.initializeLucide();
+                this.displaySessionInfo();
+                
+                // Initial health check
+                this.checkSystemHealth();
+                
+                // Auto-refresh every 30 seconds
+                setInterval(() => this.checkSystemHealth(), 30000);
+                
+                // Update uptime every second
+                setInterval(() => this.updateUptime(), 1000);
+            }
+            
+            setupEventListeners() {
+                document.getElementById('refreshHealthBtn').addEventListener('click', () => this.checkSystemHealth());
+                document.getElementById('clearMetricsBtn').addEventListener('click', () => this.clearMetrics());
+                document.getElementById('testEndpointBtn').addEventListener('click', () => this.testEndpoint());
+                document.getElementById('downloadLogsBtn').addEventListener('click', () => this.downloadLogs());
+                document.getElementById('refreshAllBtn').addEventListener('click', () => this.refreshAll());
+            }
+            
+            initializeLucide() {
+                lucide.createIcons();
+            }
+            
+            displaySessionInfo() {
+                document.getElementById('sessionIdDisplay').textContent = this.sessionId;
+                this.updateUptime();
+            }
+            
+            updateUptime() {
+                const uptimeMs = Date.now() - this.startTime;
+                const uptimeSeconds = Math.floor(uptimeMs / 1000);
+                const uptimeMinutes = Math.floor(uptimeSeconds / 60);
+                const uptimeHours = Math.floor(uptimeMinutes / 60);
+                
+                let uptimeText = '';
+                if (uptimeHours > 0) {
+                    uptimeText = `${uptimeHours}h ${uptimeMinutes % 60}m`;
+                } else if (uptimeMinutes > 0) {
+                    uptimeText = `${uptimeMinutes}m ${uptimeSeconds % 60}s`;
+                } else {
+                    uptimeText = `${uptimeSeconds}s`;
+                }
+                
+                const uptimeEl = document.getElementById('uptimeDisplay');
+                if (uptimeEl) {
+                    uptimeEl.textContent = uptimeText;
+                }
+            }
+            
+            async checkSystemHealth() {
+                const startTime = Date.now();
+                this.requestCount++;
+                
+                console.log('🔍 Starting comprehensive health check...');
+                
+                try {
+                    // Test basic health endpoint
+                    const healthResponse = await fetch(`${this.baseURL}/api/v1/health/`);
+                    const healthData = await healthResponse.json();
+                    
+                    // Test detailed health endpoint
+                    const detailedResponse = await fetch(`${this.baseURL}/api/v1/health/detailed`);
+                    const detailedData = await detailedResponse.json();
+                    
+                    const responseTime = Date.now() - startTime;
+                    this.responseTimeHistory.push(responseTime);
+                    
+                    // Keep only last 10 response times for average calculation
+                    if (this.responseTimeHistory.length > 10) {
+                        this.responseTimeHistory.shift();
+                    }
+                    
+                    if (healthResponse.ok && detailedResponse.ok) {
+                        this.successCount++;
+                        this.updateSystemStatus('online', 'All systems operational');
+                        this.updateHealthDetails(healthData, detailedData);
+                        this.updateEndpointStatus('healthEndpointStatus', true);
+                        this.updateEndpointStatus('detailedEndpointStatus', true);
+                        console.log('✅ Health check successful');
+                    } else {
+                        this.updateSystemStatus('warning', 'Some services experiencing issues');
+                        console.log('⚠️ Partial health check failure');
+                    }
+                    
+                    this.updatePerformanceMetrics(responseTime);
+                    this.updateLastCheckTime();
+                    
+                } catch (error) {
+                    console.error('❌ Health check failed:', error);
+                    this.updateSystemStatus('offline', 'Backend services unavailable');
+                    this.updateDatabaseStatus('neo4j', false, 'Connection failed');
+                    this.updateDatabaseStatus('postgres', false, 'Connection failed');
+                    this.updateEndpointStatus('healthEndpointStatus', false);
+                    this.updateEndpointStatus('detailedEndpointStatus', false);
+                    this.updateEndpointStatus('enterpriseEndpointStatus', false);
+                }
+            }
+            
+            updateSystemStatus(status, message) {
+                const indicator = document.getElementById('overallStatusIndicator');
+                const text = document.getElementById('overallStatusText');
+                const headerIndicator = document.querySelector('#systemStatus .status-indicator');
+                const headerText = document.getElementById('statusText');
+                
+                const statusClass = `status-${status}`;
+                
+                if (indicator) indicator.className = `status-indicator ${statusClass} mx-auto mb-2`;
+                if (text) text.textContent = message;
+                if (headerIndicator) headerIndicator.className = `status-indicator ${statusClass}`;
+                if (headerText) headerText.textContent = message;
+            }
+            
+            updateHealthDetails(healthData, detailedData) {
+                console.log('📊 Updating health details with data:', { healthData, detailedData });
+                
+                // Update API status
+                this.updateServiceStatus('api', true, 'Online');
+                
+                // Update database statuses from detailed data
+                if (detailedData && detailedData.databases) {
+                    const databases = detailedData.databases;
+                    
+                    if (databases.neo4j) {
+                        const neo4j = databases.neo4j;
+                        this.updateDatabaseStatus('neo4j', neo4j.connected, 
+                            neo4j.connected ? `Connected (${neo4j.response_time_ms || 0}ms)` : 'Disconnected');
+                        
+                        const neo4jDetails = document.getElementById('neo4jDetails');
+                        if (neo4jDetails) {
+                            neo4jDetails.innerHTML = `
+                                Status: ${neo4j.connected ? 'Connected' : 'Disconnected'}<br>
+                                Response Time: ${neo4j.response_time_ms || 0}ms<br>
+                                ${neo4j.database_info ? `Database: ${neo4j.database_info.name || 'neo4j'}` : ''}
+                            `;
+                        }
+                    }
+                    
+                    if (databases.postgres) {
+                        const postgres = databases.postgres;
+                        this.updateDatabaseStatus('postgres', postgres.connected,
+                            postgres.connected ? `Connected (${postgres.response_time_ms || 0}ms)` : 'Disconnected');
+                        
+                        const postgresDetails = document.getElementById('postgresDetails');
+                        if (postgresDetails) {
+                            postgresDetails.innerHTML = `
+                                Status: ${postgres.connected ? 'Connected' : 'Disconnected'}<br>
+                                Response Time: ${postgres.response_time_ms || 0}ms<br>
+                                ${postgres.database_info ? `Database: ${postgres.database_info.name || 'postgres'}` : ''}
+                            `;
+                        }
+                    }
+                } else {
+                    // Fallback - assume operational if API responded
+                    this.updateDatabaseStatus('neo4j', true, 'Operational');
+                    this.updateDatabaseStatus('postgres', true, 'Operational');
+                }
+                
+                // Update environment info
+                const envInfo = document.getElementById('environmentInfo');
+                if (envInfo && detailedData && detailedData.service) {
+                    envInfo.textContent = detailedData.service.environment || 'Development';
+                }
+            }
+            
+            updateServiceStatus(service, isOnline, statusText) {
+                const statusId = `${service}Status`;
+                const textId = `${service}StatusText`;
+                
+                const statusEl = document.getElementById(statusId);
+                const textEl = document.getElementById(textId);
+                
+                if (statusEl) statusEl.className = `status-indicator status-${isOnline ? 'online' : 'offline'}`;
+                if (textEl) textEl.textContent = statusText;
+            }
+            
+            updateDatabaseStatus(dbType, isConnected, statusText) {
+                const statusId = `${dbType}Status`;
+                const textId = `${dbType}StatusText`;
+                
+                const statusEl = document.getElementById(statusId);
+                const textEl = document.getElementById(textId);
+                
+                if (statusEl) statusEl.className = `status-indicator status-${isConnected ? 'online' : 'offline'}`;
+                if (textEl) textEl.textContent = statusText;
+            }
+            
+            updateEndpointStatus(endpointId, isOnline) {
+                const statusEl = document.getElementById(endpointId);
+                if (statusEl) {
+                    statusEl.className = `status-indicator status-${isOnline ? 'online' : 'offline'}`;
+                    statusEl.style.width = '8px';
+                    statusEl.style.height = '8px';
+                }
+            }
+            
+            updatePerformanceMetrics(responseTime) {
+                // Update current response time
+                document.getElementById('responseTime').textContent = `${responseTime}ms`;
+                document.getElementById('requestCount').textContent = this.requestCount;
+                
+                // Calculate success rate
+                const successRate = ((this.successCount / this.requestCount) * 100).toFixed(1);
+                document.getElementById('successRate').textContent = `${successRate}%`;
+                
+                // Update summary cards
+                document.getElementById('totalRequests').textContent = this.requestCount;
+                
+                // Calculate average response time
+                if (this.responseTimeHistory.length > 0) {
+                    const avgTime = Math.round(this.responseTimeHistory.reduce((a, b) => a + b, 0) / this.responseTimeHistory.length);
+                    document.getElementById('avgResponseTime').textContent = `${avgTime}ms`;
+                }
+            }
+            
+            updateLastCheckTime() {
+                const now = new Date();
+                document.getElementById('lastCheckTime').textContent = now.toLocaleTimeString();
+            }
+            
+            clearMetrics() {
+                this.requestCount = 0;
+                this.successCount = 0;
+                this.responseTimeHistory = [];
+                
+                document.getElementById('responseTime').textContent = '-';
+                document.getElementById('requestCount').textContent = '0';
+                document.getElementById('successRate').textContent = '-';
+                document.getElementById('totalRequests').textContent = '0';
+                document.getElementById('avgResponseTime').textContent = '-';
+                
+                console.log('🧹 Metrics cleared');
+            }
+            
+            async testEndpoint() {
+                console.log('🧪 Testing enterprise endpoint...');
+                
+                try {
+                    const startTime = Date.now();
+                    const response = await fetch(`${this.baseURL}/api/v1/enterprise/recommendations`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            query: "Health dashboard test query",
+                            user_context: {
+                                user_id: "health_dashboard_test"
+                            },
+                            session_id: this.sessionId
+                        })
+                    });
+                    
+                    const responseTime = Date.now() - startTime;
+                    
+                    if (response.ok) {
+                        this.updateEndpointStatus('enterpriseEndpointStatus', true);
+                        alert(`✅ Enterprise endpoint test successful!\nResponse time: ${responseTime}ms`);
+                        console.log('✅ Enterprise endpoint test passed');
+                    } else {
+                        this.updateEndpointStatus('enterpriseEndpointStatus', false);
+                        alert(`❌ Enterprise endpoint test failed!\nStatus: ${response.status}`);
+                        console.log('❌ Enterprise endpoint test failed');
+                    }
+                } catch (error) {
+                    this.updateEndpointStatus('enterpriseEndpointStatus', false);
+                    alert(`❌ Enterprise endpoint test failed!\nError: ${error.message}`);
+                    console.error('❌ Enterprise endpoint test error:', error);
+                }
+            }
+            
+            downloadLogs() {
+                console.log('📥 Preparing logs for download...');
+                
+                const logData = {
+                    timestamp: new Date().toISOString(),
+                    sessionId: this.sessionId,
+                    metrics: {
+                        requestCount: this.requestCount,
+                        successCount: this.successCount,
+                        successRate: ((this.successCount / this.requestCount) * 100).toFixed(1) + '%',
+                        averageResponseTime: this.responseTimeHistory.length > 0 ? 
+                            Math.round(this.responseTimeHistory.reduce((a, b) => a + b, 0) / this.responseTimeHistory.length) + 'ms' : 'N/A',
+                        uptime: document.getElementById('uptimeDisplay').textContent
+                    },
+                    responseTimeHistory: this.responseTimeHistory
+                };
+                
+                const blob = new Blob([JSON.stringify(logData, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `health-dashboard-logs-${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                console.log('📥 Logs downloaded successfully');
+            }
+            
+            refreshAll() {
+                console.log('🔄 Refreshing all dashboard data...');
+                this.checkSystemHealth();
+                this.displaySessionInfo();
+            }
+        }
+        
+        // Initialize the health dashboard
+        document.addEventListener('DOMContentLoaded', () => {
+            new HealthDashboard();
+        });
+    </script>
+</body>
+</html>

@@ -306,6 +306,9 @@ class SalesLoader(BaseLoader):
         if co_occurrences:
             self._create_co_occurrence_relationships(co_occurrences)
         
+        # Step 4.5: Create Trinity relationships for fast querying
+        self._create_trinity_relationships(enhanced_orders)
+        
         # Step 5: Create indexes for performance
         self.create_indexes()
         
@@ -813,3 +816,109 @@ class SalesLoader(BaseLoader):
                 'skipped_records': self._skipped_records,
                 'missing_product_references': len(getattr(self, '_missing_references', set()))
             }
+    
+    def _create_trinity_relationships(self, orders: Dict[str, List[SalesRecord]]):
+        """
+        Create FORMS_TRINITY relationships for fast Trinity queries.
+        
+        Creates direct relationships from Transaction to PowerSource with Trinity metadata:
+        (Transaction)-[:FORMS_TRINITY {powersource_gin, feeder_gin, cooler_gin, trinity_id}]->(Product)
+        
+        This enables instant Trinity-First architecture queries without complex COLLECT operations.
+        """
+        if not orders:
+            return
+        
+        self.logger.info("Creating Trinity relationships for fast querying...")
+        
+        # Extract Trinity combinations from orders (one per order_id)
+        trinity_combinations = []
+        trinity_orders_count = 0
+        
+        for order_id, records in orders.items():
+            # Group products by category for this order
+            products_by_category = {}
+            for record in records:
+                category = getattr(record, 'category', '')
+                if category in ['PowerSource', 'Feeder', 'Cooler']:
+                    if category not in products_by_category:
+                        products_by_category[category] = []
+                    products_by_category[category].append(record.gin)
+            
+            # Check if this order has all three Trinity categories
+            if ('PowerSource' in products_by_category and 
+                'Feeder' in products_by_category and 
+                'Cooler' in products_by_category):
+                
+                # Use first product of each category (primary choice)
+                ps_gin = products_by_category['PowerSource'][0]
+                f_gin = products_by_category['Feeder'][0]
+                c_gin = products_by_category['Cooler'][0]
+                trinity_id = f"{ps_gin}_{f_gin}_{c_gin}"
+                
+                trinity_combinations.append({
+                    'order_id': order_id,
+                    'powersource_gin': ps_gin,
+                    'feeder_gin': f_gin,
+                    'cooler_gin': c_gin,
+                    'trinity_id': trinity_id
+                })
+                trinity_orders_count += 1
+        
+        self.logger.info(f"Found {trinity_orders_count} Trinity-containing orders from {len(orders)} total orders")
+        
+        if not trinity_combinations:
+            self.logger.warning("No Trinity combinations found - skipping Trinity relationship creation")
+            return
+        
+        # Create Trinity relationships in batches
+        batch_size = 500
+        total_created = 0
+        
+        for i in range(0, len(trinity_combinations), batch_size):
+            batch = trinity_combinations[i:i+batch_size]
+            
+            cypher_query = """
+            UNWIND $trinity_batch AS trinity
+            
+            // Find the PowerSource Transaction and Product for this order
+            MATCH (ps_t:Transaction {order_id: trinity.order_id})-[:CONTAINS]->(ps:Product {gin: trinity.powersource_gin})
+            
+            // Create Trinity relationship (one per order_id, from PowerSource Transaction to PowerSource Product)
+            CREATE (ps_t)-[:FORMS_TRINITY {
+                powersource_gin: trinity.powersource_gin,
+                feeder_gin: trinity.feeder_gin,
+                cooler_gin: trinity.cooler_gin,
+                trinity_id: trinity.trinity_id
+            }]->(ps)
+            
+            RETURN count(*) as created_count
+            """
+            
+            try:
+                with self.neo4j_driver.session(database=self.neo4j_database) as session:
+                    result = session.run(cypher_query, trinity_batch=batch)
+                    batch_created = result.single()['created_count']
+                    total_created += batch_created
+                    self.logger.info(f"Created {batch_created} Trinity relationships in batch {i//batch_size + 1}")
+            except Exception as e:
+                self.logger.error(f"Error creating Trinity relationships batch {i//batch_size + 1}: {e}")
+                raise
+        
+        self.logger.info(f"Total Trinity relationships created: {total_created}")
+        
+        # Create Trinity-specific indexes
+        trinity_indexes = [
+            "CREATE INDEX trinity_powersource_index IF NOT EXISTS FOR ()-[r:FORMS_TRINITY]-() ON (r.powersource_gin)",
+            "CREATE INDEX trinity_id_index IF NOT EXISTS FOR ()-[r:FORMS_TRINITY]-() ON (r.trinity_id)",
+            "CREATE INDEX trinity_feeder_index IF NOT EXISTS FOR ()-[r:FORMS_TRINITY]-() ON (r.feeder_gin)",
+            "CREATE INDEX trinity_cooler_index IF NOT EXISTS FOR ()-[r:FORMS_TRINITY]-() ON (r.cooler_gin)"
+        ]
+        
+        with self.neo4j_driver.session(database=self.neo4j_database) as session:
+            for index_query in trinity_indexes:
+                try:
+                    session.run(index_query)
+                    self.logger.info(f"Created Trinity index: {index_query}")
+                except Exception as e:
+                    self.logger.warning(f"Trinity index creation failed: {e}")

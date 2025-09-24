@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESAB Agentic AI Welding Recommender</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <style>
+        :root {
+            --esab-gold: #EAB308;
+            --esab-dark: #1F2937;
+            --esab-copper: #B45309;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #8B4513 0%, #D2691E 30%, #654321 100%);
+            min-height: 100vh;
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+        
+        .status-online { @apply bg-green-500 shadow-green-500/50; }
+        .status-offline { @apply bg-red-500 shadow-red-500/50; }
+        .status-warning { @apply bg-yellow-500 shadow-yellow-500/50; }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+            box-shadow: 0 0 8px currentColor;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .nav-tab {
+            background-color: transparent;
+            color: #000;
+            border: 2px solid transparent;
+        }
+        
+        .nav-tab:hover {
+            background-color: #000;
+            color: #EAB308;
+        }
+        
+        .nav-tab.active {
+            background-color: #000;
+            color: #EAB308;
+            border: 2px solid #EAB308;
+        }
+        
+        .page-section {
+            display: none;
+        }
+        
+        .page-section.active {
+            display: block;
+        }
+        
+        .message-user {
+            background: var(--esab-gold);
+            color: black;
+            margin-left: auto;
+            max-width: 80%;
+        }
+        
+        .message-sparky {
+            background: white;
+            color: black;
+            margin-right: auto;
+            max-width: 80%;
+        }
+        
+        .loading-dots::after {
+            content: '';
+            animation: dots 1.5s infinite;
+        }
+        
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.3s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .esab-card {
+            background: rgba(255, 255, 255, 0.95);
+            border: 2px solid var(--esab-gold);
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .esab-button {
+            background: var(--esab-gold);
+            color: black;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        
+        .esab-button:hover {
+            background: var(--esab-copper);
+            transform: translateY(-1px);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="bg-yellow-400 p-4 shadow-lg">
+        <div class="container mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-6">
+                <div class="bg-black px-6 py-2 transform -skew-x-12">
+                    <span class="font-black text-yellow-400 text-xl transform skew-x-12 inline-block">ESAB</span>
+                </div>
+                <h1 class="text-black font-bold text-xl">Agentic AI Welding Recommender</h1>
+                <div id="systemStatus" class="flex items-center gap-2">
+                    <span class="status-indicator status-offline"></span>
+                    <span id="statusText" class="text-sm font-medium">Connecting...</span>
+                </div>
+            </div>
+            
+            <!-- Navigation Links -->
+            <div class="flex items-center gap-2">
+                <button id="chatTab" class="nav-tab active px-4 py-2 rounded-lg font-medium transition-colors">
+                    <i data-lucide="message-square" class="w-4 h-4 inline mr-2"></i>
+                    <span data-i18n="chat">Chat</span>
+                </button>
+                <a href="health_dashboard.html" class="nav-tab px-4 py-2 rounded-lg font-medium transition-colors text-decoration-none">
+                    <i data-lucide="activity" class="w-4 h-4 inline mr-2"></i>
+                    <span data-i18n="health_dashboard">Health Dashboard</span>
+                </a>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <!-- Language Selector -->
+                <div class="relative">
+                    <select id="languageSelector" class="bg-black text-yellow-400 px-3 py-2 rounded-lg border-2 border-yellow-400 focus:outline-none focus:ring-2 focus:ring-yellow-400">
+                        <option value="en">🇺🇸 English</option>
+                        <option value="es">🇪🇸 Español</option>
+                        <option value="fr">🇫🇷 Français</option>
+                        <option value="de">🇩🇪 Deutsch</option>
+                        <option value="pt">🇵🇹 Português</option>
+                        <option value="it">🇮🇹 Italiano</option>
+                        <option value="zh">🇨🇳 中文</option>
+                        <option value="ja">🇯🇵 日本語</option>
+                        <option value="ko">🇰🇷 한국어</option>
+                    </select>
+                </div>
+                
+                <div class="text-right">
+                    <div class="text-black text-sm" data-i18n="welcome">Welcome</div>
+                    <div class="text-black font-bold" data-i18n="welding_expert">Welding Expert</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container mx-auto p-6 min-h-screen">
+        
+        <!-- Chat Page -->
+        <div id="chatPage" class="page-section active">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Left Column: Sparky Chat -->
+                <div class="lg:col-span-2">
+                    <div class="esab-card p-6 h-full flex flex-col">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="bg-yellow-400 rounded-full w-12 h-12 flex items-center justify-center">
+                        <i data-lucide="zap" class="w-6 h-6 text-black"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900" data-i18n="ask_sparky">Ask Sparky</h2>
+                        <p class="text-gray-600" data-i18n="sparky_description">AI-powered welding equipment recommendations</p>
+                    </div>
+                </div>
+                
+                <!-- Chat Messages -->
+                <div id="chatMessages" class="flex-1 overflow-y-auto space-y-4 mb-6">
+                    <div class="message-sparky p-4 rounded-lg fade-in">
+                        <div class="flex items-center gap-2 mb-2">
+                            <i data-lucide="zap" class="w-4 h-4 text-yellow-600"></i>
+                            <span class="font-medium text-gray-900">Sparky</span>
+                        </div>
+                        <div class="text-gray-800" data-i18n="sparky_welcome">
+                            Hello! I'm Sparky, your AI welding assistant. I can help you with:
+                            <br>• Finding the perfect welding equipment
+                            <br>• Building Trinity packages (PowerSource + Feeder + Cooler)
+                            <br>• Product compatibility validation
+                            <br>• Expert and guided recommendations
+                            <br><br>What welding challenge can I help you solve today?
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Chat Input -->
+                <div class="border-t pt-4">
+                    <div class="flex gap-3">
+                        <input 
+                            id="chatInput" 
+                            type="text" 
+                            data-i18n-placeholder="input_placeholder"
+                            placeholder="Ask about welding packages, compatibility, or get recommendations..."
+                            class="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                        >
+                        <button id="sendMessage" class="esab-button px-6 py-3 rounded-lg">
+                            <i data-lucide="send" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                    <div class="mt-3 flex flex-wrap gap-2">
+                        <button class="suggestion-btn px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded-full text-sm">
+                            I want to form a package with Aristo 500 ix
+                        </button>
+                        <button class="suggestion-btn px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded-full text-sm">
+                            Multi-process welding machine
+                        </button>
+                        <button class="suggestion-btn px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded-full text-sm">
+                            MIG welding for aluminum
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Column: Package Pricing -->
+        <div class="space-y-6">
+            
+            <!-- Package Pricing Display -->
+            <div id="packageDisplay" class="esab-card p-8 min-h-[600px]">
+                <h3 class="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+                    <i data-lucide="package" class="w-8 h-8 text-blue-600"></i>
+                    <span data-i18n="recommended_package">Recommended Package</span>
+                </h3>
+                <div id="packageContent">
+                    <div class="text-center py-16 text-gray-500">
+                        <i data-lucide="package-search" class="w-16 h-16 mx-auto mb-4 opacity-50"></i>
+                        <h4 class="text-xl font-semibold mb-3" data-i18n="pricing_details">Pricing Details</h4>
+                        <p class="mb-6" data-i18n="no_package_selected">Ask Sparky for a recommendation to see pricing details</p>
+                        <button id="demoPackageBtn" class="px-6 py-3 bg-yellow-400 text-black rounded-lg hover:bg-yellow-500 transition-colors font-semibold">
+                            <span data-i18n="show_demo_package">Show Demo Package</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            </div>
+        </div>
+        
+        
+    </div>
+
+    <script>
+        // Multilingual Translation System
+        const translations = {
+            en: {
+                welcome: "Welcome",
+                welding_expert: "Welding Expert",
+                ask_sparky: "Ask Sparky",
+                sparky_description: "AI-powered welding equipment recommendations",
+                sparky_welcome: "Hello! I'm Sparky, your AI welding assistant. I can help you with:<br>• Finding the perfect welding equipment<br>• Building Trinity packages (PowerSource + Feeder + Cooler)<br>• Product compatibility validation<br>• Expert and guided recommendations<br><br>What welding challenge can I help you solve today?",
+                input_placeholder: "Ask about welding packages, compatibility, or get recommendations...",
+                trinity_package: "Trinity Package",
+                total_price: "Total Price",
+                package_contents: "Package Contents",
+                compatibility_confidence: "Compatibility Confidence",
+                each: "Each",
+                ready_to_ship: "Ready to ship",
+                package_includes: "Package includes installation guide and warranty",
+                recommended_package: "Recommended Package",
+                no_package_selected: "Ask Sparky for a recommendation to see pricing details",
+                show_demo_package: "Show Demo Package",
+                pricing_details: "Pricing Details",
+                chat: "Chat",
+                health_dashboard: "Health Dashboard"
+            },
+            es: {
+                welcome: "Bienvenido",
+                welding_expert: "Experto en Soldadura",
+                health_check: "Control de Salud",
+                ask_sparky: "Pregunta a Sparky",
+                sparky_description: "Recomendaciones de equipos de soldadura con IA",
+                sparky_welcome: "¡Hola! Soy Sparky, tu asistente de soldadura con IA. Puedo ayudarte con:<br>• Encontrar el equipo de soldadura perfecto<br>• Construir paquetes Trinity (Fuente de Poder + Alimentador + Enfriador)<br>• Validación de compatibilidad de productos<br>• Recomendaciones expertas y guiadas<br><br>¿Qué desafío de soldadura puedo ayudarte a resolver hoy?",
+                input_placeholder: "Pregunta sobre paquetes de soldadura, compatibilidad o recomendaciones...",
+                system_health: "Salud del Sistema",
+                backend_api: "API Backend",
+                database: "Base de Datos",
+                ai_models: "Modelos IA",
+                online: "En línea",
+                offline: "Desconectado",
+                langsmith_observability: "Observabilidad LangSmith",
+                trace_id: "ID de Traza",
+                language: "Idioma",
+                mode: "Modo",
+                confidence: "Confianza",
+                trinity_package: "Paquete Trinity",
+                total_price: "Precio Total",
+                package_contents: "Contenido del Paquete",
+                compatibility_confidence: "Confianza de Compatibilidad",
+                each: "Cada uno",
+                ready_to_ship: "Listo para enviar",
+                package_includes: "El paquete incluye guía de instalación y garantía",
+                recommended_package: "Paquete Recomendado",
+                no_package_selected: "Pregunta a Sparky por una recomendación para ver detalles de precios",
+                show_demo_package: "Mostrar Paquete Demo",
+                pricing_details: "Detalles de Precios",
+                chat: "Chat",
+                health_dashboard: "Panel de Salud",
+                performance: "Rendimiento",
+                response_time: "Tiempo de Respuesta",
+                requests: "Solicitudes",
+                success_rate: "Tasa de Éxito",
+                no_active_traces: "Sin trazas activas",
+                api_endpoints: "Endpoints API",
+                system_info: "Información del Sistema",
+                frontend_version: "Versión Frontend",
+                session_id: "ID de Sesión",
+                uptime: "Tiempo Activo",
+                quick_actions: "Acciones Rápidas",
+                refresh_health: "Actualizar Salud",
+                clear_metrics: "Limpiar Métricas"
+            },
+            fr: {
+                welcome: "Bienvenue",
+                welding_expert: "Expert en Soudure",
+                health_check: "Contrôle de Santé",
+                ask_sparky: "Demandez à Sparky",
+                sparky_description: "Recommandations d'équipements de soudage alimentées par l'IA",
+                sparky_welcome: "Bonjour ! Je suis Sparky, votre assistant de soudage IA. Je peux vous aider avec :<br>• Trouver l'équipement de soudage parfait<br>• Construire des packages Trinity (Source d'alimentation + Alimentateur + Refroidisseur)<br>• Validation de compatibilité des produits<br>• Recommandations expertes et guidées<br><br>Quel défi de soudage puis-je vous aider à résoudre aujourd'hui ?",
+                input_placeholder: "Demandez sur les packages de soudage, la compatibilité ou les recommandations...",
+                system_health: "Santé du Système",
+                backend_api: "API Backend",
+                database: "Base de Données",
+                ai_models: "Modèles IA",
+                online: "En ligne",
+                offline: "Hors ligne",
+                langsmith_observability: "Observabilité LangSmith",
+                trace_id: "ID de Trace",
+                language: "Langue",
+                mode: "Mode",
+                confidence: "Confiance",
+                trinity_package: "Package Trinity",
+                total_price: "Prix Total",
+                package_contents: "Contenu du Package",
+                compatibility_confidence: "Confiance de Compatibilité",
+                each: "Chaque",
+                ready_to_ship: "Prêt à expédier",
+                package_includes: "Le package inclut un guide d'installation et une garantie",
+                recommended_package: "Package Recommandé",
+                no_package_selected: "Demandez à Sparky une recommandation pour voir les détails de prix",
+                show_demo_package: "Afficher Package Démo",
+                pricing_details: "Détails des Prix"
+            },
+            de: {
+                welcome: "Willkommen",
+                welding_expert: "Schweißexperte",
+                health_check: "Gesundheitsprüfung",
+                ask_sparky: "Fragen Sie Sparky",
+                sparky_description: "KI-gestützte Schweißgeräte-Empfehlungen",
+                sparky_welcome: "Hallo! Ich bin Sparky, Ihr KI-Schweißassistent. Ich kann Ihnen helfen bei:<br>• Perfekte Schweißausrüstung finden<br>• Trinity-Pakete erstellen (Stromquelle + Drahtvorschub + Kühler)<br>• Produktkompatibilität validieren<br>• Experten- und geführte Empfehlungen<br><br>Welche Schweißherausforderung kann ich Ihnen heute lösen helfen?",
+                input_placeholder: "Fragen Sie nach Schweißpaketen, Kompatibilität oder Empfehlungen...",
+                system_health: "Systemgesundheit",
+                backend_api: "Backend-API",
+                database: "Datenbank",
+                ai_models: "KI-Modelle",
+                online: "Online",
+                offline: "Offline",
+                langsmith_observability: "LangSmith Observierbarkeit",
+                trace_id: "Trace-ID",
+                language: "Sprache",
+                mode: "Modus",
+                confidence: "Vertrauen",
+                trinity_package: "Trinity-Paket",
+                total_price: "Gesamtpreis",
+                package_contents: "Paketinhalt",
+                compatibility_confidence: "Kompatibilität Vertrauen",
+                each: "Jeweils",
+                ready_to_ship: "Versandbereit",
+                package_includes: "Paket enthält Installationsanleitung und Garantie",
+                recommended_package: "Empfohlenes Paket",
+                no_package_selected: "Fragen Sie Sparky nach einer Empfehlung, um Preisdetails zu sehen",
+                show_demo_package: "Demo-Paket Anzeigen",
+                pricing_details: "Preisdetails"
+            },
+            pt: {
+                welcome: "Bem-vindo",
+                welding_expert: "Especialista em Soldagem",
+                health_check: "Verificação de Saúde",
+                ask_sparky: "Pergunte ao Sparky",
+                sparky_description: "Recomendações de equipamentos de soldagem com IA",
+                sparky_welcome: "Olá! Eu sou o Sparky, seu assistente de soldagem com IA. Posso ajudá-lo com:<br>• Encontrar o equipamento de soldagem perfeito<br>• Construir pacotes Trinity (Fonte de Energia + Alimentador + Resfriador)<br>• Validação de compatibilidade de produtos<br>• Recomendações especializadas e guiadas<br><br>Que desafio de soldagem posso ajudá-lo a resolver hoje?",
+                input_placeholder: "Pergunte sobre pacotes de soldagem, compatibilidade ou recomendações...",
+                system_health: "Saúde do Sistema",
+                backend_api: "API Backend",
+                database: "Banco de Dados",
+                ai_models: "Modelos IA",
+                online: "Online",
+                offline: "Offline",
+                langsmith_observability: "Observabilidade LangSmith",
+                trace_id: "ID do Rastreamento",
+                language: "Idioma",
+                mode: "Modo",
+                confidence: "Confiança",
+                trinity_package: "Pacote Trinity",
+                total_price: "Preço Total",
+                package_contents: "Conteúdo do Pacote",
+                compatibility_confidence: "Confiança de Compatibilidade",
+                each: "Cada",
+                ready_to_ship: "Pronto para enviar",
+                package_includes: "Pacote inclui guia de instalação e garantia",
+                recommended_package: "Pacote Recomendado",
+                no_package_selected: "Pergunte ao Sparky por uma recomendação para ver detalhes de preços",
+                show_demo_package: "Mostrar Pacote Demo",
+                pricing_details: "Detalhes de Preços"
+            },
+            it: {
+                welcome: "Benvenuto",
+                welding_expert: "Esperto di Saldatura",
+                health_check: "Controllo Salute",
+                ask_sparky: "Chiedi a Sparky",
+                sparky_description: "Raccomandazioni per attrezzature di saldatura alimentate da IA",
+                sparky_welcome: "Ciao! Sono Sparky, il tuo assistente di saldatura IA. Posso aiutarti con:<br>• Trovare l'attrezzatura di saldatura perfetta<br>• Costruire pacchetti Trinity (Fonte di Alimentazione + Alimentatore + Refrigeratore)<br>• Validazione compatibilità prodotti<br>• Raccomandazioni esperte e guidate<br><br>Quale sfida di saldatura posso aiutarti a risolvere oggi?",
+                input_placeholder: "Chiedi sui pacchetti di saldatura, compatibilità o raccomandazioni...",
+                system_health: "Salute del Sistema",
+                backend_api: "API Backend",
+                database: "Database",
+                ai_models: "Modelli IA",
+                online: "Online",
+                offline: "Offline",
+                langsmith_observability: "Osservabilità LangSmith",
+                trace_id: "ID Traccia",
+                language: "Lingua",
+                mode: "Modalità",
+                confidence: "Fiducia",
+                trinity_package: "Pacchetto Trinity",
+                total_price: "Prezzo Totale",
+                package_contents: "Contenuto del Pacchetto",
+                compatibility_confidence: "Fiducia Compatibilità",
+                each: "Ciascuno",
+                ready_to_ship: "Pronto per la spedizione",
+                package_includes: "Il pacchetto include guida all'installazione e garanzia",
+                recommended_package: "Pacchetto Raccomandato",
+                no_package_selected: "Chiedi a Sparky una raccomandazione per vedere i dettagli sui prezzi",
+                show_demo_package: "Mostra Pacchetto Demo",
+                pricing_details: "Dettagli Prezzi"
+            },
+            zh: {
+                welcome: "欢迎",
+                welding_expert: "焊接专家",
+                health_check: "健康检查",
+                ask_sparky: "询问Sparky",
+                sparky_description: "AI驱动的焊接设备推荐",
+                sparky_welcome: "您好！我是Sparky，您的AI焊接助手。我可以帮助您：<br>• 找到完美的焊接设备<br>• 构建三位一体套装（电源+送丝机+冷却器）<br>• 产品兼容性验证<br>• 专家和引导式推荐<br><br>今天我可以帮您解决什么焊接挑战？",
+                input_placeholder: "询问焊接套装、兼容性或推荐...",
+                system_health: "系统健康",
+                backend_api: "后端API",
+                database: "数据库",
+                ai_models: "AI模型",
+                online: "在线",
+                offline: "离线",
+                langsmith_observability: "LangSmith可观测性",
+                trace_id: "追踪ID",
+                language: "语言",
+                mode: "模式",
+                confidence: "置信度",
+                trinity_package: "三位一体套装",
+                total_price: "总价",
+                package_contents: "套装内容",
+                compatibility_confidence: "兼容性置信度",
+                each: "每个",
+                ready_to_ship: "准备发货",
+                package_includes: "套装包含安装指南和保修",
+                recommended_package: "推荐套装",
+                no_package_selected: "询问Sparky获取推荐以查看价格详情",
+                show_demo_package: "显示演示套装",
+                pricing_details: "价格详情"
+            },
+            ja: {
+                welcome: "いらっしゃいませ",
+                welding_expert: "溶接エキスパート",
+                health_check: "ヘルスチェック",
+                ask_sparky: "Sparkyに聞く",
+                sparky_description: "AI駆動の溶接機器推奨",
+                sparky_welcome: "こんにちは！私はSparky、あなたのAI溶接アシスタントです。以下でお手伝いできます：<br>• 完璧な溶接機器の発見<br>• Trinityパッケージの構築（電源+フィーダー+クーラー）<br>• 製品互換性の検証<br>• エキスパートとガイド付き推奨<br><br>今日はどのような溶接の課題を解決しましょうか？",
+                input_placeholder: "溶接パッケージ、互換性、推奨について質問...",
+                system_health: "システムヘルス",
+                backend_api: "バックエンドAPI",
+                database: "データベース",
+                ai_models: "AIモデル",
+                online: "オンライン",
+                offline: "オフライン",
+                langsmith_observability: "LangSmith観測可能性",
+                trace_id: "トレースID",
+                language: "言語",
+                mode: "モード",
+                confidence: "信頼度",
+                trinity_package: "Trinityパッケージ",
+                total_price: "合計価格",
+                package_contents: "パッケージ内容",
+                compatibility_confidence: "互換性信頼度",
+                each: "各",
+                ready_to_ship: "出荷準備完了",
+                package_includes: "パッケージには設置ガイドと保証が含まれます",
+                recommended_package: "推奨パッケージ",
+                no_package_selected: "価格詳細を見るためにSparkyに推奨を求めてください",
+                show_demo_package: "デモパッケージ表示",
+                pricing_details: "価格詳細"
+            },
+            ko: {
+                welcome: "환영합니다",
+                welding_expert: "용접 전문가",
+                health_check: "상태 확인",
+                ask_sparky: "Sparky에게 문의",
+                sparky_description: "AI 기반 용접 장비 추천",
+                sparky_welcome: "안녕하세요! 저는 당신의 AI 용접 도우미 Sparky입니다. 다음과 같이 도와드릴 수 있습니다:<br>• 완벽한 용접 장비 찾기<br>• Trinity 패키지 구성 (전원 + 피더 + 쿨러)<br>• 제품 호환성 검증<br>• 전문가 및 가이드 추천<br><br>오늘 어떤 용접 과제를 해결해 드릴까요?",
+                input_placeholder: "용접 패키지, 호환성 또는 추천에 대해 질문하세요...",
+                system_health: "시스템 상태",
+                backend_api: "백엔드 API",
+                database: "데이터베이스",
+                ai_models: "AI 모델",
+                online: "온라인",
+                offline: "오프라인",
+                langsmith_observability: "LangSmith 관찰가능성",
+                trace_id: "추적 ID",
+                language: "언어",
+                mode: "모드",
+                confidence: "신뢰도",
+                trinity_package: "Trinity 패키지",
+                total_price: "총 가격",
+                package_contents: "패키지 내용",
+                compatibility_confidence: "호환성 신뢰도",
+                each: "각각",
+                ready_to_ship: "배송 준비 완료",
+                package_includes: "패키지에는 설치 가이드와 보증서가 포함됩니다",
+                recommended_package: "추천 패키지",
+                no_package_selected: "가격 세부사항을 보려면 Sparky에게 추천을 요청하세요",
+                show_demo_package: "데모 패키지 표시",
+                pricing_details: "가격 세부사항"
+            }
+        };
+
+        // Internationalization System
+        class I18nManager {
+            constructor() {
+                this.currentLanguage = localStorage.getItem('selectedLanguage') || 'en';
+                this.init();
+            }
+
+            init() {
+                this.updateLanguageSelector();
+                this.translatePage();
+            }
+
+            updateLanguageSelector() {
+                const selector = document.getElementById('languageSelector');
+                if (selector) {
+                    selector.value = this.currentLanguage;
+                    selector.addEventListener('change', (e) => {
+                        this.setLanguage(e.target.value);
+                    });
+                }
+            }
+
+            setLanguage(lang) {
+                this.currentLanguage = lang;
+                localStorage.setItem('selectedLanguage', lang);
+                document.documentElement.lang = lang;
+                this.translatePage();
+            }
+
+            translatePage() {
+                const elements = document.querySelectorAll('[data-i18n]');
+                elements.forEach(element => {
+                    const key = element.getAttribute('data-i18n');
+                    const translation = this.getTranslation(key);
+                    if (translation) {
+                        element.innerHTML = translation;
+                    }
+                });
+
+                // Handle placeholder translations
+                const placeholderElements = document.querySelectorAll('[data-i18n-placeholder]');
+                placeholderElements.forEach(element => {
+                    const key = element.getAttribute('data-i18n-placeholder');
+                    const translation = this.getTranslation(key);
+                    if (translation) {
+                        element.placeholder = translation;
+                    }
+                });
+            }
+
+            getTranslation(key) {
+                return translations[this.currentLanguage]?.[key] || translations.en[key] || key;
+            }
+
+            getCurrentLanguage() {
+                return this.currentLanguage;
+            }
+        }
+
+        class ESABAgenctAIApp {
+            constructor() {
+                this.baseURL = 'http://localhost:8000';
+                this.sessionId = `frontend_${Date.now()}`;
+                this.startTime = Date.now();
+                this.i18n = new I18nManager();
+                
+                this.init();
+            }
+            
+            init() {
+                this.setupEventListeners();
+                this.checkSystemHealth();
+                this.initializeLucide();
+                
+                // Auto-check health every 30 seconds
+                setInterval(() => this.checkSystemHealth(), 30000);
+            }
+            
+            setupEventListeners() {
+                // Chat functionality
+                document.getElementById('sendMessage').addEventListener('click', () => this.sendMessage());
+                document.getElementById('chatInput').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') this.sendMessage();
+                });
+                
+                // Suggestion buttons
+                document.querySelectorAll('.suggestion-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        document.getElementById('chatInput').value = e.target.textContent;
+                        this.sendMessage();
+                    });
+                });
+                
+                
+                // Demo package button
+                document.getElementById('demoPackageBtn').addEventListener('click', () => this.showDemoPackage());
+                
+                // Chat tab (health is now a link)
+                const chatTab = document.getElementById('chatTab');
+                if (chatTab) chatTab.addEventListener('click', () => this.showPage('chat'));
+                
+            }
+            
+            initializeLucide() {
+                lucide.createIcons();
+            }
+            
+            showPage(page) {
+                console.log('showPage called with:', page);
+                
+                // For chat page, just ensure it's active (health is now a separate page)
+                if (page === 'chat') {
+                    const chatPage = document.getElementById('chatPage');
+                    const chatTab = document.getElementById('chatTab');
+                    
+                    // Hide all pages
+                    document.querySelectorAll('.page-section').forEach(section => {
+                        section.classList.remove('active');
+                    });
+                    
+                    // Remove active class from all tabs
+                    document.querySelectorAll('.nav-tab').forEach(tab => {
+                        tab.classList.remove('active');
+                    });
+                    
+                    // Show chat page
+                    if (chatPage) chatPage.classList.add('active');
+                    if (chatTab) chatTab.classList.add('active');
+                }
+            }
+            
+            
+            async checkSystemHealth() {
+                try {
+                    const healthResponse = await fetch(`${this.baseURL}/api/v1/health/`);
+                    
+                    if (healthResponse.ok) {
+                        this.updateSystemStatus('online', 'All systems operational');
+                    } else {
+                        this.updateSystemStatus('warning', 'Partial system issues');
+                    }
+                } catch (error) {
+                    console.error('Health check failed:', error);
+                    this.updateSystemStatus('offline', 'System offline');
+                }
+            }
+            
+            updateSystemStatus(status, message) {
+                const indicator = document.getElementById('systemStatus').querySelector('.status-indicator');
+                const text = document.getElementById('statusText');
+                
+                if (indicator) indicator.className = `status-indicator status-${status}`;
+                if (text) text.textContent = message;
+            }
+            
+            
+            async sendMessage() {
+                const input = document.getElementById('chatInput');
+                const message = input.value.trim();
+                
+                if (!message) return;
+                
+                // Add user message to chat
+                this.addMessage(message, 'user');
+                input.value = '';
+                
+                // Show loading message
+                const loadingId = this.addMessage('Thinking<span class="loading-dots"></span>', 'sparky', true);
+                
+                try {
+                    const response = await fetch(`${this.baseURL}/api/v1/enterprise/recommendations`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            query: message,
+                            user_context: {
+                                user_id: "frontend_user",
+                                experience_level: "expert",
+                                preferences: {
+                                    budget_range: "premium",
+                                    preferred_brands: ["ESAB"],
+                                    applications: ["industrial"]
+                                }
+                            },
+                            session_id: this.sessionId,
+                            language: this.i18n.getCurrentLanguage()
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    // Remove loading message
+                    this.removeMessage(loadingId);
+                    
+                    if (response.ok) {
+                        this.handleSuccessfulResponse(data);
+                    } else {
+                        this.addMessage(`Sorry, I encountered an error: ${data.detail || 'Unknown error'}`, 'sparky');
+                    }
+                    
+                } catch (error) {
+                    console.error('Chat request failed:', error);
+                    this.removeMessage(loadingId);
+                    this.addMessage('Sorry, I\'m having trouble connecting to the backend. Please check the system status.', 'sparky');
+                    // Health check error
+                }
+            }
+            
+            handleSuccessfulResponse(data) {
+                console.log('🚀 DEBUG: Full API response:', data);
+                console.log('🚀 DEBUG: Packages received:', data.packages);
+                console.log('🚀 DEBUG: Number of packages:', data.packages?.length);
+                if (data.packages && data.packages.length > 0) {
+                    console.log('🚀 DEBUG: First package structure:', data.packages[0]);
+                    console.log('🚀 DEBUG: First package keys:', Object.keys(data.packages[0]));
+                }
+                
+                // Use the formatted response from the API
+                const formattedResponse = data.formatted_response || {};
+                const packages = data.packages || [];
+                
+                // Use the summary from the formatted response
+                let responseText = formattedResponse.summary || `I found ${packages.length} recommendation${packages.length !== 1 ? 's' : ''} for you!`;
+                
+                // Add detailed explanation if available
+                if (formattedResponse.detailed_explanation) {
+                    responseText += `\\n\\n${formattedResponse.detailed_explanation}`;
+                }
+                
+                // Display the first package in the pricing panel
+                if (packages.length > 0) {
+                    this.displayPackage(packages[0]);
+                }
+                
+                this.addMessage(responseText, 'sparky');
+            }
+            
+            showDemoPackage() {
+                // Demo package data to show the pricing layout
+                const demoPackage = {
+                    total_price: 15750,
+                    compatibility_confidence: 0.95,
+                    components: {
+                        power_source: {
+                            name: "Aristo 500ix MIG/Stick Package",
+                            model: "A32",
+                            price: 8950,
+                            specifications: "500A, Multi-process, Advanced pulse"
+                        },
+                        wire_feeder: {
+                            name: "Warrior 500X Wire Feeder", 
+                            model: "W500X",
+                            price: 4200,
+                            specifications: "500A, 4-roll drive, Digital display"
+                        },
+                        cooler: {
+                            name: "Cool Arc 35 Water Cooler",
+                            model: "CA35",
+                            price: 2600,
+                            specifications: "35L capacity, Auto-flow control"
+                        }
+                    }
+                };
+                
+                this.displayPackage(demoPackage);
+            }
+
+            displayPackage(packageData) {
+                console.log('🔍 DEBUG: Full package data structure:', packageData);
+                console.log('🔍 DEBUG: Package data keys:', Object.keys(packageData));
+                console.log('🔍 DEBUG: Package data types:', Object.keys(packageData).map(k => `${k}: ${typeof packageData[k]}`));
+                
+                const packageDisplay = document.getElementById('packageDisplay');
+                const packageContent = document.getElementById('packageContent');
+                
+                // Use the actual API response structure
+                const totalPrice = packageData.total_price || 0;
+                const compatibilityScore = packageData.compatibility_score || 0;
+                const powerSource = packageData.power_source;
+                const feeder = packageData.feeder;
+                const cooler = packageData.cooler;
+                
+                // Generate package title from power source
+                const packageTitle = powerSource ? `${powerSource.product_name} Package` : 'Trinity Package';
+                
+                let html = `
+                    <div class="border-b border-gray-200 pb-4 mb-4">
+                        <div class="flex justify-between items-center mb-3">
+                            <h4 class="text-xl font-bold text-esab-dark">${packageTitle}</h4>
+                            <div class="text-right">
+                                <div class="text-2xl font-bold text-esab-gold">$${totalPrice.toLocaleString()}</div>
+                                <div class="text-sm text-gray-500">Total Price</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center text-sm text-gray-600">
+                            <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                            </svg>
+                            Compatibility Confidence: ${(compatibilityScore * 100).toFixed(1)}%
+                        </div>
+                    </div>
+                    <div class="space-y-3">
+                        <h5 class="font-semibold text-gray-800 mb-3">Package Contents:</h5>
+                `;
+                
+                // Dynamically display all components from the API response
+                // Define category display mapping for better UX
+                const categoryDisplayNames = {
+                    'power_source': 'Power Source',
+                    'feeder': 'Wire Feeder', 
+                    'cooler': 'Cooling Unit',
+                    'torch': 'Welding Torch',
+                    'interconnector': 'Interconnection Cables',
+                    'consumables': 'Consumables',
+                    'accessories': 'Accessories'
+                };
+                
+                // Get all main component fields (not arrays)
+                const mainComponents = {};
+                Object.keys(packageData).forEach(key => {
+                    console.log(`🔍 DEBUG: Checking key "${key}":`, packageData[key]);
+                    console.log(`🔍 DEBUG: Key "${key}" type:`, typeof packageData[key]);
+                    console.log(`🔍 DEBUG: Key "${key}" is array:`, Array.isArray(packageData[key]));
+                    console.log(`🔍 DEBUG: Key "${key}" has product_name:`, packageData[key]?.product_name);
+                    
+                    // Skip non-component fields and arrays
+                    if (!['total_price', 'compatibility_score', 'package_score', 'trinity_compliance', 
+                          'business_rule_compliance', 'currency', 'compatibility_verified', 
+                          'formation_path', 'relationship_strength', 'consumables', 'accessories'].includes(key) &&
+                        packageData[key] && 
+                        typeof packageData[key] === 'object' && 
+                        !Array.isArray(packageData[key]) &&
+                        packageData[key].product_name) {
+                        console.log(`✅ DEBUG: Including component "${key}":`, packageData[key]);
+                        mainComponents[key] = packageData[key];
+                    } else {
+                        console.log(`❌ DEBUG: Excluding key "${key}"`);
+                    }
+                });
+                
+                console.log('🔍 DEBUG: Final mainComponents:', mainComponents);
+                console.log('🔍 DEBUG: Number of main components found:', Object.keys(mainComponents).length);
+                
+                // Display all main components dynamically
+                Object.entries(mainComponents).forEach(([category, component]) => {
+                    const displayName = categoryDisplayNames[category] || category.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    const bgColor = category === 'power_source' ? 'from-yellow-50 to-yellow-100' : 
+                                   category === 'feeder' ? 'from-blue-50 to-blue-100' :
+                                   category === 'cooler' ? 'from-green-50 to-green-100' :
+                                   'from-gray-50 to-gray-100';
+                    
+                    // Sales frequency display with visual indicator
+                    const salesFreq = component.sales_frequency || 0;
+                    const popularityLevel = salesFreq > 100 ? 'High' : salesFreq > 50 ? 'Medium' : salesFreq > 0 ? 'Low' : 'New';
+                    const popularityColor = salesFreq > 100 ? 'text-green-600' : salesFreq > 50 ? 'text-yellow-600' : salesFreq > 0 ? 'text-orange-600' : 'text-gray-500';
+                    const popularityIcon = salesFreq > 100 ? '🔥' : salesFreq > 50 ? '⭐' : salesFreq > 0 ? '📈' : '✨';
+                    
+                    html += `
+                        <div class="flex justify-between items-center p-3 bg-gradient-to-r ${bgColor} rounded-lg border">
+                            <div class="flex-1">
+                                <div class="flex items-center justify-between mb-1">
+                                    <div class="font-semibold text-sm text-esab-dark">${displayName}</div>
+                                    <div class="flex items-center text-xs ${popularityColor}">
+                                        <span class="mr-1">${popularityIcon}</span>
+                                        <span>${popularityLevel}</span>
+                                    </div>
+                                </div>
+                                <div class="text-sm text-gray-700 mt-1">${component.product_name}</div>
+                                ${component.product_id ? `<div class="text-xs text-gray-500 mt-1">ID: ${component.product_id}</div>` : ''}
+                                ${salesFreq > 0 ? `<div class="text-xs text-blue-600 mt-1">Sales: ${salesFreq} units</div>` : ''}
+                                ${component.description ? `<div class="text-xs text-gray-600 mt-1 line-clamp-2">${component.description.replace(/<[^>]*>/g, '').substring(0, 100)}...</div>` : ''}
+                            </div>
+                            <div class="text-right ml-4">
+                                <div class="text-lg font-bold text-esab-copper">$${(component.price || 0).toLocaleString()}</div>
+                                <div class="text-xs text-gray-500">Each</div>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                // Display array-based components (consumables, accessories)
+                ['consumables', 'accessories'].forEach(arrayCategory => {
+                    const items = packageData[arrayCategory] || [];
+                    if (items.length > 0) {
+                        const displayName = categoryDisplayNames[arrayCategory] || arrayCategory.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+                        items.forEach(item => {
+                            // Sales frequency display with visual indicator
+                            const salesFreq = item.sales_frequency || 0;
+                            const popularityLevel = salesFreq > 100 ? 'High' : salesFreq > 50 ? 'Medium' : salesFreq > 0 ? 'Low' : 'New';
+                            const popularityColor = salesFreq > 100 ? 'text-green-600' : salesFreq > 50 ? 'text-yellow-600' : salesFreq > 0 ? 'text-orange-600' : 'text-gray-500';
+                            const popularityIcon = salesFreq > 100 ? '🔥' : salesFreq > 50 ? '⭐' : salesFreq > 0 ? '📈' : '✨';
+                            
+                            html += `
+                                <div class="flex justify-between items-center p-3 bg-gradient-to-r from-purple-50 to-purple-100 rounded-lg border">
+                                    <div class="flex-1">
+                                        <div class="flex items-center justify-between mb-1">
+                                            <div class="font-semibold text-sm text-esab-dark">${displayName}</div>
+                                            <div class="flex items-center text-xs ${popularityColor}">
+                                                <span class="mr-1">${popularityIcon}</span>
+                                                <span>${popularityLevel}</span>
+                                            </div>
+                                        </div>
+                                        <div class="text-sm text-gray-700 mt-1">${item.product_name}</div>
+                                        ${item.product_id ? `<div class="text-xs text-gray-500 mt-1">ID: ${item.product_id}</div>` : ''}
+                                        ${salesFreq > 0 ? `<div class="text-xs text-blue-600 mt-1">Sales: ${salesFreq} units</div>` : ''}
+                                        ${item.description ? `<div class="text-xs text-gray-600 mt-1 line-clamp-2">${item.description.replace(/<[^>]*>/g, '').substring(0, 100)}...</div>` : ''}
+                                    </div>
+                                    <div class="text-right ml-4">
+                                        <div class="text-lg font-bold text-esab-copper">$${(item.price || 0).toLocaleString()}</div>
+                                        <div class="text-xs text-gray-500">Each</div>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                    }
+                });
+                
+                html += `
+                    </div>
+                    <div class="mt-4 pt-4 border-t border-gray-200">
+                        <div class="flex justify-between items-center text-sm text-gray-600">
+                            <span>Package includes installation guide and warranty</span>
+                            <span class="font-medium">Ready to ship</span>
+                        </div>
+                    </div>
+                `;
+                
+                packageContent.innerHTML = html;
+                packageDisplay.style.display = 'block';
+            }
+            
+            
+            addMessage(content, sender, isLoading = false) {
+                const messagesDiv = document.getElementById('chatMessages');
+                const messageId = `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+                
+                const messageDiv = document.createElement('div');
+                messageDiv.id = messageId;
+                messageDiv.className = `message-${sender} p-4 rounded-lg fade-in`;
+                
+                const icon = sender === 'sparky' ? 'zap' : 'user';
+                const senderName = sender === 'sparky' ? 'Sparky' : 'You';
+                
+                messageDiv.innerHTML = `
+                    <div class="flex items-center gap-2 mb-2">
+                        <i data-lucide="${icon}" class="w-4 h-4 ${sender === 'sparky' ? 'text-yellow-600' : 'text-gray-700'}"></i>
+                        <span class="font-medium">${senderName}</span>
+                    </div>
+                    <div class="text-gray-800">${content}</div>
+                `;
+                
+                messagesDiv.appendChild(messageDiv);
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+                
+                this.initializeLucide();
+                
+                return messageId;
+            }
+            
+            removeMessage(messageId) {
+                const message = document.getElementById(messageId);
+                if (message) {
+                    message.remove();
+                }
+            }
+        }
+        
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', () => {
+            new ESABAgenctAIApp();
+        });
+    </script>
+</body>
+</html>

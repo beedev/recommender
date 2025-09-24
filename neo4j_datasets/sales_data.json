@@ -1,17 +1,16 @@
 {
   "metadata": {
-    "total_records": 10097,
-    "unique_orders": 1646,
-    "complete_combo_orders": 1646,
+    "total_records": 10077,
+    "unique_orders": 1645,
+    "complete_combo_orders": 1645,
     "target_powersources": [
       "0445555880",
-      "0445250880",
-      "0446200880",
-      "0465350883",
       "0465350884",
-      "0445100880"
+      "0446200880",
+      "0445250880",
+      "0465350883"
     ],
-    "generated_date": "2025-09-20",
+    "generated_date": "2025-09-22",
     "source": "Filtered from sales_data_cleaned.csv - complete PowerSource+Feeder+Cooler orders only",
     "filtering_rule": "Orders must contain PowerSource + Feeder + Cooler minimum combo"
   },
@@ -23277,16 +23276,6 @@
       "category": "PowerSourceAccessory"
     },
     {
-      "order_id": "100739187",
-      "line_no": "12",
-      "gin": "0349313450",
-      "description": "TROLLEY Warrior/Aristo 3 in 1",
-      "customer": "VSE GERMANY GMBH",
-      "facility": "DEB",
-      "warehouse": "PDC",
-      "category": "PowerSourceAccessory"
-    },
-    {
       "order_id": "100739195",
       "line_no": "6",
       "gin": "0349313450",
@@ -29927,146 +29916,6 @@
       "category": "PowerSourceAccessory"
     },
     {
-      "order_id": "100779940",
-      "line_no": "10",
-      "gin": "0445100880",
-      "description": "Renegade ES300i",
-      "customer": "WELD SUPPLY",
-      "facility": "BEB",
-      "warehouse": "PDC",
-      "category": "PowerSource"
-    },
-    {
-      "order_id": "100765239",
-      "line_no": "2",
-      "gin": "0445100880",
-      "description": "Renegade ES300i",
-      "customer": "ERNST SCHMIDT GMBH",
-      "facility": "DEB",
-      "warehouse": "PDC",
-      "category": "PowerSource"
-    },
-    {
-      "order_id": "100739187",
-      "line_no": "14",
-      "gin": "0445100880",
-      "description": "Renegade ES300i",
-      "customer": "VSE GERMANY GMBH",
-      "facility": "DEB",
-      "warehouse": "PDC",
-      "category": "PowerSource"
-    },
-    {
-      "order_id": "100739195",
-      "line_no": "19",
-      "gin": "0445100880",
-      "description": "Renegade ES300i",
-      "customer": "VSE GERMANY GMBH",
-      "facility": "DEB",
-      "warehouse": "PDC",
-      "category": "PowerSource"
-    },
-    {
-      "order_id": "100739202",
-      "line_no": "18",
-      "gin": "0445100880",
-      "description": "Renegade ES300i",
-      "customer": "VSE GERMANY GMBH",
-      "facility": "DEB",
-      "warehouse": "PDC",
-      "category": "PowerSource"
-    },
-    {
-      "order_id": "100739208",
-      "line_no": "24",
-      "gin": "0445100880",
-      "description": "Renegade ES300i",
-      "customer": "VSE GERMANY GMBH",
-      "facility": "DEB",
-      "warehouse": "PDC",
-      "category": "PowerSource"
-    },
-    {
-      "order_id": "100910236",
-      "line_no": "1",
-      "gin": "0445100880",
-      "description": "Renegade ES300i",
-      "customer": "LASSERVICE NV",
-      "facility": "BEB",
-      "warehouse": "PDC",
-      "category": "PowerSource"
-    },
-    {
-      "order_id": "100640282",
-      "line_no": "11",
-      "gin": "0445100880",
-      "description": "Renegade ES300i",
-      "customer": "BURDIN BOSSERT MARINGUE SAGETAT",
-      "facility": "FRB",
-      "warehouse": "PDC",
-      "category": "PowerSource"
-    },
-    {
-      "order_id": "100421860",
-      "line_no": "3",
-      "gin": "0445100880",
-      "description": "Renegade ES300i",
-      "customer": "MOUGENOT ET FILS SARL",
-      "facility": "FRB",
-      "warehouse": "PDC",
-      "category": "PowerSource"
-    },
-    {
-      "order_id": "100553406",
-      "line_no": "22",
-      "gin": "0445100880",
-      "description": "Renegade ES300i",
-      "customer": "ERNST SCHMIDT GMBH",
-      "facility": "DEB",
-      "warehouse": "PDC",
-      "category": "PowerSource"
-    },
-    {
-      "order_id": "100493720",
-      "line_no": "36",
-      "gin": "0445100880",
-      "description": "Renegade ES300i",
-      "customer": "SOLDUFER SERVICIOS INDUSTRIALES SL",
-      "facility": "ESB",
-      "warehouse": "PDC",
-      "category": "PowerSource"
-    },
-    {
-      "order_id": "101210800",
-      "line_no": "9",
-      "gin": "0445100880",
-      "description": "Renegade ES300i",
-      "customer": "TAMPEREEN PIRKKA-HITSI OY",
-      "facility": "FIB",
-      "warehouse": "PDC",
-      "category": "PowerSource"
-    },
-    {
-      "order_id": "101262064",
-      "line_no": "14",
-      "gin": "0445100880",
-      "description": "Renegade ES300i",
-      "customer": "WELD PROFESIONAL SRL",
-      "facility": "ROB",
-      "warehouse": "PDC",
-      "category": "PowerSource"
-    },
-    {
-      "order_id": "101093922",
-      "line_no": "12",
-      "gin": "0445100880",
-      "description": "Renegade ES300i",
-      "customer": "UNISOLDA COMÉRCIO E INDÚSTRIA, S.A.",
-      "facility": "PTB",
-      "warehouse": "PDC",
-      "category": "PowerSource"
-    },
-    {
       "order_id": "101175279",
       "line_no": "21",
       "gin": "0445139880",
@@ -36667,16 +36516,6 @@
       "category": "Feeder"
     },
     {
-      "order_id": "100739187",
-      "line_no": "5",
-      "gin": "0445800892",
-      "description": "Robust Feed Pulse OW PP ELP",
-      "customer": "VSE GERMANY GMBH",
-      "facility": "DEB",
-      "warehouse": "PDC",
-      "category": "Feeder"
-    },
-    {
       "order_id": "100739208",
       "line_no": "15",
       "gin": "0445800892",
@@ -40129,16 +39968,6 @@
     {
       "order_id": "100739208",
       "line_no": "16",
-      "gin": "0445800898",
-      "description": "Robust Feed U82 Off Water",
-      "customer": "VSE GERMANY GMBH",
-      "facility": "DEB",
-      "warehouse": "PDC",
-      "category": "Feeder"
-    },
-    {
-      "order_id": "100739187",
-      "line_no": "6",
       "gin": "0445800898",
       "description": "Robust Feed U82 Off Water",
       "customer": "VSE GERMANY GMBH",
@@ -54477,16 +54306,6 @@
       "category": "Interconnector"
     },
     {
-      "order_id": "100739187",
-      "line_no": "7",
-      "gin": "0446255880",
-      "description": "Intercon. RF CAN 70mm2 2m",
-      "customer": "VSE GERMANY GMBH",
-      "facility": "DEB",
-      "warehouse": "PDC",
-      "category": "Interconnector"
-    },
-    {
       "order_id": "100739202",
       "line_no": "11",
       "gin": "0446255880",
@@ -66249,16 +66068,6 @@
     {
       "order_id": "100739208",
       "line_no": "9",
-      "gin": "0459836890",
-      "description": "Interconn set 2.0M/W 70mm2 19P",
-      "customer": "VSE GERMANY GMBH",
-      "facility": "DEB",
-      "warehouse": "PDC",
-      "category": "Interconnector"
-    },
-    {
-      "order_id": "100739187",
-      "line_no": "3",
       "gin": "0459836890",
       "description": "Interconn set 2.0M/W 70mm2 19P",
       "customer": "VSE GERMANY GMBH",
@@ -92409,16 +92218,6 @@
     {
       "order_id": "100739195",
       "line_no": "12",
-      "gin": "0465427880",
-      "description": "Cool 2",
-      "customer": "VSE GERMANY GMBH",
-      "facility": "DEB",
-      "warehouse": "PDC",
-      "category": "Cooler"
-    },
-    {
-      "order_id": "100739187",
-      "line_no": "11",
       "gin": "0465427880",
       "description": "Cool 2",
       "customer": "VSE GERMANY GMBH",

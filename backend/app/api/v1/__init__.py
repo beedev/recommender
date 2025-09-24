@@ -18,6 +18,7 @@ from .system import router as system_router
 from .enhanced_orchestrator import router as orchestrator_router
 # from .agent_recommendations import router as agent_recommendations_router  # Archived
 from .enterprise import enterprise_router
+from .vector_compatibility import router as vector_compatibility_router
 
 # Main API router for v1
 api_router = APIRouter()
@@ -87,6 +88,12 @@ api_router.include_router(
     enterprise_router,
     prefix="/enterprise",
     tags=["Enterprise Recommendations"]
+)
+
+api_router.include_router(
+    vector_compatibility_router,
+    prefix="/vector-compatibility",
+    tags=["Vector Compatibility Search"]
 )
 
 __all__ = ["api_router"]

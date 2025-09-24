@@ -105,6 +105,11 @@ class Settings(BaseSettings):
     AGENT_TRACKING_BATCH_SIZE: int = Field(default=100, env="AGENT_TRACKING_BATCH_SIZE")
     AGENT_TRACKING_FLUSH_INTERVAL: int = Field(default=30, env="AGENT_TRACKING_FLUSH_INTERVAL")
     
+    # Vector Compatibility Configuration
+    VECTOR_CONFIDENCE_THRESHOLD: float = Field(default=0.8, env="VECTOR_CONFIDENCE_THRESHOLD")
+    VECTOR_SEARCH_LIMIT: int = Field(default=20, env="VECTOR_SEARCH_LIMIT")
+    ENABLE_COMPATIBILITY_FALLBACK: bool = Field(default=True, env="ENABLE_COMPATIBILITY_FALLBACK")
+    
     # =============================================================================
     # LOGGING CONFIGURATION
     # =============================================================================
@@ -194,6 +199,24 @@ class Settings(BaseSettings):
         """Ensure MAX_ITEMS_PER_PAGE is greater than 0."""
         if v <= 0:
             raise ValueError("MAX_ITEMS_PER_PAGE must be positive")
+        return v
+    
+    @field_validator("VECTOR_CONFIDENCE_THRESHOLD")
+    @classmethod
+    def validate_vector_confidence_threshold(cls, v: float) -> float:
+        """Ensure VECTOR_CONFIDENCE_THRESHOLD is between 0.0 and 1.0."""
+        if not 0.0 <= v <= 1.0:
+            raise ValueError("VECTOR_CONFIDENCE_THRESHOLD must be between 0.0 and 1.0")
+        return v
+    
+    @field_validator("VECTOR_SEARCH_LIMIT")
+    @classmethod
+    def validate_vector_search_limit(cls, v: int) -> int:
+        """Ensure VECTOR_SEARCH_LIMIT is positive and reasonable."""
+        if v <= 0:
+            raise ValueError("VECTOR_SEARCH_LIMIT must be positive")
+        if v > 100:
+            raise ValueError("VECTOR_SEARCH_LIMIT should not exceed 100 for performance reasons")
         return v
     
     model_config = {
