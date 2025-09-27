@@ -3,25 +3,30 @@ Sales Data Loader
 Bharath's Quality-First Implementation
 
 This loader handles sales_data.json and creates comprehensive sales data model:
-1. CO_OCCURS relationships for recommendation performance
-2. Transaction nodes for detailed sales analytics  
-3. Customer nodes for customer intelligence (extensible for profiles)
+1. Clean Order-based architecture with proper Trinity nodes
+2. Multi-PowerSource order splitting with compatibility checking
+3. Trinity semantic search with combined descriptions
+4. CO_OCCURS relationships for recommendation performance
 
 Creates the following Neo4j structure:
 - Customer nodes: aggregated customer data with facilities, categories
-- Transaction nodes: individual sales records with order details
-- CO_OCCURS relationships: product co-occurrence patterns for recommendations
-- Relationships: (Customer)-[:MADE]->(Transaction)-[:CONTAINS]->(Product)
+- Order nodes: header nodes for grouped line items
+- Transaction nodes: individual line items within orders
+- Trinity nodes: PowerSource+Feeder+Cooler combinations with semantic descriptions
+- Relationships: (Customer)-[:PLACED]->(Order)-[:CONTAINS]->(Product)
+- Relationships: (Order)-[:PART_OF]->(Transaction)-[:LINE_ITEM]->(Product)
+- Relationships: (Order)-[:FORMS_TRINITY]->(Trinity)-[:COMPRISES {component_type}]->(Product)
 
 Features:
+- Clean Order-based architecture with Trinity nodes
+- Multi-PowerSource order splitting with compatibility logic
+- Trinity semantic search with combined component descriptions
 - Product reference validation (skips invalid GINs)
 - Order-based co-occurrence calculation
 - Customer aggregation and profiling foundation
-- Transaction-level detail preservation
-- Frequency tracking and normalization
 - Performance optimized batch loading
 - Comprehensive indexing for fast queries
-- Extensible for future customer profile enhancements
+- DETERMINES relationship compatibility checking
 """
 
 import json
@@ -30,6 +35,7 @@ from pathlib import Path
 from typing import Dict, List, Any, Set, Tuple
 from collections import defaultdict, Counter
 from dataclasses import dataclass
+import uuid
 
 from .base_loader import BaseLoader, ValidationResult
 
@@ -60,6 +66,48 @@ class CoOccurrence:
     last_occurrence_date: date
     orders: List[str]
     confidence_score: float = 0.0
+
+
+@dataclass
+class OrderData:
+    """Order header with line items"""
+    original_order_id: str
+    order_id: str  # May have suffix for split orders
+    customer: str
+    facility: str
+    warehouse: str
+    line_items: List[SalesRecord]
+    powersources: List[str] = None  # GINs of PowerSources in this order
+    
+    def __post_init__(self):
+        # Extract PowerSources from line items if not provided
+        if self.powersources is None:
+            self.powersources = [item.gin for item in self.line_items 
+                               if getattr(item, 'category', '') == 'PowerSource']
+
+
+@dataclass 
+class TrinityData:
+    """Trinity combination with semantic description"""
+    trinity_id: str
+    powersource_gin: str
+    feeder_gin: str
+    cooler_gin: str
+    powersource_name: str
+    feeder_name: str
+    cooler_name: str
+    combined_description: str
+    orders: List[str]  # Orders that contain this Trinity
+    
+    def __post_init__(self):
+        # Generate combined semantic description
+        if not self.combined_description:
+            self.combined_description = (
+                f"Complete welding system: {self.powersource_name} power source "
+                f"with {self.feeder_name} feeder and {self.cooler_name} cooler. "
+                f"Optimized for professional welding applications requiring "
+                f"power source, wire feeding, and cooling capabilities."
+            )
 
 
 class SalesLoader(BaseLoader):
@@ -105,6 +153,8 @@ class SalesLoader(BaseLoader):
         
         # Sales-specific tracking
         self._valid_orders: Dict[str, List[SalesRecord]] = defaultdict(list)
+        self._split_orders: List[OrderData] = []
+        self._trinity_combinations: List[TrinityData] = []
         self._invalid_gin_count = 0
         self._skipped_records = 0
     
@@ -244,7 +294,11 @@ class SalesLoader(BaseLoader):
     
     def _process_data(self, data: Dict, validate_references: bool) -> ValidationResult:
         """
-        Process and load sales data into Neo4j co-occurrence relationships
+        Process and load sales data with new clean architecture:
+        1. Group transactions into Order headers
+        2. Split multi-PowerSource orders with compatibility checking
+        3. Create Trinity nodes with semantic descriptions
+        4. Create CO_OCCURS relationships
         
         Args:
             data: Dictionary containing sales records
@@ -261,9 +315,9 @@ class SalesLoader(BaseLoader):
             invalid_records=0
         )
         
-        self.logger.info(f"Processing {len(records_data)} sales records")
+        self.logger.info(f"Processing {len(records_data)} sales records with new clean architecture")
         
-        # Step 1: Validate and group records by order
+        # Step 1: Validate and group records by original order
         valid_orders = defaultdict(list)
         
         for i, record_data in enumerate(records_data):
@@ -291,33 +345,45 @@ class SalesLoader(BaseLoader):
             valid_orders[record.order_id].append(record)
             result.valid_records += 1
         
-        self.logger.info(f"Grouped {result.valid_records} valid records into {len(valid_orders)} orders")
+        self.logger.info(f"Grouped {result.valid_records} valid records into {len(valid_orders)} original orders")
         self.logger.info(f"Skipped {self._skipped_records} records due to missing product references")
         
-        # Step 2: Calculate co-occurrences within orders (including F-gin enhancements)
+        # Step 2: Split multi-PowerSource orders with compatibility checking
         enhanced_orders = self._enhance_orders_with_f_gin(valid_orders)
-        co_occurrences = self._calculate_co_occurrences(enhanced_orders)
+        split_orders = self._split_multi_powersource_orders(enhanced_orders)
+        self.logger.info(f"Split into {len(split_orders)} final orders after multi-PowerSource processing")
+        
+        # Step 3: Create Trinity combinations with semantic descriptions
+        trinity_combinations = self._create_trinity_combinations(split_orders)
+        self.logger.info(f"Created {len(trinity_combinations)} Trinity combinations")
+        
+        # Step 4: Calculate co-occurrences from split orders
+        co_occurrences = self._calculate_co_occurrences_from_orders(split_orders)
         self.logger.info(f"Calculated {len(co_occurrences)} product co-occurrences")
         
-        # Step 3: Create Transaction and Customer nodes for detailed analysis
-        self._create_transaction_nodes(valid_orders)
+        # Step 5: Create the new graph structure in Neo4j
+        self._create_customer_nodes_new(split_orders)
+        self._create_order_nodes(split_orders)
+        self._create_transaction_nodes_new(split_orders)
+        self._create_trinity_nodes(trinity_combinations)
         
-        # Step 4: Create CO_OCCURS relationships in Neo4j
+        # Step 6: Create relationships
+        self._create_order_relationships(split_orders, trinity_combinations)
+        
+        # Step 7: Create CO_OCCURS relationships
         if co_occurrences:
             self._create_co_occurrence_relationships(co_occurrences)
         
-        # Step 4.5: Create Trinity relationships for fast querying
-        self._create_trinity_relationships(enhanced_orders)
-        
-        # Step 5: Create indexes for performance
+        # Step 8: Create indexes for performance
         self.create_indexes()
         
         result.is_valid = True  # Always valid since we skip problematic records
         
         self.logger.info(f"Sales data loading completed:")
         self.logger.info(f"  Valid records: {result.valid_records}")
+        self.logger.info(f"  Split orders: {len(split_orders)}")
+        self.logger.info(f"  Trinity combinations: {len(trinity_combinations)}")
         self.logger.info(f"  Skipped records: {self._skipped_records}")
-        self.logger.info(f"  Missing product references: {len(result.missing_references)}")
         self.logger.info(f"  Co-occurrence relationships: {len(co_occurrences)}")
         
         return result
@@ -383,6 +449,338 @@ class SalesLoader(BaseLoader):
         
         return enhanced_orders
     
+    def _split_multi_powersource_orders(self, orders: Dict[str, List[SalesRecord]]) -> List[OrderData]:
+        """
+        Split orders with multiple PowerSources into separate sub-orders.
+        
+        Algorithm:
+        1. For each order, identify unique PowerSources (ignore duplicates)
+        2. For each PowerSource, find compatible feeder and cooler from ALL order line items
+        3. Only create sub-order if both compatible feeder AND cooler found
+        4. Create sub-order with suffix: originalID-1, originalID-2, etc.
+        5. Include compatible accessories from complete line item set
+        
+        Args:
+            orders: Dictionary of order_id -> list of SalesRecords
+            
+        Returns:
+            List of OrderData objects representing split orders
+        """
+        self.logger.info("Starting multi-PowerSource order splitting with compatibility checking...")
+        
+        # Load DETERMINES relationships for compatibility checking
+        determines_relationships = self._load_determines_relationships()
+        split_orders = []
+        
+        for original_order_id, records in orders.items():
+            # Group line items by category
+            products_by_category = defaultdict(list)
+            for record in records:
+                category = getattr(record, 'category', '')
+                if category:
+                    products_by_category[category].append(record)
+            
+            # Get unique PowerSources (ignore duplicate quantities)
+            powersources = products_by_category.get('PowerSource', [])
+            unique_powersources = {}
+            for ps_record in powersources:
+                if ps_record.gin not in unique_powersources:
+                    unique_powersources[ps_record.gin] = ps_record
+            
+            # If single PowerSource, create single order
+            if len(unique_powersources) <= 1:
+                if unique_powersources:  # Has at least one PowerSource
+                    # Create single order with all line items
+                    order_data = OrderData(
+                        original_order_id=original_order_id,
+                        order_id=original_order_id,
+                        customer=records[0].customer,
+                        facility=records[0].facility,
+                        warehouse=records[0].warehouse,
+                        line_items=records
+                    )
+                    split_orders.append(order_data)
+                continue
+            
+            # Multiple PowerSources - split into sub-orders
+            all_feeders = [r.gin for r in products_by_category.get('Feeder', [])]
+            all_coolers = [r.gin for r in products_by_category.get('Cooler', [])]
+            all_accessories = products_by_category.get('Accessory', [])
+            
+            sub_order_count = 0
+            
+            for ps_gin, ps_record in unique_powersources.items():
+                # Find compatible feeder from ALL order line items
+                compatible_feeder_gin = self._find_compatible_component(
+                    ps_gin, all_feeders, 'Feeder', determines_relationships
+                )
+                
+                # Find compatible cooler from ALL order line items 
+                compatible_cooler_gin = self._find_compatible_component(
+                    ps_gin, all_coolers, 'Cooler', determines_relationships
+                )
+                
+                # Only create sub-order if BOTH feeder and cooler found
+                if compatible_feeder_gin and compatible_cooler_gin:
+                    sub_order_count += 1
+                    sub_order_id = f"{original_order_id}-{sub_order_count}"
+                    
+                    # Build line items for this sub-order
+                    sub_order_line_items = [ps_record]  # Start with PowerSource
+                    
+                    # Add compatible feeder
+                    feeder_record = next(
+                        (r for r in products_by_category.get('Feeder', []) if r.gin == compatible_feeder_gin),
+                        None
+                    )
+                    if feeder_record:
+                        sub_order_line_items.append(feeder_record)
+                    
+                    # Add compatible cooler
+                    cooler_record = next(
+                        (r for r in products_by_category.get('Cooler', []) if r.gin == compatible_cooler_gin),
+                        None
+                    )
+                    if cooler_record:
+                        sub_order_line_items.append(cooler_record)
+                    
+                    # Add compatible accessories from complete line item set
+                    # (For now, add all accessories - could enhance with compatibility logic)
+                    sub_order_line_items.extend(all_accessories)
+                    
+                    # Create sub-order
+                    sub_order = OrderData(
+                        original_order_id=original_order_id,
+                        order_id=sub_order_id,
+                        customer=ps_record.customer,
+                        facility=ps_record.facility,
+                        warehouse=ps_record.warehouse,
+                        line_items=sub_order_line_items
+                    )
+                    
+                    split_orders.append(sub_order)
+                    
+                    self.logger.debug(
+                        f"Created sub-order {sub_order_id} for PowerSource {ps_gin} "
+                        f"with feeder {compatible_feeder_gin} and cooler {compatible_cooler_gin}"
+                    )
+                    
+                else:
+                    # Log skipped PowerSource
+                    missing_components = []
+                    if not compatible_feeder_gin:
+                        missing_components.append('feeder')
+                    if not compatible_cooler_gin:
+                        missing_components.append('cooler')
+                    
+                    self.logger.warning(
+                        f"Skipped PowerSource {ps_gin} in order {original_order_id}: "
+                        f"missing compatible {', '.join(missing_components)}"
+                    )
+        
+        self.logger.info(
+            f"Order splitting completed: {len(orders)} original orders → {len(split_orders)} split orders"
+        )
+        
+        return split_orders
+    
+    def _create_trinity_combinations(self, orders: List[OrderData]) -> List[TrinityData]:
+        """
+        Create Trinity combinations from split orders with semantic descriptions.
+        Each order should have exactly one PowerSource with compatible feeder/cooler.
+        
+        Args:
+            orders: List of OrderData objects (post-splitting)
+            
+        Returns:
+            List of TrinityData objects with combined descriptions for semantic search
+        """
+        self.logger.info("Creating Trinity combinations with semantic descriptions...")
+        
+        trinity_combinations = []
+        trinity_map = {}  # trinity_id -> TrinityData for deduplication
+        
+        for order in orders:
+            # Group line items by category
+            products_by_category = defaultdict(list)
+            for item in order.line_items:
+                category = getattr(item, 'category', '')
+                if category in ['PowerSource', 'Feeder', 'Cooler']:
+                    products_by_category[category].append(item)
+            
+            # Should have exactly one of each for split orders
+            powersources = products_by_category.get('PowerSource', [])
+            feeders = products_by_category.get('Feeder', [])
+            coolers = products_by_category.get('Cooler', [])
+            
+            if len(powersources) == 1 and len(feeders) == 1 and len(coolers) == 1:
+                ps_record = powersources[0]
+                feeder_record = feeders[0]
+                cooler_record = coolers[0]
+                
+                # Create Trinity ID
+                trinity_id = f"{ps_record.gin}_{feeder_record.gin}_{cooler_record.gin}"
+                
+                if trinity_id not in trinity_map:
+                    # Get product names from catalog
+                    ps_name = self._get_product_name(ps_record.gin) or ps_record.description or ps_record.gin
+                    feeder_name = self._get_product_name(feeder_record.gin) or feeder_record.description or feeder_record.gin
+                    cooler_name = self._get_product_name(cooler_record.gin) or cooler_record.description or cooler_record.gin
+                    
+                    # Create Trinity with semantic description
+                    trinity_data = TrinityData(
+                        trinity_id=trinity_id,
+                        powersource_gin=ps_record.gin,
+                        feeder_gin=feeder_record.gin,
+                        cooler_gin=cooler_record.gin,
+                        powersource_name=ps_name,
+                        feeder_name=feeder_name,
+                        cooler_name=cooler_name,
+                        combined_description="",  # Will be auto-generated
+                        orders=[order.order_id]
+                    )
+                    
+                    # Generate semantic description
+                    trinity_data.combined_description = self._generate_trinity_description(
+                        trinity_data
+                    )
+                    
+                    trinity_map[trinity_id] = trinity_data
+                    
+                else:
+                    # Add this order to existing Trinity
+                    trinity_map[trinity_id].orders.append(order.order_id)
+                
+            else:
+                # Log problematic orders
+                self.logger.warning(
+                    f"Order {order.order_id} does not have exactly 1 PowerSource, 1 Feeder, 1 Cooler: "
+                    f"PS={len(powersources)}, F={len(feeders)}, C={len(coolers)}"
+                )
+        
+        trinity_combinations = list(trinity_map.values())
+        
+        self.logger.info(
+            f"Created {len(trinity_combinations)} unique Trinity combinations "
+            f"from {len(orders)} split orders"
+        )
+        
+        # Log sample Trinity descriptions for verification
+        for i, trinity in enumerate(trinity_combinations[:3]):
+            self.logger.info(
+                f"Trinity {i+1} ({trinity.trinity_id}): {trinity.combined_description[:100]}..."
+            )
+        
+        return trinity_combinations
+    
+    def _get_product_name(self, gin: str) -> str:
+        """
+        Get product name from catalog for Trinity description.
+        Load product data from Neo4j since _product_catalog is just a set of GINs.
+        
+        Args:
+            gin: Product GIN number
+            
+        Returns:
+            Product name or None if not found
+        """
+        try:
+            with self.neo4j_driver.session(database=self.neo4j_database) as session:
+                query = "MATCH (p:Product {gin: $gin}) RETURN p.product_name as name, p.description as description"
+                result = session.run(query, gin=gin)
+                record = result.single()
+                
+                if record:
+                    return record['name'] or record['description'] or gin
+                else:
+                    return gin
+                    
+        except Exception as e:
+            self.logger.warning(f"Failed to get product name for {gin}: {e}")
+            return gin
+    
+    def _generate_trinity_description(self, trinity: TrinityData) -> str:
+        """
+        Generate comprehensive semantic description for Trinity combination.
+        
+        Args:
+            trinity: TrinityData object
+            
+        Returns:
+            Combined semantic description for search
+        """
+        # Handle F-GIN products with special descriptions
+        feeder_desc = trinity.feeder_name
+        cooler_desc = trinity.cooler_name
+        
+        if trinity.feeder_gin == 'F000000007':
+            feeder_desc = "integrated feeder (no separate feeder required)"
+        if trinity.cooler_gin == 'F000000005':
+            cooler_desc = "integrated cooling (no separate cooler required)"
+        
+        # Generate comprehensive description
+        description = (
+            f"Complete welding system featuring {trinity.powersource_name} power source "
+            f"with {feeder_desc} and {cooler_desc}. "
+            f"This welding package provides comprehensive power generation, wire feeding, "
+            f"and cooling capabilities for professional welding applications. "
+            f"Optimized for industrial use with {trinity.powersource_name} technology, "
+            f"compatible feeder system, and appropriate cooling solution. "
+            f"Suitable for {trinity.powersource_name.lower()} welding processes "
+            f"requiring coordinated power, feeding, and thermal management."
+        )
+        
+        return description
+    
+    def _calculate_co_occurrences_from_orders(self, orders: List[OrderData]) -> List[CoOccurrence]:
+        """Calculate product co-occurrences from split OrderData objects"""
+        co_occurrence_data = defaultdict(lambda: {
+            'frequency': 0,
+            'orders': set()
+        })
+        
+        for order in orders:
+            # Get unique products in this order
+            products_in_order = list(set(record.gin for record in order.line_items))
+            
+            # Skip orders with only one product (no co-occurrence possible)
+            if len(products_in_order) < 2:
+                continue
+            
+            # Create co-occurrence pairs (bidirectional)
+            for i, product1 in enumerate(products_in_order):
+                for product2 in products_in_order[i+1:]:
+                    # Create sorted pair key for consistency
+                    pair_key = tuple(sorted([product1, product2]))
+                    
+                    co_occurrence_data[pair_key]['frequency'] += 1
+                    co_occurrence_data[pair_key]['orders'].add(order.order_id)
+        
+        # Convert to CoOccurrence objects with confidence scoring
+        co_occurrences = []
+        max_frequency = max((data['frequency'] for data in co_occurrence_data.values()), default=1)
+        
+        for (product1, product2), data in co_occurrence_data.items():
+            # Calculate confidence score based on frequency
+            frequency_score = min(data['frequency'] / max_frequency, 1.0)
+            confidence_score = frequency_score
+            
+            co_occurrence = CoOccurrence(
+                product1_gin=product1,
+                product2_gin=product2,
+                frequency=data['frequency'],
+                last_occurrence_date=date.today(),
+                orders=list(data['orders']),
+                confidence_score=confidence_score
+            )
+            
+            co_occurrences.append(co_occurrence)
+        
+        # Sort by frequency (most frequent first)
+        co_occurrences.sort(key=lambda x: x.frequency, reverse=True)
+        
+        return co_occurrences
+    
     def _calculate_co_occurrences(self, orders: Dict[str, List[SalesRecord]]) -> List[CoOccurrence]:
         """Calculate product co-occurrences within orders"""
         co_occurrence_data = defaultdict(lambda: {
@@ -433,6 +831,608 @@ class SalesLoader(BaseLoader):
         co_occurrences.sort(key=lambda x: x.frequency, reverse=True)
         
         return co_occurrences
+    
+    def _create_customer_nodes_new(self, orders: List[OrderData]):
+        """
+        Create Customer nodes from split orders.
+        
+        Args:
+            orders: List of OrderData objects
+        """
+        if not orders:
+            return
+        
+        # Collect customer data
+        customers_data = defaultdict(lambda: {
+            'facilities': set(),
+            'warehouses': set(),
+            'order_count': 0,
+            'categories': set()
+        })
+        
+        for order in orders:
+            if order.customer:
+                customer_key = order.customer.strip()
+                if customer_key:
+                    customers_data[customer_key]['facilities'].add(order.facility)
+                    customers_data[customer_key]['warehouses'].add(order.warehouse)
+                    customers_data[customer_key]['order_count'] += 1
+                    
+                    # Collect categories from line items
+                    for item in order.line_items:
+                        if hasattr(item, 'category') and item.category:
+                            customers_data[customer_key]['categories'].add(item.category)
+        
+        # Convert sets to lists for Customer node creation
+        customers_data_lists = {}
+        for customer_name, data in customers_data.items():
+            customers_data_lists[customer_name] = {
+                'facilities': list(data['facilities']),
+                'warehouses': list(data['warehouses']),
+                'order_count': data['order_count'],  # Changed from transaction_count
+                'categories': list(data['categories'])
+            }
+        
+        # Create Customer nodes in batches
+        self._create_customer_nodes(customers_data_lists)
+        
+        self.logger.info(f"Created {len(customers_data)} Customer nodes from {len(orders)} split orders")
+    
+    def _create_order_nodes(self, orders: List[OrderData]):
+        """
+        Create Order header nodes from split orders.
+        
+        Args:
+            orders: List of OrderData objects
+        """
+        if not orders:
+            return
+        
+        batch_size = 100
+        total_created = 0
+        
+        for i in range(0, len(orders), batch_size):
+            batch = orders[i:i+batch_size]
+            
+            # Prepare batch data
+            orders_batch = []
+            for order in batch:
+                order_node = {
+                    'order_id': order.order_id,
+                    'original_order_id': order.original_order_id,
+                    'customer': order.customer,
+                    'facility': order.facility,
+                    'warehouse': order.warehouse,
+                    'line_item_count': len(order.line_items),
+                    'powersource_count': len(order.powersources),
+                    'created_at': datetime.utcnow().isoformat()
+                }
+                orders_batch.append(order_node)
+            
+            # Create Order nodes
+            cypher_query = """
+            UNWIND $orders AS order
+            CREATE (o:Order {
+                order_id: order.order_id,
+                original_order_id: order.original_order_id,
+                customer: order.customer,
+                facility: order.facility,
+                warehouse: order.warehouse,
+                line_item_count: order.line_item_count,
+                powersource_count: order.powersource_count,
+                created_at: order.created_at
+            })
+            """
+            
+            try:
+                with self.neo4j_driver.session(database=self.neo4j_database) as session:
+                    session.run(cypher_query, orders=orders_batch)
+                
+                batch_created = len(batch)
+                total_created += batch_created
+                self.logger.info(f"Created {batch_created} Order nodes (batch {i//batch_size + 1})")
+                
+            except Exception as e:
+                self.logger.error(f"Failed to create Order batch: {e}")
+                raise
+        
+        self.logger.info(f"Total Order nodes created: {total_created}")
+    
+    def _create_transaction_nodes_new(self, orders: List[OrderData]):
+        """
+        Create Transaction nodes (line items) from split orders.
+        
+        Args:
+            orders: List of OrderData objects
+        """
+        if not orders:
+            return
+        
+        # Collect all line items
+        all_transactions = []
+        for order in orders:
+            for item in order.line_items:
+                transaction_data = {
+                    'order_id': order.order_id,
+                    'original_order_id': order.original_order_id,
+                    'line_no': item.line_no,
+                    'gin': item.gin,
+                    'description': item.description,
+                    'customer': order.customer,
+                    'facility': order.facility,
+                    'warehouse': order.warehouse,
+                    'category': getattr(item, 'category', '')
+                }
+                all_transactions.append(transaction_data)
+        
+        # Create Transaction nodes in batches
+        batch_size = 500
+        total_created = 0
+        
+        for i in range(0, len(all_transactions), batch_size):
+            batch = all_transactions[i:i+batch_size]
+            
+            # Prepare batch data
+            transactions_batch = []
+            for txn in batch:
+                transaction_node = {
+                    'order_id': txn['order_id'],
+                    'original_order_id': txn['original_order_id'],
+                    'line_no': txn['line_no'],
+                    'gin': txn['gin'],
+                    'description': txn['description'],
+                    'customer': txn['customer'],
+                    'facility': txn['facility'],
+                    'warehouse': txn['warehouse'],
+                    'category': txn['category'],
+                    'created_at': datetime.utcnow().isoformat()
+                }
+                transactions_batch.append(transaction_node)
+            
+            # Create Transaction nodes
+            cypher_query = """
+            UNWIND $transactions AS txn
+            CREATE (t:Transaction {
+                order_id: txn.order_id,
+                original_order_id: txn.original_order_id,
+                line_no: txn.line_no,
+                gin: txn.gin,
+                description: txn.description,
+                customer: txn.customer,
+                facility: txn.facility,
+                warehouse: txn.warehouse,
+                category: txn.category,
+                created_at: txn.created_at
+            })
+            """
+            
+            try:
+                with self.neo4j_driver.session(database=self.neo4j_database) as session:
+                    session.run(cypher_query, transactions=transactions_batch)
+                
+                batch_created = len(batch)
+                total_created += batch_created
+                self.logger.info(f"Created {batch_created} Transaction nodes (batch {i//batch_size + 1})")
+                
+            except Exception as e:
+                self.logger.error(f"Failed to create Transaction batch: {e}")
+                raise
+        
+        self.logger.info(f"Total Transaction nodes created: {total_created}")
+    
+    def _create_trinity_nodes(self, trinity_combinations: List[TrinityData]):
+        """
+        Create Trinity nodes with semantic descriptions for search.
+        
+        Args:
+            trinity_combinations: List of TrinityData objects
+        """
+        if not trinity_combinations:
+            return
+        
+        batch_size = 100
+        total_created = 0
+        
+        for i in range(0, len(trinity_combinations), batch_size):
+            batch = trinity_combinations[i:i+batch_size]
+            
+            # Prepare batch data
+            trinity_batch = []
+            for trinity in batch:
+                trinity_node = {
+                    'trinity_id': trinity.trinity_id,
+                    'powersource_gin': trinity.powersource_gin,
+                    'feeder_gin': trinity.feeder_gin,
+                    'cooler_gin': trinity.cooler_gin,
+                    'powersource_name': trinity.powersource_name,
+                    'feeder_name': trinity.feeder_name,
+                    'cooler_name': trinity.cooler_name,
+                    'combined_description': trinity.combined_description,
+                    'order_count': len(trinity.orders),
+                    'sample_orders': trinity.orders[:5],  # First 5 orders as sample
+                    'created_at': datetime.utcnow().isoformat()
+                }
+                trinity_batch.append(trinity_node)
+            
+            # Create Trinity nodes
+            cypher_query = """
+            UNWIND $trinity_batch AS trinity
+            CREATE (tr:Trinity {
+                trinity_id: trinity.trinity_id,
+                powersource_gin: trinity.powersource_gin,
+                feeder_gin: trinity.feeder_gin,
+                cooler_gin: trinity.cooler_gin,
+                powersource_name: trinity.powersource_name,
+                feeder_name: trinity.feeder_name,
+                cooler_name: trinity.cooler_name,
+                combined_description: trinity.combined_description,
+                order_count: trinity.order_count,
+                sample_orders: trinity.sample_orders,
+                created_at: trinity.created_at
+            })
+            """
+            
+            try:
+                with self.neo4j_driver.session(database=self.neo4j_database) as session:
+                    session.run(cypher_query, trinity_batch=trinity_batch)
+                
+                batch_created = len(batch)
+                total_created += batch_created
+                self.logger.info(f"Created {batch_created} Trinity nodes (batch {i//batch_size + 1})")
+                
+            except Exception as e:
+                self.logger.error(f"Failed to create Trinity batch: {e}")
+                raise
+        
+        self.logger.info(f"Total Trinity nodes created: {total_created}")
+    
+    def _create_order_relationships(self, orders: List[OrderData], trinity_combinations: List[TrinityData]):
+        """
+        Create all relationships in the new architecture:
+        - (Customer)-[:PLACED]->(Order)
+        - (Order)-[:PART_OF]->(Transaction)  
+        - (Transaction)-[:LINE_ITEM]->(Product)
+        - (Order)-[:CONTAINS]->(Product)
+        - (Order)-[:FORMS_TRINITY]->(Trinity)
+        - (Trinity)-[:COMPRISES {component_type}]->(Product)
+        
+        Args:
+            orders: List of OrderData objects
+            trinity_combinations: List of TrinityData objects
+        """
+        self.logger.info("Creating relationships for new architecture...")
+        
+        # Step 1: Create Customer-Order relationships
+        self._create_customer_order_relationships(orders)
+        
+        # Step 2: Create Order-Transaction relationships  
+        self._create_order_transaction_relationships(orders)
+        
+        # Step 3: Create Transaction-Product relationships
+        self._create_transaction_product_relationships(orders)
+        
+        # Step 4: Create Order-Product relationships (summary level)
+        self._create_order_product_relationships(orders)
+        
+        # Step 5: Create Order-Trinity relationships
+        self._create_order_trinity_relationships(orders, trinity_combinations)
+        
+        # Step 6: Create Trinity-Product relationships
+        self._create_trinity_product_relationships(trinity_combinations)
+        
+        self.logger.info("All relationships created successfully")
+    
+    def _create_customer_order_relationships(self, orders: List[OrderData]):
+        """
+        Create (Customer)-[:PLACED]->(Order) relationships.
+        
+        Args:
+            orders: List of OrderData objects
+        """
+        if not orders:
+            return
+        
+        # Collect Customer-Order pairs
+        customer_order_pairs = []
+        for order in orders:
+            if order.customer:
+                customer_order_pairs.append({
+                    'customer_name': order.customer,
+                    'order_id': order.order_id
+                })
+        
+        if not customer_order_pairs:
+            return
+        
+        # Create relationships in batches
+        batch_size = 500
+        total_created = 0
+        
+        for i in range(0, len(customer_order_pairs), batch_size):
+            batch = customer_order_pairs[i:i+batch_size]
+            
+            cypher_query = """
+            UNWIND $pairs AS pair
+            MATCH (c:Customer {name: pair.customer_name})
+            MATCH (o:Order {order_id: pair.order_id})
+            CREATE (c)-[:PLACED]->(o)
+            """
+            
+            try:
+                with self.neo4j_driver.session(database=self.neo4j_database) as session:
+                    session.run(cypher_query, pairs=batch)
+                
+                batch_created = len(batch)
+                total_created += batch_created
+                self.logger.info(f"Created {batch_created} Customer-Order relationships (batch {i//batch_size + 1})")
+                
+            except Exception as e:
+                self.logger.error(f"Failed to create Customer-Order relationships: {e}")
+                raise
+        
+        self.logger.info(f"Total Customer-Order relationships created: {total_created}")
+    
+    def _create_order_transaction_relationships(self, orders: List[OrderData]):
+        """
+        Create (Order)-[:PART_OF]->(Transaction) relationships.
+        
+        Args:
+            orders: List of OrderData objects
+        """
+        if not orders:
+            return
+        
+        # Collect Order-Transaction pairs
+        order_transaction_pairs = []
+        for order in orders:
+            for item in order.line_items:
+                order_transaction_pairs.append({
+                    'order_id': order.order_id,
+                    'line_no': item.line_no
+                })
+        
+        # Create relationships in batches
+        batch_size = 1000
+        total_created = 0
+        
+        for i in range(0, len(order_transaction_pairs), batch_size):
+            batch = order_transaction_pairs[i:i+batch_size]
+            
+            cypher_query = """
+            UNWIND $pairs AS pair
+            MATCH (o:Order {order_id: pair.order_id})
+            MATCH (t:Transaction {order_id: pair.order_id, line_no: pair.line_no})
+            CREATE (o)-[:PART_OF]->(t)
+            """
+            
+            try:
+                with self.neo4j_driver.session(database=self.neo4j_database) as session:
+                    session.run(cypher_query, pairs=batch)
+                
+                batch_created = len(batch)
+                total_created += batch_created
+                self.logger.info(f"Created {batch_created} Order-Transaction relationships (batch {i//batch_size + 1})")
+                
+            except Exception as e:
+                self.logger.error(f"Failed to create Order-Transaction relationships: {e}")
+                raise
+        
+        self.logger.info(f"Total Order-Transaction relationships created: {total_created}")
+    
+    def _create_transaction_product_relationships(self, orders: List[OrderData]):
+        """
+        Create (Transaction)-[:LINE_ITEM]->(Product) relationships.
+        
+        Args:
+            orders: List of OrderData objects
+        """
+        if not orders:
+            return
+        
+        # Collect Transaction-Product pairs
+        transaction_product_pairs = []
+        for order in orders:
+            for item in order.line_items:
+                transaction_product_pairs.append({
+                    'order_id': order.order_id,
+                    'line_no': item.line_no,
+                    'gin': item.gin
+                })
+        
+        # Create relationships in batches
+        batch_size = 1000
+        total_created = 0
+        
+        for i in range(0, len(transaction_product_pairs), batch_size):
+            batch = transaction_product_pairs[i:i+batch_size]
+            
+            cypher_query = """
+            UNWIND $pairs AS pair
+            MATCH (t:Transaction {order_id: pair.order_id, line_no: pair.line_no})
+            MATCH (p:Product {gin: pair.gin})
+            CREATE (t)-[:LINE_ITEM]->(p)
+            """
+            
+            try:
+                with self.neo4j_driver.session(database=self.neo4j_database) as session:
+                    session.run(cypher_query, pairs=batch)
+                
+                batch_created = len(batch)
+                total_created += batch_created
+                self.logger.info(f"Created {batch_created} Transaction-Product relationships (batch {i//batch_size + 1})")
+                
+            except Exception as e:
+                self.logger.error(f"Failed to create Transaction-Product relationships: {e}")
+                raise
+        
+        self.logger.info(f"Total Transaction-Product relationships created: {total_created}")
+    
+    def _create_order_product_relationships(self, orders: List[OrderData]):
+        """
+        Create (Order)-[:CONTAINS]->(Product) relationships for summary level access.
+        
+        Args:
+            orders: List of OrderData objects
+        """
+        if not orders:
+            return
+        
+        # Collect unique Order-Product pairs
+        order_product_pairs = []
+        for order in orders:
+            unique_products = set()
+            for item in order.line_items:
+                if item.gin not in unique_products:
+                    unique_products.add(item.gin)
+                    order_product_pairs.append({
+                        'order_id': order.order_id,
+                        'gin': item.gin
+                    })
+        
+        # Create relationships in batches
+        batch_size = 1000
+        total_created = 0
+        
+        for i in range(0, len(order_product_pairs), batch_size):
+            batch = order_product_pairs[i:i+batch_size]
+            
+            cypher_query = """
+            UNWIND $pairs AS pair
+            MATCH (o:Order {order_id: pair.order_id})
+            MATCH (p:Product {gin: pair.gin})
+            CREATE (o)-[:CONTAINS]->(p)
+            """
+            
+            try:
+                with self.neo4j_driver.session(database=self.neo4j_database) as session:
+                    session.run(cypher_query, pairs=batch)
+                
+                batch_created = len(batch)
+                total_created += batch_created
+                self.logger.info(f"Created {batch_created} Order-Product relationships (batch {i//batch_size + 1})")
+                
+            except Exception as e:
+                self.logger.error(f"Failed to create Order-Product relationships: {e}")
+                raise
+        
+        self.logger.info(f"Total Order-Product relationships created: {total_created}")
+    
+    def _create_order_trinity_relationships(self, orders: List[OrderData], trinity_combinations: List[TrinityData]):
+        """
+        Create (Order)-[:FORMS_TRINITY]->(Trinity) relationships.
+        
+        Args:
+            orders: List of OrderData objects
+            trinity_combinations: List of TrinityData objects
+        """
+        if not trinity_combinations:
+            return
+        
+        # Create Trinity ID to Order mapping
+        trinity_to_orders = {}
+        for trinity in trinity_combinations:
+            trinity_to_orders[trinity.trinity_id] = trinity.orders
+        
+        # Collect Order-Trinity pairs
+        order_trinity_pairs = []
+        for trinity_id, order_ids in trinity_to_orders.items():
+            for order_id in order_ids:
+                order_trinity_pairs.append({
+                    'order_id': order_id,
+                    'trinity_id': trinity_id
+                })
+        
+        # Create relationships in batches
+        batch_size = 500
+        total_created = 0
+        
+        for i in range(0, len(order_trinity_pairs), batch_size):
+            batch = order_trinity_pairs[i:i+batch_size]
+            
+            cypher_query = """
+            UNWIND $pairs AS pair
+            MATCH (o:Order {order_id: pair.order_id})
+            MATCH (tr:Trinity {trinity_id: pair.trinity_id})
+            CREATE (o)-[:FORMS_TRINITY]->(tr)
+            """
+            
+            try:
+                with self.neo4j_driver.session(database=self.neo4j_database) as session:
+                    session.run(cypher_query, pairs=batch)
+                
+                batch_created = len(batch)
+                total_created += batch_created
+                self.logger.info(f"Created {batch_created} Order-Trinity relationships (batch {i//batch_size + 1})")
+                
+            except Exception as e:
+                self.logger.error(f"Failed to create Order-Trinity relationships: {e}")
+                raise
+        
+        self.logger.info(f"Total Order-Trinity relationships created: {total_created}")
+    
+    def _create_trinity_product_relationships(self, trinity_combinations: List[TrinityData]):
+        """
+        Create (Trinity)-[:COMPRISES {component_type}]->(Product) relationships.
+        
+        Args:
+            trinity_combinations: List of TrinityData objects
+        """
+        if not trinity_combinations:
+            return
+        
+        # Collect Trinity-Product relationships with component types
+        trinity_product_pairs = []
+        for trinity in trinity_combinations:
+            # PowerSource relationship
+            trinity_product_pairs.append({
+                'trinity_id': trinity.trinity_id,
+                'gin': trinity.powersource_gin,
+                'component_type': 'PowerSource'
+            })
+            
+            # Feeder relationship
+            trinity_product_pairs.append({
+                'trinity_id': trinity.trinity_id,
+                'gin': trinity.feeder_gin,
+                'component_type': 'Feeder'
+            })
+            
+            # Cooler relationship
+            trinity_product_pairs.append({
+                'trinity_id': trinity.trinity_id,
+                'gin': trinity.cooler_gin,
+                'component_type': 'Cooler'
+            })
+        
+        # Create relationships in batches
+        batch_size = 1000
+        total_created = 0
+        
+        for i in range(0, len(trinity_product_pairs), batch_size):
+            batch = trinity_product_pairs[i:i+batch_size]
+            
+            cypher_query = """
+            UNWIND $pairs AS pair
+            MATCH (tr:Trinity {trinity_id: pair.trinity_id})
+            MATCH (p:Product {gin: pair.gin})
+            CREATE (tr)-[:COMPRISES {
+                component_type: pair.component_type
+            }]->(p)
+            """
+            
+            try:
+                with self.neo4j_driver.session(database=self.neo4j_database) as session:
+                    session.run(cypher_query, pairs=batch)
+                
+                batch_created = len(batch)
+                total_created += batch_created
+                self.logger.info(f"Created {batch_created} Trinity-Product relationships (batch {i//batch_size + 1})")
+                
+            except Exception as e:
+                self.logger.error(f"Failed to create Trinity-Product relationships: {e}")
+                raise
+        
+        self.logger.info(f"Total Trinity-Product relationships created: {total_created}")
     
     def _create_co_occurrence_relationships(self, co_occurrences: List[CoOccurrence]):
         """Create CO_OCCURS relationships in Neo4j"""
@@ -568,11 +1568,11 @@ class SalesLoader(BaseLoader):
             for customer_name, data in batch:
                 customer_node = {
                     'name': customer_name,
-                    'primary_facility': list(data['facilities'])[0] if data['facilities'] else '',
-                    'all_facilities': list(data['facilities']),
-                    'all_warehouses': list(data['warehouses']),
-                    'transaction_count': data['transaction_count'],
-                    'product_categories': list(data['categories']),
+                    'primary_facility': data['facilities'][0] if data['facilities'] else '',
+                    'all_facilities': data['facilities'],
+                    'all_warehouses': data['warehouses'],
+                    'order_count': data['order_count'],
+                    'product_categories': data['categories'],
                     'created_at': datetime.utcnow().isoformat()
                 }
                 customers_batch.append(customer_node)
@@ -584,7 +1584,7 @@ class SalesLoader(BaseLoader):
             SET c.primary_facility = customer.primary_facility,
                 c.all_facilities = customer.all_facilities,
                 c.all_warehouses = customer.all_warehouses,
-                c.transaction_count = customer.transaction_count,
+                c.order_count = customer.order_count,
                 c.product_categories = customer.product_categories,
                 c.created_at = customer.created_at,
                 c.updated_at = datetime()
@@ -670,6 +1670,67 @@ class SalesLoader(BaseLoader):
         
         return enhanced_transactions
     
+    def _load_determines_relationships(self):
+        """Load DETERMINES relationships from database for compatibility checking"""
+        try:
+            with self.neo4j_driver.session(database=self.neo4j_database) as session:
+                query = """
+                MATCH (ps:Product)-[d:DETERMINES]->(comp:Product)
+                WHERE ps.category = 'PowerSource'
+                RETURN ps.gin as powersource_gin, 
+                       comp.gin as component_gin,
+                       comp.category as component_category
+                """
+                results = session.run(query).data()
+                
+                # Group by powersource -> category -> [components]
+                determines_map = {}
+                for record in results:
+                    ps_gin = record['powersource_gin'] 
+                    comp_gin = record['component_gin']
+                    comp_category = record['component_category']
+                    
+                    if ps_gin not in determines_map:
+                        determines_map[ps_gin] = {}
+                    if comp_category not in determines_map[ps_gin]:
+                        determines_map[ps_gin][comp_category] = []
+                        
+                    determines_map[ps_gin][comp_category].append(comp_gin)
+                
+                self.logger.info(f"Loaded DETERMINES relationships for {len(determines_map)} PowerSources")
+                return determines_map
+                
+        except Exception as e:
+            self.logger.error(f"Failed to load DETERMINES relationships: {e}")
+            return {}
+
+    def _find_compatible_component(self, powersource_gin, available_components, component_category, determines_relationships):
+        """
+        Find compatible component for PowerSource from available components in the order.
+        
+        Args:
+            powersource_gin: PowerSource GIN to find compatible component for
+            available_components: List of component GINs available in the order
+            component_category: 'Feeder' or 'Cooler' 
+            determines_relationships: Loaded DETERMINES relationships
+            
+        Returns:
+            Compatible component GIN or None if no compatible component found
+        """
+        # Get components that this PowerSource DETERMINES
+        ps_determines = determines_relationships.get(powersource_gin, {})
+        required_components = ps_determines.get(component_category, [])
+        
+        # Find intersection between required and available
+        compatible_components = [comp for comp in available_components if comp in required_components]
+        
+        if compatible_components:
+            # Return first compatible component (could be enhanced with priority logic)
+            return compatible_components[0]
+        
+        # No compatible component found
+        return None
+    
     def _create_transaction_records(self, transactions: List[Dict]):
         """Create Transaction nodes and connect to Customer and Product nodes"""
         if not transactions:
@@ -743,7 +1804,7 @@ class SalesLoader(BaseLoader):
         self.logger.info(f"Total Transaction nodes created: {total_created}")
     
     def create_indexes(self):
-        """Create performance indexes for sales queries"""
+        """Create performance indexes for the new architecture"""
         indexes = [
             # CO_OCCURS relationship indexes
             "CREATE INDEX co_occurs_frequency_index IF NOT EXISTS FOR ()-[r:CO_OCCURS]-() ON (r.frequency)",
@@ -753,13 +1814,26 @@ class SalesLoader(BaseLoader):
             # Customer node indexes
             "CREATE INDEX customer_name_index IF NOT EXISTS FOR (c:Customer) ON (c.name)",
             "CREATE INDEX customer_facility_index IF NOT EXISTS FOR (c:Customer) ON (c.primary_facility)",
-            "CREATE INDEX customer_transaction_count_index IF NOT EXISTS FOR (c:Customer) ON (c.transaction_count)",
+            "CREATE INDEX customer_order_count_index IF NOT EXISTS FOR (c:Customer) ON (c.order_count)",
+            
+            # Order node indexes
+            "CREATE INDEX order_id_index IF NOT EXISTS FOR (o:Order) ON (o.order_id)",
+            "CREATE INDEX order_original_id_index IF NOT EXISTS FOR (o:Order) ON (o.original_order_id)",
+            "CREATE INDEX order_customer_index IF NOT EXISTS FOR (o:Order) ON (o.customer)",
+            "CREATE INDEX order_facility_index IF NOT EXISTS FOR (o:Order) ON (o.facility)",
             
             # Transaction node indexes
             "CREATE INDEX transaction_order_index IF NOT EXISTS FOR (t:Transaction) ON (t.order_id)",
-            "CREATE INDEX transaction_facility_index IF NOT EXISTS FOR (t:Transaction) ON (t.facility)",
-            "CREATE INDEX transaction_warehouse_index IF NOT EXISTS FOR (t:Transaction) ON (t.warehouse)",
-            "CREATE INDEX transaction_category_index IF NOT EXISTS FOR (t:Transaction) ON (t.category)"
+            "CREATE INDEX transaction_original_order_index IF NOT EXISTS FOR (t:Transaction) ON (t.original_order_id)",
+            "CREATE INDEX transaction_gin_index IF NOT EXISTS FOR (t:Transaction) ON (t.gin)",
+            "CREATE INDEX transaction_category_index IF NOT EXISTS FOR (t:Transaction) ON (t.category)",
+            
+            # Trinity node indexes
+            "CREATE INDEX trinity_id_index IF NOT EXISTS FOR (tr:Trinity) ON (tr.trinity_id)",
+            "CREATE INDEX trinity_powersource_index IF NOT EXISTS FOR (tr:Trinity) ON (tr.powersource_gin)",
+            "CREATE INDEX trinity_feeder_index IF NOT EXISTS FOR (tr:Trinity) ON (tr.feeder_gin)",
+            "CREATE INDEX trinity_cooler_index IF NOT EXISTS FOR (tr:Trinity) ON (tr.cooler_gin)",
+            "CREATE FULLTEXT INDEX trinity_description_index IF NOT EXISTS FOR (tr:Trinity) ON (tr.combined_description)"
         ]
         
         with self.neo4j_driver.session(database=self.neo4j_database) as session:
@@ -771,154 +1845,77 @@ class SalesLoader(BaseLoader):
                     self.logger.warning(f"Index creation failed: {e}")
     
     def get_sales_statistics(self) -> Dict:
-        """Get comprehensive sales statistics"""
+        """Get comprehensive sales statistics for new architecture"""
         with self.neo4j_driver.session(database=self.neo4j_database) as session:
-            stats_query = """
-            MATCH (p:Product)
-            OPTIONAL MATCH (p)-[c:CO_OCCURS]->()
+            # Node count statistics
+            node_stats_query = """
             RETURN 
-                count(DISTINCT p) as products_with_sales_data,
-                count(c) as total_co_occurrences,
-                avg(c.frequency) as avg_co_occurrence_frequency,
-                max(c.frequency) as max_co_occurrence_frequency,
-                avg(c.confidence_score) as avg_confidence_score
+                apoc.meta.stats() AS meta_stats
             """
             
-            result = session.run(stats_query)
+            # Basic statistics without APOC
+            basic_stats_query = """
+            MATCH (c:Customer) WITH count(c) as customers
+            MATCH (o:Order) WITH customers, count(o) as orders
+            MATCH (t:Transaction) WITH customers, orders, count(t) as transactions
+            MATCH (tr:Trinity) WITH customers, orders, transactions, count(tr) as trinity_nodes
+            MATCH (p:Product) WITH customers, orders, transactions, trinity_nodes, count(p) as products
+            OPTIONAL MATCH ()-[co:CO_OCCURS]-() WITH customers, orders, transactions, trinity_nodes, products, count(co) as co_occurrences
+            RETURN customers, orders, transactions, trinity_nodes, products, co_occurrences
+            """
+            
+            result = session.run(basic_stats_query)
             stats = result.single()
             
-            # Get top co-occurring products
-            top_pairs_query = """
-            MATCH (p1:Product)-[c:CO_OCCURS]->(p2:Product)
-            WHERE p1.gin < p2.gin  // Avoid duplicates
-            RETURN p1.gin as product1, p2.gin as product2, c.frequency as frequency
-            ORDER BY c.frequency DESC
-            LIMIT 10
+            # Get Trinity statistics
+            trinity_stats_query = """
+            MATCH (tr:Trinity)
+            RETURN 
+                count(tr) as total_trinity_combinations,
+                avg(tr.order_count) as avg_orders_per_trinity,
+                max(tr.order_count) as max_orders_per_trinity
             """
             
-            top_pairs_result = session.run(top_pairs_query)
-            top_pairs = [
+            trinity_result = session.run(trinity_stats_query)
+            trinity_stats = trinity_result.single()
+            
+            # Get top Trinity combinations
+            top_trinity_query = """
+            MATCH (tr:Trinity)
+            RETURN tr.trinity_id as trinity_id, 
+                   tr.powersource_name as powersource_name,
+                   tr.feeder_name as feeder_name,
+                   tr.cooler_name as cooler_name,
+                   tr.order_count as order_count
+            ORDER BY tr.order_count DESC
+            LIMIT 5
+            """
+            
+            top_trinity_result = session.run(top_trinity_query)
+            top_trinity = [
                 {
-                    'product1': record['product1'],
-                    'product2': record['product2'], 
-                    'frequency': record['frequency']
+                    'trinity_id': record['trinity_id'],
+                    'powersource_name': record['powersource_name'],
+                    'feeder_name': record['feeder_name'],
+                    'cooler_name': record['cooler_name'],
+                    'order_count': record['order_count']
                 }
-                for record in top_pairs_result
+                for record in top_trinity_result
             ]
             
             return {
-                'products_with_sales_data': stats['products_with_sales_data'],
-                'total_co_occurrences': stats['total_co_occurrences'],
-                'avg_co_occurrence_frequency': stats['avg_co_occurrence_frequency'],
-                'max_co_occurrence_frequency': stats['max_co_occurrence_frequency'],
-                'avg_confidence_score': stats['avg_confidence_score'],
-                'top_co_occurring_pairs': top_pairs,
+                'architecture': 'Clean Order-based with Trinity nodes',
+                'customers': stats['customers'] or 0,
+                'orders': stats['orders'] or 0,
+                'transactions': stats['transactions'] or 0,
+                'products': stats['products'] or 0,
+                'trinity_combinations': trinity_stats['total_trinity_combinations'] or 0,
+                'avg_orders_per_trinity': trinity_stats['avg_orders_per_trinity'] or 0,
+                'max_orders_per_trinity': trinity_stats['max_orders_per_trinity'] or 0,
+                'co_occurrences': stats['co_occurrences'] or 0,
+                'top_trinity_combinations': top_trinity,
                 'skipped_records': self._skipped_records,
                 'missing_product_references': len(getattr(self, '_missing_references', set()))
             }
     
-    def _create_trinity_relationships(self, orders: Dict[str, List[SalesRecord]]):
-        """
-        Create FORMS_TRINITY relationships for fast Trinity queries.
-        
-        Creates direct relationships from Transaction to PowerSource with Trinity metadata:
-        (Transaction)-[:FORMS_TRINITY {powersource_gin, feeder_gin, cooler_gin, trinity_id}]->(Product)
-        
-        This enables instant Trinity-First architecture queries without complex COLLECT operations.
-        """
-        if not orders:
-            return
-        
-        self.logger.info("Creating Trinity relationships for fast querying...")
-        
-        # Extract Trinity combinations from orders (one per order_id)
-        trinity_combinations = []
-        trinity_orders_count = 0
-        
-        for order_id, records in orders.items():
-            # Group products by category for this order
-            products_by_category = {}
-            for record in records:
-                category = getattr(record, 'category', '')
-                if category in ['PowerSource', 'Feeder', 'Cooler']:
-                    if category not in products_by_category:
-                        products_by_category[category] = []
-                    products_by_category[category].append(record.gin)
-            
-            # Check if this order has all three Trinity categories
-            if ('PowerSource' in products_by_category and 
-                'Feeder' in products_by_category and 
-                'Cooler' in products_by_category):
-                
-                # Use first product of each category (primary choice)
-                ps_gin = products_by_category['PowerSource'][0]
-                f_gin = products_by_category['Feeder'][0]
-                c_gin = products_by_category['Cooler'][0]
-                trinity_id = f"{ps_gin}_{f_gin}_{c_gin}"
-                
-                trinity_combinations.append({
-                    'order_id': order_id,
-                    'powersource_gin': ps_gin,
-                    'feeder_gin': f_gin,
-                    'cooler_gin': c_gin,
-                    'trinity_id': trinity_id
-                })
-                trinity_orders_count += 1
-        
-        self.logger.info(f"Found {trinity_orders_count} Trinity-containing orders from {len(orders)} total orders")
-        
-        if not trinity_combinations:
-            self.logger.warning("No Trinity combinations found - skipping Trinity relationship creation")
-            return
-        
-        # Create Trinity relationships in batches
-        batch_size = 500
-        total_created = 0
-        
-        for i in range(0, len(trinity_combinations), batch_size):
-            batch = trinity_combinations[i:i+batch_size]
-            
-            cypher_query = """
-            UNWIND $trinity_batch AS trinity
-            
-            // Find the PowerSource Transaction and Product for this order
-            MATCH (ps_t:Transaction {order_id: trinity.order_id})-[:CONTAINS]->(ps:Product {gin: trinity.powersource_gin})
-            
-            // Create Trinity relationship (one per order_id, from PowerSource Transaction to PowerSource Product)
-            CREATE (ps_t)-[:FORMS_TRINITY {
-                powersource_gin: trinity.powersource_gin,
-                feeder_gin: trinity.feeder_gin,
-                cooler_gin: trinity.cooler_gin,
-                trinity_id: trinity.trinity_id
-            }]->(ps)
-            
-            RETURN count(*) as created_count
-            """
-            
-            try:
-                with self.neo4j_driver.session(database=self.neo4j_database) as session:
-                    result = session.run(cypher_query, trinity_batch=batch)
-                    batch_created = result.single()['created_count']
-                    total_created += batch_created
-                    self.logger.info(f"Created {batch_created} Trinity relationships in batch {i//batch_size + 1}")
-            except Exception as e:
-                self.logger.error(f"Error creating Trinity relationships batch {i//batch_size + 1}: {e}")
-                raise
-        
-        self.logger.info(f"Total Trinity relationships created: {total_created}")
-        
-        # Create Trinity-specific indexes
-        trinity_indexes = [
-            "CREATE INDEX trinity_powersource_index IF NOT EXISTS FOR ()-[r:FORMS_TRINITY]-() ON (r.powersource_gin)",
-            "CREATE INDEX trinity_id_index IF NOT EXISTS FOR ()-[r:FORMS_TRINITY]-() ON (r.trinity_id)",
-            "CREATE INDEX trinity_feeder_index IF NOT EXISTS FOR ()-[r:FORMS_TRINITY]-() ON (r.feeder_gin)",
-            "CREATE INDEX trinity_cooler_index IF NOT EXISTS FOR ()-[r:FORMS_TRINITY]-() ON (r.cooler_gin)"
-        ]
-        
-        with self.neo4j_driver.session(database=self.neo4j_database) as session:
-            for index_query in trinity_indexes:
-                try:
-                    session.run(index_query)
-                    self.logger.info(f"Created Trinity index: {index_query}")
-                except Exception as e:
-                    self.logger.warning(f"Trinity index creation failed: {e}")
+    # Old Trinity relationship method removed - replaced with new architecture

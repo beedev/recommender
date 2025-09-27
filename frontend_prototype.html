@@ -138,6 +138,10 @@
                     <i data-lucide="message-square" class="w-4 h-4 inline mr-2"></i>
                     <span data-i18n="chat">Chat</span>
                 </button>
+                <a href="guided_flow.html" class="nav-tab px-4 py-2 rounded-lg font-medium transition-colors text-decoration-none esab-button">
+                    <i data-lucide="zap" class="w-4 h-4 inline mr-2"></i>
+                    <span data-i18n="guided_flow">Guided Builder</span>
+                </a>
                 <a href="health_dashboard.html" class="nav-tab px-4 py-2 rounded-lg font-medium transition-colors text-decoration-none">
                     <i data-lucide="activity" class="w-4 h-4 inline mr-2"></i>
                     <span data-i18n="health_dashboard">Health Dashboard</span>
@@ -622,6 +626,7 @@
                 this.setupEventListeners();
                 this.checkSystemHealth();
                 this.initializeLucide();
+                this.checkForGuidedFlowPackage();
                 
                 // Auto-check health every 30 seconds
                 setInterval(() => this.checkSystemHealth(), 30000);
@@ -654,6 +659,76 @@
             
             initializeLucide() {
                 lucide.createIcons();
+            }
+            
+            checkForGuidedFlowPackage() {
+                // Check if there's a completed package from guided flow
+                const packageDataStr = sessionStorage.getItem('guidedFlowCompletedPackage');
+                console.log('✅ Checking for guided flow package...', packageDataStr ? 'Found data' : 'No data');
+                
+                if (packageDataStr) {
+                    try {
+                        const packageData = JSON.parse(packageDataStr);
+                        console.log('✅ Found guided flow completed package');
+                        
+                        // Clear the stored data so it doesn't auto-load again
+                        sessionStorage.removeItem('guidedFlowCompletedPackage');
+                        
+                        // Display the package in the results area
+                        this.displayGuidedFlowPackage(packageData);
+                        
+                    } catch (error) {
+                        console.error('❌ Error parsing guided flow package data:', error);
+                        sessionStorage.removeItem('guidedFlowCompletedPackage');
+                    }
+                }
+            }
+            
+            displayGuidedFlowPackage(packageData) {
+                console.log('🎯 Displaying guided flow package...');
+                console.log('📋 Selected accessories from guided flow:', packageData.selections.accessories);
+                
+                // Filter the package data to include only the accessories selected during guided flow
+                const filteredPackageData = { ...packageData.packageData };
+                
+                // Replace the accessories array with only the selected ones
+                if (packageData.selections.accessories && packageData.selections.accessories.length > 0) {
+                    filteredPackageData.accessories = packageData.selections.accessories;
+                    console.log('✅ Filtered accessories to show only selected:', filteredPackageData.accessories);
+                } else {
+                    // If no accessories were selected, show empty array
+                    filteredPackageData.accessories = [];
+                    console.log('📝 No accessories were selected in guided flow');
+                }
+                
+                // Simulate a query result to display the package
+                const simulatedResponse = {
+                    query: `Guided Flow Package: ${packageData.selections.powersource?.product_name || 'Custom Package'}`,
+                    packages: [filteredPackageData],
+                    explanations: packageData.fullResponse.explanations || {},
+                    success: true,
+                    total_found: 1
+                };
+                
+                // Show the chat page and display results
+                this.showPage('chat');
+                
+                // Add a message indicating this came from guided flow
+                const messageId = this.addMessage('assistant', 
+                    `✅ **Package completed via Guided Flow**\n\nHere's your custom Trinity package built step-by-step:`, 
+                    'success');
+                
+                // Display the package results
+                console.log('📦 Displaying package in right panel...');
+                this.displayPackage(simulatedResponse.packages[0], simulatedResponse.explanations);
+                
+                // Scroll to the results
+                setTimeout(() => {
+                    const resultsSection = document.querySelector('#chatMessages .message:last-child');
+                    if (resultsSection) {
+                        resultsSection.scrollIntoView({ behavior: 'smooth' });
+                    }
+                }, 100);
             }
             
             showPage(page) {
@@ -782,7 +857,7 @@
                 
                 // Display the first package in the pricing panel
                 if (packages.length > 0) {
-                    this.displayPackage(packages[0]);
+                    this.displayPackage(packages[0], data.generation_explanation);
                 }
                 
                 this.addMessage(responseText, 'sparky');
@@ -818,7 +893,7 @@
                 this.displayPackage(demoPackage);
             }
 
-            displayPackage(packageData) {
+            displayPackage(packageData, generationExplanation = null) {
                 console.log('🔍 DEBUG: Full package data structure:', packageData);
                 console.log('🔍 DEBUG: Package data keys:', Object.keys(packageData));
                 console.log('🔍 DEBUG: Package data types:', Object.keys(packageData).map(k => `${k}: ${typeof packageData[k]}`));
@@ -968,18 +1043,122 @@
                     }
                 });
                 
-                html += `
-                    </div>
-                    <div class="mt-4 pt-4 border-t border-gray-200">
-                        <div class="flex justify-between items-center text-sm text-gray-600">
-                            <span>Package includes installation guide and warranty</span>
-                            <span class="font-medium">Ready to ship</span>
+                // Add generation explanation if available
+                if (generationExplanation) {
+                    html += `
                         </div>
-                    </div>
-                `;
+                        <div class="mt-6 pt-4 border-t border-gray-200">
+                            <div class="mb-4">
+                                <button id="toggleExplanation" class="flex items-center justify-between w-full text-left p-3 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors">
+                                    <div class="flex items-center gap-2">
+                                        <i data-lucide="info" class="w-5 h-5 text-blue-600"></i>
+                                        <span class="font-semibold text-blue-800">How was this package generated?</span>
+                                    </div>
+                                    <i data-lucide="chevron-down" class="w-4 h-4 text-blue-600 transform transition-transform" id="explanationChevron"></i>
+                                </button>
+                                <div id="explanationContent" class="hidden mt-3 p-4 bg-gray-50 rounded-lg border">
+                                    <div class="space-y-4">
+                                        
+                                        <!-- Query Understanding -->
+                                        <div class="border-b border-gray-200 pb-3">
+                                            <h4 class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                                                <i data-lucide="search" class="w-4 h-4 text-green-600"></i>
+                                                Query Understanding
+                                            </h4>
+                                            <p class="text-sm text-gray-700">${generationExplanation.user_query_analysis}</p>
+                                            ${Object.keys(generationExplanation.detected_requirements || {}).length > 0 ? `
+                                                <div class="mt-2">
+                                                    <span class="text-xs font-medium text-gray-600">Detected Requirements:</span>
+                                                    <ul class="text-xs text-gray-600 mt-1 ml-4">
+                                                        ${generationExplanation.detected_requirements.welding_processes?.length > 0 ? `<li>• Processes: ${generationExplanation.detected_requirements.welding_processes.join(', ')}</li>` : ''}
+                                                        ${generationExplanation.detected_requirements.materials?.length > 0 ? `<li>• Materials: ${generationExplanation.detected_requirements.materials.join(', ')}</li>` : ''}
+                                                        ${generationExplanation.detected_requirements.expertise_level ? `<li>• Expertise: ${generationExplanation.detected_requirements.expertise_level}</li>` : ''}
+                                                    </ul>
+                                                </div>
+                                            ` : ''}
+                                        </div>
+                                        
+                                        <!-- Search Strategy -->
+                                        <div class="border-b border-gray-200 pb-3">
+                                            <h4 class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                                                <i data-lucide="target" class="w-4 h-4 text-blue-600"></i>
+                                                Search Strategy
+                                            </h4>
+                                            <p class="text-sm text-gray-700">${generationExplanation.search_strategy_reasoning}</p>
+                                            ${generationExplanation.trinity_formation_process ? `<p class="text-sm text-gray-700 mt-1">${generationExplanation.trinity_formation_process}</p>` : ''}
+                                        </div>
+                                        
+                                        <!-- Component Selection -->
+                                        <div class="border-b border-gray-200 pb-3">
+                                            <h4 class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                                                <i data-lucide="settings" class="w-4 h-4 text-purple-600"></i>
+                                                Component Selection
+                                            </h4>
+                                            ${generationExplanation.power_source_selection_reason ? `<p class="text-sm text-gray-700 mb-1"><strong>Power Source:</strong> ${generationExplanation.power_source_selection_reason}</p>` : ''}
+                                            ${generationExplanation.feeder_selection_reason ? `<p class="text-sm text-gray-700 mb-1"><strong>Feeder:</strong> ${generationExplanation.feeder_selection_reason}</p>` : ''}
+                                            ${generationExplanation.cooler_selection_reason ? `<p class="text-sm text-gray-700 mb-1"><strong>Cooler:</strong> ${generationExplanation.cooler_selection_reason}</p>` : ''}
+                                            ${generationExplanation.accessories_selection_criteria ? `<p class="text-sm text-gray-700"><strong>Accessories:</strong> ${generationExplanation.accessories_selection_criteria}</p>` : ''}
+                                        </div>
+                                        
+                                        <!-- Business Rules -->
+                                        <div>
+                                            <h4 class="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                                                <i data-lucide="shield-check" class="w-4 h-4 text-orange-600"></i>
+                                                Business Rules Applied
+                                            </h4>
+                                            ${generationExplanation.business_rules_applied?.length > 0 ? `
+                                                <ul class="text-sm text-gray-700 space-y-1">
+                                                    ${generationExplanation.business_rules_applied.map(rule => `<li class="flex items-start gap-2"><i data-lucide="check" class="w-3 h-3 text-green-600 mt-0.5 flex-shrink-0"></i><span>${rule}</span></li>`).join('')}
+                                                </ul>
+                                            ` : '<p class="text-sm text-gray-500">No specific business rules applied</p>'}
+                                        </div>
+                                        
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-4 pt-4 border-t border-gray-200">
+                            <div class="flex justify-between items-center text-sm text-gray-600">
+                                <span>Package includes installation guide and warranty</span>
+                                <span class="font-medium">Ready to ship</span>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    html += `
+                        </div>
+                        <div class="mt-4 pt-4 border-t border-gray-200">
+                            <div class="flex justify-between items-center text-sm text-gray-600">
+                                <span>Package includes installation guide and warranty</span>
+                                <span class="font-medium">Ready to ship</span>
+                            </div>
+                        </div>
+                    `;
+                }
                 
                 packageContent.innerHTML = html;
                 packageDisplay.style.display = 'block';
+                
+                // Add event listener for the explanation toggle button
+                if (generationExplanation) {
+                    setTimeout(() => {
+                        const toggleBtn = document.getElementById('toggleExplanation');
+                        const explanationContent = document.getElementById('explanationContent');
+                        const chevron = document.getElementById('explanationChevron');
+                        
+                        if (toggleBtn && explanationContent && chevron) {
+                            toggleBtn.addEventListener('click', () => {
+                                if (explanationContent.classList.contains('hidden')) {
+                                    explanationContent.classList.remove('hidden');
+                                    chevron.style.transform = 'rotate(180deg)';
+                                } else {
+                                    explanationContent.classList.add('hidden');
+                                    chevron.style.transform = 'rotate(0deg)';
+                                }
+                            });
+                        }
+                    }, 100); // Small delay to ensure DOM is updated
+                }
             }
             
             

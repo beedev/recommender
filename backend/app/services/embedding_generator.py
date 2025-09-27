@@ -3,11 +3,14 @@ Enhanced Product Embedding Generator for Neo4j Vector Storage
 
 Generates semantic embeddings for welding products using comprehensive
 specification extraction and HTML cleaning for improved search accuracy.
+Enhanced with domain-specific vocabulary weighting for better product name matching.
 """
 
 import json
 import re
 import logging
+import yaml
+import os
 from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass
 from datetime import datetime
@@ -47,7 +50,9 @@ class ProductEmbeddingGenerator:
         """
         self.model_name = model_name
         self.model = None
+        self.domain_vocabulary = None
         self.load_model()
+        self.load_domain_vocabulary()
         
         # Comprehensive specification field mappings for readability
         self.field_mappings = {
@@ -110,6 +115,131 @@ class ProductEmbeddingGenerator:
         except Exception as e:
             logger.error(f"Failed to load model {self.model_name}: {e}")
             raise
+    
+    def load_domain_vocabulary(self) -> None:
+        """Load domain-specific vocabulary from config files with weights"""
+        try:
+            # Get paths to config files
+            config_dir = os.path.join(os.path.dirname(__file__), '../../config')
+            mode_detection_path = os.path.join(config_dir, 'mode_detection.yaml')
+            welding_processes_path = os.path.join(config_dir, 'welding_processes.yaml')
+            
+            self.domain_vocabulary = {
+                'product_names': {},      # weight: 3.0 - highest priority for exact matching
+                'processes': {},          # weight: 2.5 - welding processes  
+                'technical_terms': {},    # weight: 2.0 - technical specifications
+                'materials': {},          # weight: 1.8 - material types
+                'applications': {},       # weight: 1.5 - use cases and applications
+                'general_terms': {}       # weight: 1.2 - general welding terms
+            }
+            
+            # Load mode detection vocabulary
+            if os.path.exists(mode_detection_path):
+                with open(mode_detection_path, 'r') as f:
+                    mode_config = yaml.safe_load(f)
+                    
+                # Extract product names from expert signals
+                expert_signals = mode_config.get('expert_signals', [])
+                for signal in expert_signals:
+                    # Product names typically contain model numbers or specific brand names
+                    if any(char.isdigit() for char in signal) or signal in ['Aristo 500 ix', 'Warrior 400i', 'Renegade 300']:
+                        self.domain_vocabulary['product_names'][signal.lower()] = 3.0
+                    elif signal.upper() in ['MIG', 'TIG', 'GMAW', 'GTAW', 'SMAW', 'FCAW']:
+                        self.domain_vocabulary['processes'][signal.lower()] = 2.5
+                    else:
+                        self.domain_vocabulary['technical_terms'][signal.lower()] = 2.0
+            
+            # Load welding processes vocabulary        
+            if os.path.exists(welding_processes_path):
+                with open(welding_processes_path, 'r') as f:
+                    welding_config = yaml.safe_load(f)
+                    
+                # Load welding processes
+                processes = welding_config.get('welding_processes', {})
+                if processes.get('primary'):
+                    for process in processes['primary']:
+                        self.domain_vocabulary['processes'][process.lower()] = 2.5
+                if processes.get('technical'):
+                    for process in processes['technical']:
+                        self.domain_vocabulary['processes'][process.lower()] = 2.5
+                        
+                # Load materials
+                materials = welding_config.get('materials', {})
+                if materials.get('primary'):
+                    for material in materials['primary']:
+                        self.domain_vocabulary['materials'][material.lower().replace('_', ' ')] = 1.8
+                        
+                # Load applications
+                applications = welding_config.get('applications', [])
+                for app in applications:
+                    self.domain_vocabulary['applications'][app.lower()] = 1.5
+                    
+                # Load industries (general terms)
+                industries = welding_config.get('industries', [])
+                for industry in industries:
+                    self.domain_vocabulary['general_terms'][industry.lower()] = 1.2
+            
+            # Add common product name patterns for better matching
+            common_product_patterns = [
+                'renegade', 'warrior', 'aristo', 'robustfeed', 'cool2', 'cooling unit',
+                'wire feeder', 'power source', 'torch', 'electrode holder'
+            ]
+            for pattern in common_product_patterns:
+                self.domain_vocabulary['product_names'][pattern.lower()] = 3.0
+                
+            total_terms = sum(len(category) for category in self.domain_vocabulary.values())
+            logger.info(f"Loaded domain vocabulary: {total_terms} terms across {len(self.domain_vocabulary)} categories")
+            
+        except Exception as e:
+            logger.warning(f"Failed to load domain vocabulary: {e}")
+            # Initialize empty vocabulary if loading fails
+            self.domain_vocabulary = {'product_names': {}, 'processes': {}, 'technical_terms': {}, 'materials': {}, 'applications': {}, 'general_terms': {}}
+    
+    def _enhance_with_domain_vocabulary(self, text: str) -> str:
+        """
+        Enhance text by emphasizing domain-specific terms with repetition weighting.
+        
+        Args:
+            text: Original text to enhance
+            
+        Returns:
+            Enhanced text with domain-specific terms emphasized
+        """
+        if not text or not self.domain_vocabulary:
+            return text
+            
+        enhanced_parts = [text]  # Start with original text
+        
+        # Normalize text for matching
+        text_lower = text.lower()
+        
+        # Check each vocabulary category and apply weighting
+        for category, terms in self.domain_vocabulary.items():
+            for term, weight in terms.items():
+                if term in text_lower:
+                    # Calculate repetition count based on weight
+                    # product_names (weight 3.0) -> repeat 2 times
+                    # processes (weight 2.5) -> repeat 1-2 times  
+                    # other terms -> repeat 1 time or add context
+                    
+                    if weight >= 3.0:  # Product names - highest priority
+                        repetitions = 2
+                        enhanced_parts.append(f"{term} {term}")
+                    elif weight >= 2.5:  # Welding processes
+                        repetitions = 1
+                        enhanced_parts.append(f"{term} welding process")
+                    elif weight >= 2.0:  # Technical terms
+                        enhanced_parts.append(f"{term} specification")
+                    elif weight >= 1.5:  # Materials and applications
+                        enhanced_parts.append(f"{term} application")
+        
+        # Join all parts with spaces
+        enhanced_text = ' '.join(enhanced_parts)
+        
+        # Clean up excessive spaces
+        enhanced_text = re.sub(r'\s+', ' ', enhanced_text)
+        
+        return enhanced_text.strip()
     
     def _clean_html_description(self, description: str) -> str:
         """
@@ -330,13 +460,16 @@ class ProductEmbeddingGenerator:
         # Join all parts
         complete_text = ' '.join(text_parts)
         
+        # Enhance with domain-specific vocabulary weighting
+        enhanced_text = self._enhance_with_domain_vocabulary(complete_text)
+        
         # Final cleanup
-        complete_text = re.sub(r'\s+', ' ', complete_text)
-        complete_text = complete_text.strip()
+        enhanced_text = re.sub(r'\s+', ' ', enhanced_text)
+        enhanced_text = enhanced_text.strip()
         
-        logger.debug(f"Generated embedding text for {product.get('gin', 'unknown')}: {len(complete_text)} characters")
+        logger.debug(f"Generated enhanced embedding text for {product.get('gin', 'unknown')}: {len(enhanced_text)} characters (original: {len(complete_text)})")
         
-        return complete_text
+        return enhanced_text
     
     def generate_embedding(self, product: Dict) -> Optional[ProductEmbedding]:
         """
@@ -412,7 +545,7 @@ class ProductEmbeddingGenerator:
     
     def query_embedding(self, query_text: str) -> List[float]:
         """
-        Generate embedding for a search query.
+        Generate embedding for a search query with domain vocabulary enhancement.
         
         Args:
             query_text: Search query text
@@ -424,8 +557,13 @@ class ProductEmbeddingGenerator:
             # Clean and normalize query text
             cleaned_query = re.sub(r'\s+', ' ', query_text.strip())
             
+            # Enhance query with domain-specific vocabulary weighting
+            enhanced_query = self._enhance_with_domain_vocabulary(cleaned_query)
+            
+            logger.debug(f"Enhanced query: '{cleaned_query}' -> '{enhanced_query}'")
+            
             # Generate embedding
-            embedding_vector = self.model.encode(cleaned_query)
+            embedding_vector = self.model.encode(enhanced_query)
             
             return embedding_vector.tolist()
             

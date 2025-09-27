@@ -20,7 +20,7 @@ from .enhanced_state_models import (
     ExpertiseMode
 )
 from ...database.repositories import Neo4jRepository
-from ...agents.simple_neo4j_agent import SimpleNeo4jAgent, SimpleWeldingPackage
+from ...agents.simple_neo4j_agent import SimpleNeo4jAgent, SimpleWeldingPackage, WeldingPackageComponent
 from ...services.embedding_generator import ProductEmbeddingGenerator
 
 logger = logging.getLogger(__name__)
@@ -82,12 +82,12 @@ class GraphAlgorithmExecutor:
         """
         
         query = """
-        MATCH (p:Product {category: $category})<-[:PURCHASED]-(order:Order)
+        MATCH (p:Product {category: $category})<-[:CONTAINS]-(order:Order)
         WITH p, COUNT(order) as direct_sales
         WHERE direct_sales >= $min_sales
         
         // Find products that co-occur with this product in purchases
-        MATCH (p)<-[:PURCHASED]-(shared_order:Order)-[:PURCHASED]->(co_product:Product)
+        MATCH (p)<-[:CONTAINS]-(shared_order:Order)-[:CONTAINS]->(co_product:Product)
         WHERE co_product.category = $category AND co_product <> p
         WITH p, direct_sales, COUNT(DISTINCT co_product) as co_occurrence_score
         
@@ -299,7 +299,7 @@ class TrinityPackageFormer:
         intent: EnhancedProcessedIntent,
         compliance_score: float
     ) -> float:
-        """Calculate overall package score"""
+        """Calculate overall package score with user intent matching bonus"""
         
         # Base score from Trinity compliance
         score = compliance_score * 0.4
@@ -317,12 +317,79 @@ class TrinityPackageFormer:
         price_consistency = package_data.get("price_consistency_score", 0.5)
         score += price_consistency * 0.1
         
+        # User Intent Match Bonus - boost packages containing explicitly requested products
+        intent_bonus = self._calculate_intent_match_bonus(package_data, intent)
+        score += intent_bonus
+        
         # Expertise mode adjustment
         if intent.expertise_mode == ExpertiseMode.EXPERT:
             # Expert users likely want precise technical matches
             score = min(score * 1.1, 1.0)
         
         return min(score, 1.0)
+    
+    def _calculate_intent_match_bonus(
+        self, 
+        package_data: Dict[str, Any], 
+        intent: EnhancedProcessedIntent
+    ) -> float:
+        """
+        Calculate bonus score for packages that contain user's explicitly requested products.
+        
+        Args:
+            package_data: Package component data
+            intent: Processed user intent with original query
+            
+        Returns:
+            Bonus score (0.0 to 0.15) to boost packages matching user intent
+        """
+        bonus = 0.0
+        
+        # Get the original query from intent
+        original_query = getattr(intent, 'original_query', '').lower()
+        if not original_query:
+            return bonus
+            
+        # Define product name keywords to look for
+        # These should match our domain vocabulary high-priority terms
+        product_keywords = {
+            'renegade': 0.35,    # Very high bonus for exact product name match
+            'warrior': 0.35,
+            'aristo': 0.35,
+            'aristo 500': 0.40,  # Even higher for specific model matches
+            'aristo 500ix': 0.45,
+            'warrior 500': 0.40,
+            'renegade es': 0.40,
+            'robustfeed': 0.25,  # High bonus for component names
+            'cool2': 0.25,
+            'cooling unit': 0.15,
+            'wire feeder': 0.15,
+            'power source': 0.05  # Lower bonus for generic terms
+        }
+        
+        # Check each component in the package for keyword matches
+        components_to_check = [
+            package_data.get("power_source"),
+            package_data.get("feeder"), 
+            package_data.get("cooler")
+        ]
+        
+        for component in components_to_check:
+            if not component:
+                continue
+                
+            component_name = component.get("product_name", "").lower()
+            
+            # Check for exact keyword matches in product name
+            for keyword, keyword_bonus in product_keywords.items():
+                if keyword in original_query and keyword in component_name:
+                    bonus += keyword_bonus
+                    # Log the intent match for debugging
+                    logger.info(f"🎯 Intent Match Bonus: '{keyword}' found in query '{original_query}' matches component '{component_name}' (+{keyword_bonus})")
+                    break  # Only give one bonus per component to avoid double-counting
+        
+        # Cap the total bonus to prevent excessive boosting
+        return min(bonus, 0.15)
     
     def _calculate_total_price(self, package_data: Dict[str, Any]) -> float:
         """Calculate total package price"""
@@ -391,6 +458,12 @@ class SmartNeo4jService:
             if guided_step_result:
                 return guided_step_result
             
+            # TRINITY-FIRST: Try Trinity semantic search for complete package formation
+            trinity_packages = await self._try_trinity_semantic_search(processed_intent, trace_id)
+            if trinity_packages:
+                logger.info("[Agent 2] Trinity-first approach successful, adding Trinity-based packages")
+                logger.info(f"[Agent 2] Found {len(trinity_packages)} Trinity packages, continuing to generate additional recommendations")
+            
             # Step 1: Intelligent routing decision
             routing_decision = self._make_routing_decision(processed_intent)
             
@@ -401,37 +474,66 @@ class SmartNeo4jService:
                 candidates = await self._hybrid_search(processed_intent, routing_decision)
             
             # Step 3: Use expert mode package formation for complete packages
+            standard_packages = []
             if processed_intent.expertise_mode in [ExpertiseMode.EXPERT, ExpertiseMode.HYBRID]:
                 logger.info(f"[Agent 2] Using expert mode package formation for {processed_intent.expertise_mode.value}")
-                trinity_packages = await self._form_expert_packages(candidates, processed_intent)
+                standard_packages = await self._form_expert_packages(candidates, processed_intent)
             else:
                 # Guided mode - use simple Trinity formation
                 business_rules = self._load_business_rules()
-                trinity_packages = await self.trinity_former.form_packages(
+                standard_packages = await self.trinity_former.form_packages(
                     candidates, processed_intent, business_rules
                 )
             
-            # Step 4: Calculate quality metrics
-            confidence_distribution = self._calculate_confidence_distribution(trinity_packages)
-            trinity_formation_rate = len([p for p in trinity_packages if p.trinity_compliance]) / max(len(trinity_packages), 1)
+            # Step 4: Combine Trinity packages with standard packages
+            all_packages = []
+            
+            # Add Trinity packages first (highest priority)
+            if trinity_packages:
+                logger.info(f"[Agent 2] Adding {len(trinity_packages)} Trinity semantic packages")
+                for pkg in trinity_packages:
+                    # Mark Trinity packages with semantic search algorithm
+                    if hasattr(pkg, '_algorithm_source'):
+                        pkg._algorithm_source = "trinity_semantic_search"
+                    all_packages.append(pkg)
+            
+            # Add standard packages (sales frequency, compatibility)
+            if standard_packages:
+                logger.info(f"[Agent 2] Adding {len(standard_packages)} standard packages (sales frequency + compatibility)")
+                for pkg in standard_packages:
+                    # Mark standard packages with appropriate algorithms
+                    if hasattr(pkg, '_algorithm_source'):
+                        pkg._algorithm_source = "sales_frequency_compatibility"
+                    all_packages.append(pkg)
+            
+            # Use combined packages
+            final_packages = all_packages if all_packages else trinity_packages if trinity_packages else standard_packages
+            
+            # Step 5: Calculate quality metrics using final packages
+            confidence_distribution = self._calculate_confidence_distribution(final_packages)
+            trinity_formation_rate = len([p for p in final_packages if p.trinity_compliance]) / max(len(final_packages), 1)
             
             processing_time = (time.time() - start_time) * 1000
             
+            # Update algorithms used to include Trinity semantic search if used
+            all_algorithms_used = routing_decision.algorithms.copy()
+            if trinity_packages:
+                all_algorithms_used.append(GraphAlgorithm.TRINITY_SEMANTIC_SEARCH)
+            
             # Create scored recommendations response
             scored_recommendations = ScoredRecommendations(
-                packages=trinity_packages,
-                total_packages_found=len(trinity_packages),
+                packages=final_packages,
+                total_packages_found=len(final_packages),
                 search_metadata=routing_decision,
-                algorithms_used=routing_decision.algorithms,
+                algorithms_used=all_algorithms_used,
                 confidence_distribution=confidence_distribution,
                 trinity_formation_rate=trinity_formation_rate,
                 neo4j_query_time_ms=processing_time,
                 trace_id=trace_id,
-                neo4j_queries_executed=len(routing_decision.algorithms) + 1  # Base query + algorithms
+                neo4j_queries_executed=len(all_algorithms_used) + 1  # Base query + algorithms
             )
             
-            logger.info(f"[Agent 2] Generated {len(trinity_packages)} packages, Trinity rate: {trinity_formation_rate:.2f}, Time: {processing_time:.1f}ms")
-            
+            logger.info(f"[Agent 2] Generated {len(final_packages)} total packages ({len(trinity_packages) if trinity_packages else 0} Trinity + {len(standard_packages) if standard_packages else 0} standard), Trinity rate: {trinity_formation_rate:.2f}, Time: {processing_time:.1f}ms")
             return scored_recommendations
             
         except Exception as e:
@@ -615,7 +717,7 @@ class SmartNeo4jService:
         
         query = """
         MATCH (p:Product {category: $category})
-        OPTIONAL MATCH (p)<-[:PURCHASED]-(order:Order)
+        OPTIONAL MATCH (p)<-[:CONTAINS]-(order:Order)
         WITH p, COUNT(order) as sales_frequency
         RETURN p.product_id as product_id,
                p.name as product_name,
@@ -803,8 +905,8 @@ class SmartNeo4jService:
                     )
                     
                     if expert_package:
-                        # Convert to Trinity package format
-                        trinity_package = self._convert_simple_to_trinity_package(expert_package)
+                        # Convert to Trinity package format with intent match bonus
+                        trinity_package = self._convert_simple_to_trinity_package(expert_package, processed_intent)
                         expert_packages.append(trinity_package)
                         
                         logger.info(f"[Agent 2] Expert package formed: {len(expert_package.consumables + expert_package.accessories + [expert_package.power_source] + expert_package.feeders + expert_package.coolers)} total products")
@@ -843,7 +945,7 @@ class SmartNeo4jService:
             compatibility_score=component_dict.get("compatibility_score", 0.5)
         )
 
-    def _convert_simple_to_trinity_package(self, simple_package: SimpleWeldingPackage) -> TrinityPackage:
+    def _convert_simple_to_trinity_package(self, simple_package: SimpleWeldingPackage, processed_intent: Optional[EnhancedProcessedIntent] = None) -> TrinityPackage:
         """Convert simple package format to Trinity package format"""
         
         # Extract components
@@ -854,13 +956,30 @@ class SmartNeo4jService:
         # Check Trinity compliance
         trinity_compliant = all([power_source, feeder, cooler])
         
+        # Apply intent match bonus if processed_intent is available
+        base_score = simple_package.package_score
+        if processed_intent:
+            # Create package data structure for intent match calculation
+            package_data = {
+                "power_source": power_source,
+                "feeder": feeder, 
+                "cooler": cooler
+            }
+            intent_bonus = self._calculate_intent_match_bonus(package_data, processed_intent)
+            enhanced_score = min(base_score + intent_bonus, 1.0)
+            
+            if intent_bonus > 0:
+                logger.info(f"🎯 Intent Match Applied: Package score enhanced from {base_score:.3f} to {enhanced_score:.3f} (+{intent_bonus:.3f})")
+        else:
+            enhanced_score = base_score
+        
         return TrinityPackage(
             power_source=power_source,
             feeder=feeder,
             cooler=cooler,
             consumables=[c.__dict__ for c in simple_package.consumables],
             accessories=[a.__dict__ for a in simple_package.accessories],
-            package_score=simple_package.package_score,
+            package_score=enhanced_score,
             trinity_compliance=trinity_compliant,
             business_rule_compliance=simple_package.confidence,
             total_price=simple_package.total_price,
@@ -1154,6 +1273,315 @@ class SmartNeo4jService:
         # This would extract from session context in a real implementation  
         # For now, return None to use general compatibility
         return None
+
+    def _calculate_intent_match_bonus(
+        self, 
+        package_data: Dict[str, Any], 
+        intent: EnhancedProcessedIntent
+    ) -> float:
+        """
+        Calculate bonus score for packages that contain user's explicitly requested products.
+        
+        Args:
+            package_data: Package component data
+            intent: Processed user intent with original query
+            
+        Returns:
+            Bonus score (0.0 to 0.15) to boost packages matching user intent
+        """
+        bonus = 0.0
+        
+        # Get the original query from intent
+        original_query = getattr(intent, 'original_query', '').lower()
+        if not original_query:
+            return bonus
+            
+        # Define product name keywords to look for
+        # These should match our domain vocabulary high-priority terms
+        product_keywords = {
+            'renegade': 0.35,    # Very high bonus for exact product name match
+            'warrior': 0.35,
+            'aristo': 0.35,
+            'aristo 500': 0.40,  # Even higher for specific model matches
+            'aristo 500ix': 0.45,
+            'warrior 500': 0.40,
+            'renegade es': 0.40,
+            'robustfeed': 0.25,  # High bonus for component names
+            'cool2': 0.25,
+            'cooling unit': 0.15,
+            'wire feeder': 0.15,
+            'power source': 0.05  # Lower bonus for generic terms
+        }
+        
+        # Check each component in the package for keyword matches
+        components_to_check = [
+            package_data.get("power_source"),
+            package_data.get("feeder"), 
+            package_data.get("cooler")
+        ]
+        
+        for component in components_to_check:
+            if not component:
+                continue
+                
+            component_name = component.get("product_name", "").lower()
+            
+            # Check for exact keyword matches in product name
+            for keyword, keyword_bonus in product_keywords.items():
+                if keyword in original_query and keyword in component_name:
+                    bonus += keyword_bonus
+                    # Log the intent match for debugging
+                    logger.info(f"🎯 Intent Match Bonus: '{keyword}' found in query '{original_query}' matches component '{component_name}' (+{keyword_bonus})")
+                    break  # Only give one bonus per component to avoid double-counting
+        
+        # Cap the total bonus to prevent excessive boosting
+        return min(bonus, 0.15)
+
+    async def _try_trinity_semantic_search(
+        self, 
+        processed_intent: EnhancedProcessedIntent, 
+        trace_id: str
+    ) -> Optional[List[TrinityPackage]]:
+        """
+        Try Trinity semantic search for complete package formation
+        
+        Args:
+            processed_intent: Enhanced intent from Agent 1
+            trace_id: Distributed tracing identifier
+            
+        Returns:
+            List of Trinity packages or None if not applicable
+        """
+        try:
+            # Only try Trinity search for queries that might benefit from complete packages
+            query = processed_intent.original_query.lower()
+            trinity_keywords = ["package", "setup", "kit", "complete", "system", "trinity", "combination"]
+            
+            # Check if query suggests looking for complete packages
+            if not any(keyword in query for keyword in trinity_keywords):
+                return None
+            
+            logger.info(f"[Agent 2] Attempting Trinity semantic search for: '{processed_intent.original_query}'")
+            
+            # Use simple Neo4j agent for Trinity semantic search
+            trinity_results = await self.simple_neo4j_agent.search_trinity_combinations(
+                processed_intent.original_query, 
+                limit=5
+            )
+            
+            if not trinity_results:
+                logger.info("[Agent 2] No Trinity combinations found, trying product-specific fallback")
+                # Try to find Trinity packages with user-specified products
+                return await self._try_product_specific_trinity_search(processed_intent, trace_id)
+            
+            # Convert Trinity results to TrinityPackage objects
+            trinity_packages = []
+            
+            for trinity_result in trinity_results[:3]:  # Top 3 Trinity combinations
+                # Get Trinity components
+                components = await self.simple_neo4j_agent.get_trinity_package_components(
+                    trinity_result['trinity_id']
+                )
+                
+                if not components:
+                    continue
+                
+                # Extract components by category
+                power_source = components.get('PowerSource')
+                feeder = components.get('Feeder')
+                cooler = components.get('Cooler')
+                
+                if not all([power_source, feeder, cooler]):
+                    continue
+                
+                # Find accessories for this Trinity
+                trinity_accessories = await self.simple_neo4j_agent._find_trinity_based_accessories(
+                    power_source.product_id,
+                    feeder.product_id, 
+                    cooler.product_id
+                )
+                
+                # Calculate total price
+                total_price = sum([
+                    power_source.price or 0.0,
+                    feeder.price or 0.0,
+                    cooler.price or 0.0
+                ] + [acc.price or 0.0 for acc in trinity_accessories[:5]])
+                
+                # Convert components to dictionaries for TrinityPackage
+                def component_to_dict(component):
+                    return {
+                        "product_id": component.product_id,
+                        "product_name": component.product_name,
+                        "category": component.category,
+                        "subcategory": component.subcategory,
+                        "description": component.description,
+                        "price": component.price,
+                        "compatibility_score": component.compatibility_score,
+                        "sales_frequency": component.sales_frequency
+                    }
+                
+                # Create Trinity package with dict components
+                trinity_package = TrinityPackage(
+                    power_source=component_to_dict(power_source),
+                    feeder=component_to_dict(feeder),
+                    cooler=component_to_dict(cooler),
+                    consumables=[],  # Trinity doesn't include consumables by default
+                    accessories=[component_to_dict(acc) for acc in trinity_accessories[:5]],  # Limit accessories
+                    total_price=total_price,
+                    package_score=trinity_result['similarity_score'] * 0.9,  # High confidence for Trinity
+                    confidence=processed_intent.confidence * trinity_result['similarity_score'],
+                    trinity_compliance=True,
+                    expert_validated=False,
+                    intent_match_score=trinity_result['similarity_score'],
+                    explanation=f"Complete Trinity package featuring {power_source.product_name}",
+                    search_metadata={
+                        "trinity_id": trinity_result['trinity_id'],
+                        "similarity_score": trinity_result['similarity_score'],
+                        "order_count": trinity_result['order_count'],
+                        "search_type": "trinity_semantic"
+                    }
+                )
+                
+                trinity_packages.append(trinity_package)
+            
+            if trinity_packages:
+                logger.info(f"[Agent 2] Trinity search generated {len(trinity_packages)} packages")
+                return trinity_packages
+            
+            return None
+            
+        except Exception as e:
+            logger.error(f"[Agent 2] Trinity semantic search error: {e}")
+            return None
+
+    async def _try_product_specific_trinity_search(
+        self, 
+        processed_intent: EnhancedProcessedIntent, 
+        trace_id: str
+    ) -> Optional[List[TrinityPackage]]:
+        """
+        Fallback search for Trinity packages containing user-specified products
+        
+        When semantic search fails, this method searches for Trinity combinations
+        that contain specific products mentioned in the user's query.
+        """
+        try:
+            query = processed_intent.original_query.lower()
+            
+            # Extract potential product names from the query
+            product_keywords = ['aristo', 'warrior', 'renegade', 'robustfeed', 'cool2']
+            mentioned_products = [kw for kw in product_keywords if kw in query]
+            
+            if not mentioned_products:
+                logger.info("[Agent 2] No specific products mentioned, skipping product-specific search")
+                return None
+            
+            logger.info(f"[Agent 2] Searching for Trinity packages containing: {mentioned_products}")
+            
+            # Search for Trinity combinations containing the mentioned products
+            trinity_packages = []
+            
+            for product_keyword in mentioned_products:
+                # Direct query for Trinity packages containing this product
+                trinity_query = """
+                MATCH (tr:Trinity)-[:COMPRISES]->(ps:Product {category: 'PowerSource'})
+                WHERE toLower(ps.name) CONTAINS $product_keyword
+                WITH tr, ps
+                MATCH (tr)-[:COMPRISES]->(f:Product {category: 'Feeder'})
+                MATCH (tr)-[:COMPRISES]->(c:Product {category: 'Cooler'})
+                RETURN tr.trinity_id as trinity_id, ps, f, c
+                LIMIT 3
+                """
+                
+                results = await self.neo4j_repo.execute_query(trinity_query, {"product_keyword": product_keyword})
+                
+                for result in results:
+                    trinity_id = result['trinity_id']
+                    power_source_data = result['ps']
+                    feeder_data = result['f']
+                    cooler_data = result['c']
+                    
+                    # Convert to WeldingPackageComponent format
+                    power_source = WeldingPackageComponent(
+                        product_id=power_source_data['gin'],
+                        product_name=power_source_data['name'],
+                        category=power_source_data['category'],
+                        price=power_source_data.get('price', 0),
+                        description=power_source_data.get('description', ''),
+                        sales_frequency=power_source_data.get('sales_frequency', 0)
+                    )
+                    
+                    feeder = WeldingPackageComponent(
+                        product_id=feeder_data['gin'],
+                        product_name=feeder_data['name'],
+                        category=feeder_data['category'],
+                        price=feeder_data.get('price', 0),
+                        description=feeder_data.get('description', ''),
+                        sales_frequency=feeder_data.get('sales_frequency', 0)
+                    )
+                    
+                    cooler = WeldingPackageComponent(
+                        product_id=cooler_data['gin'],
+                        product_name=cooler_data['name'],
+                        category=cooler_data['category'],
+                        price=cooler_data.get('price', 0),
+                        description=cooler_data.get('description', ''),
+                        sales_frequency=cooler_data.get('sales_frequency', 0)
+                    )
+                    
+                    # Find accessories for this Trinity
+                    trinity_accessories = await self.simple_neo4j_agent._find_trinity_based_accessories(
+                        power_source.product_id,
+                        feeder.product_id,
+                        cooler.product_id
+                    )
+                    
+                    # Calculate total price
+                    total_price = power_source.price + feeder.price + cooler.price
+                    total_price += sum(acc.price for acc in trinity_accessories[:5])
+                    
+                    # Higher score for user-requested products
+                    base_score = 0.8  # High base score for direct product match
+                    intent_bonus = self._calculate_intent_match_bonus({
+                        "power_source": power_source.__dict__,
+                        "feeder": feeder.__dict__,
+                        "cooler": cooler.__dict__
+                    }, processed_intent)
+                    
+                    final_score = min(base_score + intent_bonus, 1.0)
+                    
+                    trinity_package = TrinityPackage(
+                        power_source=component_to_dict(power_source),
+                        feeder=component_to_dict(feeder),
+                        cooler=component_to_dict(cooler),
+                        consumables=[],
+                        accessories=[component_to_dict(acc) for acc in trinity_accessories[:5]],
+                        total_price=total_price,
+                        package_score=final_score,
+                        trinity_compliance=True,
+                        business_rule_compliance=processed_intent.confidence,
+                        compatibility_verified=True,
+                        compatibility_score=0.9,
+                        formation_path=[trinity_id],
+                        relationship_strength=final_score
+                    )
+                    
+                    trinity_packages.append(trinity_package)
+                    logger.info(f"[Agent 2] Found product-specific Trinity: {power_source.product_name} (Score: {final_score:.3f})")
+            
+            if trinity_packages:
+                # Sort by score and return top packages
+                trinity_packages.sort(key=lambda x: x.package_score, reverse=True)
+                logger.info(f"[Agent 2] Product-specific search successful: {len(trinity_packages)} packages found")
+                return trinity_packages[:3]
+            else:
+                logger.info("[Agent 2] No Trinity packages found for specified products")
+                return None
+                
+        except Exception as e:
+            logger.error(f"[Agent 2] Product-specific Trinity search error: {e}")
+            return None
 
 
 # Dependency injection

@@ -1,0 +1,65 @@
+{
+  "execution_timestamp": "2025-09-20T15:59:23.876279",
+  "powersources": [
+    "0465350883",
+    "0465350884",
+    "0445555880",
+    "0445250880",
+    "0445100880",
+    "0446200880"
+  ],
+  "pipeline_stages": {},
+  "dataset_summary": {
+    "product_catalog.json": {
+      "total_products": 248,
+      "existing_products": 191,
+      "synthetic_products": 57,
+      "target_powersources": [
+        "0445555880",
+        "0445250880",
+        "0446200880",
+        "0465350883",
+        "0465350884",
+        "0445100880"
+      ],
+      "generated_date": "2025-09-20",
+      "source": "Enhanced catalog from ENG.json + synthetic products"
+    },
+    "golden_packages.json": {
+      "total_packages": 7,
+      "target_powersources": [
+        "0445555880",
+        "0445250880",
+        "0446200880",
+        "0465350883",
+        "0465350884",
+        "0445100880"
+      ],
+      "generated_date": "2025-09-20",
+      "source": "Filtered from golden_pkg_format_V2.xlsx"
+    },
+    "sales_data.json": {
+      "total_records": 10097,
+      "unique_orders": 1646,
+      "complete_combo_orders": 1646,
+      "target_powersources": [
+        "0445555880",
+        "0445250880",
+        "0446200880",
+        "0465350883",
+        "0465350884",
+        "0445100880"
+      ],
+      "generated_date": "2025-09-20",
+      "source": "Filtered from sales_data_cleaned.csv - complete PowerSource+Feeder+Cooler orders only",
+      "filtering_rule": "Orders must contain PowerSource + Feeder + Cooler minimum combo"
+    }
+  },
+  "validation_results": {},
+  "next_steps": [
+    "Review generated datasets in neo4j_datasets/ directory",
+    "Load datasets into Neo4j using provided Cypher scripts",
+    "Test recommendation queries against loaded data",
+    "Consider implementing compatibility rules extraction"
+  ]
+}

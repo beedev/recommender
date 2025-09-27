@@ -458,8 +458,8 @@ class IntelligentIntentService:
             context=enhanced_context
         )
         
-        # Convert SimpleWeldingIntent to ExtractedIntent format
-        base_intent = self._convert_simple_to_extracted_intent(simple_intent, english_query)
+        # Convert SimpleWeldingIntent to ExtractedIntent format (with LLM process validation)
+        base_intent = await self._convert_simple_to_extracted_intent(simple_intent, english_query)
         
         # Enhance confidence scoring based on expertise mode
         if expertise_mode == ExpertiseMode.EXPERT:
@@ -580,14 +580,96 @@ class IntelligentIntentService:
         
         return None
     
-    def _convert_simple_to_extracted_intent(self, simple_intent, query: str) -> ExtractedIntent:
+    async def _validate_welding_processes(self, processes: List[str]) -> List[str]:
+        """
+        Use LLM to validate and map welding process terms to enum-compatible values.
+        Maps domain terms like 'pulse welding' to standard enum values using AI reasoning.
+        """
+        if not processes:
+            return []
+            
+        from ...agents.state_models import WeldingProcess
+        from langchain_openai import ChatOpenAI
+        from langchain.schema import HumanMessage
+        
+        # Get valid enum values
+        valid_processes = [member.value for member in WeldingProcess]
+        
+        # Filter already valid processes
+        already_valid = [p for p in processes if str(p).strip() in valid_processes]
+        needs_validation = [p for p in processes if str(p).strip() not in valid_processes]
+        
+        if not needs_validation:
+            return already_valid
+            
+        try:
+            # Use LLM to map invalid terms to valid enum values
+            from ...core.config import settings
+            llm = ChatOpenAI(
+                model_name="gpt-4", 
+                temperature=0.1,
+                openai_api_key=settings.OPENAI_API_KEY
+            )
+            
+            validation_prompt = f"""
+You are a welding expert. Map these welding process terms to the closest standard welding process.
+
+VALID WELDING PROCESSES: {', '.join(valid_processes)}
+
+TERMS TO MAP: {', '.join(needs_validation)}
+
+Rules:
+- "pulse welding" → "MIG" (pulse is a MIG technique)
+- "wire welding" → "MIG" 
+- "argon welding" → "TIG"
+- "electrode welding" → "STICK"
+- "arc welding" → choose most appropriate based on context
+
+For each term, return the most appropriate standard process from the valid list.
+If a term is unclear or doesn't match any welding process, skip it.
+
+Return ONLY a JSON array of the mapped standard processes (no duplicates):
+["PROCESS1", "PROCESS2", ...]
+"""
+            
+            response = await llm.agenerate([[HumanMessage(content=validation_prompt)]])
+            response_text = response.generations[0][0].text.strip()
+            
+            # Parse LLM response
+            import json
+            try:
+                mapped_processes = json.loads(response_text)
+                if isinstance(mapped_processes, list):
+                    # Validate that LLM returned valid enum values
+                    validated_mapped = [p for p in mapped_processes if p in valid_processes]
+                    
+                    logger.info(f"🤖 LLM mapped {needs_validation} → {validated_mapped}")
+                    
+                    # Combine already valid + LLM mapped (remove duplicates)
+                    all_processes = list(set(already_valid + validated_mapped))
+                    return all_processes
+                    
+            except json.JSONDecodeError as e:
+                logger.warning(f"Failed to parse LLM response as JSON: {e}")
+                
+        except Exception as e:
+            logger.error(f"LLM validation failed: {e}")
+            
+        # Fallback: return only already valid processes
+        logger.warning(f"Using fallback validation - only returning already valid processes: {already_valid}")
+        return already_valid
+    
+    async def _convert_simple_to_extracted_intent(self, simple_intent, query: str) -> ExtractedIntent:
         """
         Convert SimpleWeldingIntent to ExtractedIntent format
         Ensures compatibility with existing pipeline
         """
         
+        # Map domain-specific welding terms to valid enum values using LLM (fixes pulse welding issue)
+        validated_processes = await self._validate_welding_processes(simple_intent.processes or [])
+        
         return ExtractedIntent(
-            welding_process=simple_intent.processes or [],
+            welding_process=validated_processes,
             material=simple_intent.material,
             power_watts=simple_intent.power_watts,
             current_amps=simple_intent.current_amps,

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Guided Flow Package Transfer</title>
+</head>
+<body>
+    <h1>Test Guided Flow Package Transfer</h1>
+    <button onclick="simulateGuidedFlowCompletion()">Simulate Guided Flow Completion</button>
+    <button onclick="goToMainPage()">Go to Main Page</button>
+    <div id="status"></div>
+
+    <script>
+        function simulateGuidedFlowCompletion() {
+            // Simulate a completed package from guided flow
+            const mockPackageData = {
+                packageData: {
+                    power_source: {
+                        product_id: "PWR001",
+                        product_name: "ESAB PowerSource MIG 500",
+                        price: 2500.00,
+                        sales_frequency: 85
+                    },
+                    feeder: {
+                        product_id: "FDR001", 
+                        product_name: "ESAB Wire Feeder WF-24",
+                        price: 1200.00,
+                        sales_frequency: 78
+                    },
+                    cooler: {
+                        product_id: "COL001",
+                        product_name: "ESAB Cooling System CS-400", 
+                        price: 800.00,
+                        sales_frequency: 65
+                    },
+                    consumables: [],
+                    accessories: [
+                        {
+                            product_id: "ACC001",
+                            product_name: "ESAB Welding Torch MT-350",
+                            price: 350.00,
+                            sales_frequency: 90
+                        }
+                    ],
+                    total_price: 4850.00,
+                    package_score: 0.92,
+                    trinity_compliance: true
+                },
+                fullResponse: {
+                    explanations: {
+                        overview: "Custom Trinity package built via guided flow with high compatibility."
+                    }
+                },
+                selections: {
+                    powersource: {
+                        product_id: "PWR001",
+                        product_name: "ESAB PowerSource MIG 500"
+                    },
+                    feeder: {
+                        product_id: "FDR001", 
+                        product_name: "ESAB Wire Feeder WF-24"
+                    },
+                    cooler: {
+                        product_id: "COL001",
+                        product_name: "ESAB Cooling System CS-400"
+                    },
+                    accessories: [
+                        {
+                            product_id: "ACC001",
+                            product_name: "ESAB Welding Torch MT-350"
+                        }
+                    ]
+                },
+                sessionId: "guided_test_" + Date.now(),
+                completedAt: new Date().toISOString()
+            };
+
+            // Store in sessionStorage like the guided flow would
+            sessionStorage.setItem('guidedFlowCompletedPackage', JSON.stringify(mockPackageData));
+            
+            document.getElementById('status').innerHTML = '✅ Package data stored in sessionStorage. Now go to main page to test.';
+        }
+
+        function goToMainPage() {
+            window.location.href = 'http://localhost:3000/frontend_prototype.html';
+        }
+    </script>
+</body>
+</html>

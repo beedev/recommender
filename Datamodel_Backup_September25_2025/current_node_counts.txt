@@ -1,0 +1,5 @@
+labels(n), node_count
+["Transaction"], 10087
+["Customer"], 459
+["Product"], 248
+["GoldenPackage"], 7

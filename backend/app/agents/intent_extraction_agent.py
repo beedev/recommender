@@ -138,6 +138,40 @@ Extract requirements:"""
             HumanMessagePromptTemplate.from_template(human_template)
         ])
         
+    async def _llm_preprocess_domain_terms(self, query: str) -> str:
+        """
+        Use LLM to preprocess domain-specific welding terms before enum validation.
+        Maps colloquial terms to standard enum values.
+        """
+        try:
+            preprocessing_prompt = f"""
+You are a welding expert. Normalize this query by replacing colloquial welding terms with standard terminology.
+
+Standard welding processes: MIG, TIG, MMA, STICK, FLUX_CORE, MULTI_PROCESS, GMAW, GTAW, SMAW, FCAW, SAW, PAW
+
+Query: "{query}"
+
+Replace non-standard welding terms with standard ones:
+- "pulse welding" → "MIG" (pulse is a MIG technique)
+- "wire welding" → "MIG"
+- "argon welding" → "TIG"
+- "electrode welding" → "STICK"
+- "rod welding" → "STICK"
+- "arc welding" → "MIG" (or appropriate context-based process)
+
+Keep all other terms unchanged. Return only the normalized query text.
+"""
+            
+            response = await self.model.agenerate([[HumanMessage(content=preprocessing_prompt)]])
+            normalized_query = response.generations[0][0].text.strip()
+            
+            logger.info(f"🔄 LLM domain preprocessing: '{query}' → '{normalized_query}'")
+            return normalized_query
+            
+        except Exception as e:
+            logger.warning(f"LLM preprocessing failed: {e}")
+            return query  # Fallback to original
+
     @traceable(name="intent_extraction")
     async def extract_intent(self, state: WeldingIntentState) -> WeldingIntentState:
         """
@@ -152,8 +186,11 @@ Extract requirements:"""
         try:
             logger.info(f"Extracting intent from query: {state.user_query[:100]}...")
             
-            # Pre-process query for better extraction
-            preprocessed_query = self._preprocess_query(state.user_query)
+            # LLM-based domain term preprocessing (fixes enum validation issues)
+            domain_preprocessed_query = await self._llm_preprocess_domain_terms(state.user_query)
+            
+            # Standard pre-processing (abbreviations, normalization)
+            preprocessed_query = self._preprocess_query(domain_preprocessed_query)
             
             # Pattern-based pre-extraction
             pattern_results = self._extract_with_patterns(preprocessed_query)
@@ -175,7 +212,8 @@ Extract requirements:"""
                 "llm_results": llm_results,
                 "preprocessing": {
                     "original_query": state.user_query,
-                    "preprocessed_query": preprocessed_query
+                    "domain_preprocessed_query": domain_preprocessed_query,
+                    "final_preprocessed_query": preprocessed_query
                 }
             }
             

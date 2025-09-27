@@ -125,6 +125,7 @@ class GraphAlgorithm(str, Enum):
     CLUSTERING = "clustering"
     SALES_FREQUENCY = "sales_frequency"
     COMPATIBILITY = "compatibility"
+    TRINITY_SEMANTIC_SEARCH = "trinity_semantic_search"
 
 
 @dataclass
@@ -232,6 +233,32 @@ class MultilingualResponse(BaseModel):
     cultural_adaptations: List[str] = Field(default_factory=list)
 
 
+class PackageGenerationExplanation(BaseModel):
+    """Detailed explanation of how packages were generated"""
+    
+    # Intent Understanding
+    user_query_analysis: str = ""
+    detected_requirements: Dict[str, Any] = Field(default_factory=dict)
+    interpretation_confidence: float = Field(0.0, ge=0.0, le=1.0)
+    ambiguous_terms_resolved: List[str] = Field(default_factory=list)
+    
+    # Package Selection Process
+    search_strategy_reasoning: str = ""
+    algorithms_applied: List[str] = Field(default_factory=list)
+    trinity_formation_process: str = ""
+    
+    # Component Selection Logic
+    power_source_selection_reason: str = ""
+    feeder_selection_reason: str = ""
+    cooler_selection_reason: str = ""
+    accessories_selection_criteria: str = ""
+    
+    # Ranking and Scoring
+    ranking_factors: Dict[str, float] = Field(default_factory=dict)
+    business_rules_applied: List[str] = Field(default_factory=list)
+    final_score_breakdown: Dict[str, float] = Field(default_factory=dict)
+
+
 class EnterpriseRecommendationResponse(BaseModel):
     """Final Agent 3 output: Complete enterprise response"""
     
@@ -242,6 +269,9 @@ class EnterpriseRecommendationResponse(BaseModel):
     # Multilingual response
     formatted_response: MultilingualResponse
     explanations: Dict[str, str] = Field(default_factory=dict)
+    
+    # Package Generation Transparency
+    generation_explanation: PackageGenerationExplanation = Field(default_factory=PackageGenerationExplanation)
     
     # Quality and confidence
     overall_confidence: float = Field(0.0, ge=0.0, le=1.0)

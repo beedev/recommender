@@ -107,12 +107,13 @@ class CypherQueryAgent:
             """,
             
             QueryType.SIMILAR_PURCHASE: """
-                MATCH (c:Customer)-[:PURCHASED]->(pkg:Package)-[:CONTAINS]->(p:Product)
+                MATCH (c:Customer)-[:MADE]->(o:Order)-[:CONTAINS]->(p:Product)
                 WHERE {similarity_conditions}
-                OPTIONAL MATCH (p)-[s:SOLD_WITH]->(other)
-                WITH p, COUNT(s) as sales_count, COUNT(DISTINCT c) as customer_count
-                RETURN p, sales_count, customer_count
-                ORDER BY customer_count DESC, sales_count DESC
+                OPTIONAL MATCH (p)<-[:CONTAINS]-(other_order:Order)-[:CONTAINS]->(other:Product)
+                WHERE other <> p
+                WITH p, COUNT(other) as cooccurrence_count, COUNT(DISTINCT c) as customer_count
+                RETURN p, cooccurrence_count as sales_count, customer_count
+                ORDER BY customer_count DESC, cooccurrence_count DESC
                 LIMIT $limit
             """,
             

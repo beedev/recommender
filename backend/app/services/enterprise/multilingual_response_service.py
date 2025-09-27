@@ -12,6 +12,7 @@ from .enhanced_state_models import (
     ScoredRecommendations,
     EnhancedProcessedIntent,
     EnterpriseRecommendationResponse,
+    PackageGenerationExplanation,
     MultilingualResponse,
     ExplanationLevel,
     BusinessPriority,
@@ -540,6 +541,9 @@ class MultilingualResponseService:
             confidence_breakdown = self._calculate_confidence_breakdown(reranked_packages, recommendations)
             business_insights = self._generate_business_insights(reranked_packages, user_context)
             
+            # Generate package generation explanation
+            generation_explanation = self._generate_package_explanation(reranked_packages, original_intent, recommendations)
+            
             processing_time = (time.time() - start_time) * 1000
             
             # Create final enterprise response
@@ -548,6 +552,7 @@ class MultilingualResponseService:
                 total_found=len(reranked_packages),
                 formatted_response=formatted_response,
                 explanations=explanations,
+                generation_explanation=generation_explanation,
                 overall_confidence=overall_confidence,
                 confidence_breakdown=confidence_breakdown,
                 search_metadata=recommendations.search_metadata,
@@ -685,6 +690,130 @@ class MultilingualResponseService:
         
         return min(satisfaction, 1.0)
     
+    def _generate_package_explanation(
+        self, 
+        packages: List[TrinityPackage], 
+        intent: EnhancedProcessedIntent,
+        recommendations: ScoredRecommendations
+    ) -> PackageGenerationExplanation:
+        """Generate detailed explanation of how packages were generated"""
+        
+        # Analyze user intent understanding
+        user_query_analysis = f"Interpreted query '{intent.original_query}' as "
+        if intent.welding_process:
+            user_query_analysis += f"welding process: {', '.join(intent.welding_process)}"
+        if intent.material:
+            user_query_analysis += f", material: {intent.material}"
+        if not intent.welding_process and not intent.material:
+            user_query_analysis += "general welding equipment request"
+        
+        # Detected requirements
+        detected_requirements = {
+            "welding_processes": intent.welding_process or [],
+            "materials": [intent.material] if intent.material else [],
+            "power_requirements": f"{intent.power_watts}W" if intent.power_watts else None,
+            "current_requirements": f"{intent.current_amps}A" if intent.current_amps else None,
+            "expertise_level": intent.expertise_mode.value,
+            "language": intent.detected_language.value
+        }
+        
+        # Search strategy reasoning
+        strategy_name = recommendations.search_metadata.strategy.value
+        search_strategy_reasoning = f"Used {strategy_name} search strategy. "
+        if strategy_name == "HYBRID":
+            search_strategy_reasoning += "Combined semantic similarity with graph-based compatibility for comprehensive results."
+        elif strategy_name == "GRAPH_FOCUSED":
+            search_strategy_reasoning += "Prioritized relationship-based search for expert queries."
+        else:
+            search_strategy_reasoning += "Applied guided flow for step-by-step selection."
+        
+        # Trinity formation process
+        trinity_formation_process = "Applied Trinity architecture (PowerSource + Feeder + Cooler). "
+        if packages and len(packages) > 0:
+            trinity_count = len([p for p in packages if p.trinity_compliance])
+            trinity_formation_process += f"Successfully formed {trinity_count}/{len(packages)} packages as complete Trinity combinations."
+        
+        # Component selection reasoning (focus on top package)
+        power_source_reason = ""
+        feeder_reason = ""
+        cooler_reason = ""
+        accessories_criteria = ""
+        
+        if packages:
+            top_package = packages[0]
+            
+            # Power source selection
+            if "SMAW" in (intent.welding_process or []):
+                power_source_reason = f"Selected {top_package.power_source.get('product_name', 'Unknown')} for SMAW/stick welding capability with appropriate amperage output."
+            elif "GMAW" in (intent.welding_process or []):
+                power_source_reason = f"Selected {top_package.power_source.get('product_name', 'Unknown')} for MIG/GMAW welding with wire feeding compatibility."
+            else:
+                power_source_reason = f"Selected {top_package.power_source.get('product_name', 'Unknown')} based on compatibility and performance requirements."
+            
+            # Feeder selection
+            if top_package.feeder:
+                feeder_name = top_package.feeder.get('product_name', 'Unknown')
+                if "No Feeder Available" in feeder_name:
+                    feeder_reason = "No feeder required for this welding process (stick welding uses electrodes)."
+                else:
+                    feeder_reason = f"Selected {feeder_name} for optimal wire feeding performance with the chosen power source."
+            
+            # Cooler selection
+            if top_package.cooler:
+                cooler_name = top_package.cooler.get('product_name', 'Unknown')
+                if "No Cooler Available" in cooler_name:
+                    cooler_reason = "No cooling required for this application (air-cooled operation suitable)."
+                else:
+                    cooler_reason = f"Selected {cooler_name} for thermal management during extended welding operations."
+            
+            # Accessories criteria
+            acc_count = len(top_package.accessories)
+            accessories_criteria = f"Selected {acc_count} accessories based on co-purchase frequency with this Trinity combination, focusing on trolleys, cables, and essential consumables."
+        
+        # Ranking factors
+        ranking_factors = {
+            "trinity_compliance": 0.4,
+            "semantic_similarity": 0.3,
+            "sales_frequency": 0.2,
+            "business_rules": 0.1
+        }
+        
+        # Business rules applied
+        business_rules_applied = [
+            "Trinity architecture enforcement (PowerSource + Feeder + Cooler)",
+            "Compatibility verification between components",
+            "Sales frequency prioritization",
+            "ESAB product preference (where applicable)"
+        ]
+        
+        # Final score breakdown for top package
+        final_score_breakdown = {}
+        if packages:
+            top_package = packages[0]
+            final_score_breakdown = {
+                "base_package_score": top_package.package_score,
+                "trinity_compliance_bonus": 0.1 if top_package.trinity_compliance else 0.0,
+                "compatibility_score": top_package.compatibility_score,
+                "business_rule_adjustment": top_package.business_rule_compliance
+            }
+        
+        return PackageGenerationExplanation(
+            user_query_analysis=user_query_analysis,
+            detected_requirements=detected_requirements,
+            interpretation_confidence=intent.confidence,
+            ambiguous_terms_resolved=getattr(intent, 'ambiguous_terms', []),
+            search_strategy_reasoning=search_strategy_reasoning,
+            algorithms_applied=[alg.value for alg in recommendations.algorithms_used],
+            trinity_formation_process=trinity_formation_process,
+            power_source_selection_reason=power_source_reason,
+            feeder_selection_reason=feeder_reason,
+            cooler_selection_reason=cooler_reason,
+            accessories_selection_criteria=accessories_criteria,
+            ranking_factors=ranking_factors,
+            business_rules_applied=business_rules_applied,
+            final_score_breakdown=final_score_breakdown
+        )
+    
     def _create_error_response(self, intent: EnhancedProcessedIntent, trace_id: str, error: str) -> EnterpriseRecommendationResponse:
         """Create error response when processing fails"""
         
@@ -702,6 +831,11 @@ class MultilingualResponseService:
             total_found=0,
             formatted_response=error_response,
             explanations={"error": error},
+            generation_explanation=PackageGenerationExplanation(
+                user_query_analysis=f"Failed to process query: '{intent.original_query}'",
+                interpretation_confidence=0.0,
+                search_strategy_reasoning="Processing failed before search strategy could be applied"
+            ),
             overall_confidence=0.0,
             confidence_breakdown={"error": 1.0},
             search_metadata=None,

@@ -1,0 +1,233 @@
+{
+  "metadata": {
+    "total_packages": 7,
+    "target_powersources": [
+      "0445555880",
+      "0465350884",
+      "0446200880",
+      "0445250880",
+      "0465350883"
+    ],
+    "generated_date": "2025-09-22",
+    "source": "Filtered from golden_pkg_format_V2.xlsx"
+  },
+  "golden_packages": [
+    {
+      "package_id": 1,
+      "powersource_gin": "0446200880",
+      "powersource_name": "Aristo 500ix",
+      "components": {
+        "feeder": {
+          "gin": "0445800894",
+          "name": "RobustFeed Pulse, EURO connector, torch cooling system"
+        },
+        "cooler": {
+          "gin": "0465427880",
+          "name": "Cool 2"
+        },
+        "interconnector": {
+          "gin": "0446255891",
+          "name": "Intercon. RF, CAN, W, 70mm2, 5m"
+        },
+        "torch": {
+          "gin": "0700026415",
+          "name": "EXEOR PSF 420W Water cooled, 3m"
+        },
+        "power_accessory": {
+          "gin": "0349313450",
+          "name": "Trolley Warrior/Aristo 3 in 1"
+        },
+        "feeder_accessory": {
+          "gin": "0446081880",
+          "name": "Wheel kit robust feed"
+        }
+      }
+    },
+    {
+      "package_id": 2,
+      "powersource_gin": "0446200880",
+      "powersource_name": "Aristo 500ix",
+      "components": {
+        "feeder": {
+          "gin": "0445800887",
+          "name": "RobustFeed U6,  EURO connector, torch cooling system, heater, gas flow meter and MMA"
+        },
+        "cooler": {
+          "gin": "0465427880",
+          "name": "Cool 2"
+        },
+        "interconnector": {
+          "gin": "0446255891",
+          "name": "Intercon. RF, CAN, W, 70mm2, 5m"
+        },
+        "torch": {
+          "gin": "0700026415",
+          "name": "EXEOR PSF 420W Water cooled, 3m"
+        },
+        "power_accessory": {
+          "gin": "0349313450",
+          "name": "Trolley Warrior/Aristo 3 in 1"
+        },
+        "feeder_accessory": {
+          "gin": "0446081880",
+          "name": "Wheel kit robust feed"
+        }
+      }
+    },
+    {
+      "package_id": 3,
+      "powersource_gin": "0446200880",
+      "powersource_name": "Aristo 500ix",
+      "components": {
+        "feeder": {
+          "gin": "0445800898",
+          "name": "RobustFeed U82,  U82 Plus included, flow meter, heater, MMA outlet, Water, ELP"
+        },
+        "cooler": {
+          "gin": "0465427880",
+          "name": "Cool 2"
+        },
+        "interconnector": {
+          "gin": "0446255891",
+          "name": "Intercon. RF, CAN, W, 70mm2, 5m"
+        },
+        "torch": {
+          "gin": "0700026415",
+          "name": "EXEOR PSF 420W Water cooled, 3m"
+        },
+        "power_accessory": {
+          "gin": "0349313450",
+          "name": "Trolley Warrior/Aristo 3 in 1"
+        },
+        "feeder_accessory": {
+          "gin": "0446081880",
+          "name": "Wheel kit robust feed"
+        }
+      }
+    },
+    {
+      "package_id": 9,
+      "powersource_gin": "0465350883",
+      "powersource_name": "Warrior 500i",
+      "components": {
+        "feeder": {
+          "gin": "0445800883",
+          "name": "Robust Feed Pro Off Water CPL"
+        },
+        "cooler": {
+          "gin": "0465427880",
+          "name": "Cool 2"
+        },
+        "interconnector": {
+          "gin": "0460160892",
+          "name": "Interconn RF 70mm2, Water cooled, 10m"
+        },
+        "torch": {
+          "gin": "0700026416",
+          "name": "Exeor PSF 420w 4m"
+        },
+        "power_accessory": {
+          "gin": "0349313450",
+          "name": "Trolley Warrior/Aristo 3 in 1"
+        },
+        "feeder_accessory": {
+          "gin": "0446081880",
+          "name": "Wheel kit robust feed"
+        }
+      }
+    },
+    {
+      "package_id": 10,
+      "powersource_gin": "0465350884",
+      "powersource_name": "Warrior 400i",
+      "components": {
+        "feeder": {
+          "gin": "0445800883",
+          "name": "Robust Feed Pro Off Water CPL"
+        },
+        "cooler": {
+          "gin": "0465427880",
+          "name": "Cool 2"
+        },
+        "interconnector": {
+          "gin": "0460160892",
+          "name": "Interconn RF 70mm2, Water cooled, 10m"
+        },
+        "torch": {
+          "gin": "0700026416",
+          "name": "Exeor PSF 420w 4m"
+        },
+        "power_accessory": {
+          "gin": "0349313450",
+          "name": "Trolley Warrior/Aristo 3 in 1"
+        },
+        "feeder_accessory": {
+          "gin": "0446081880",
+          "name": "Wheel kit robust feed"
+        }
+      }
+    },
+    {
+      "package_id": 11,
+      "powersource_gin": "0445555880",
+      "powersource_name": "Warrior 750i 380 - 460V, CE",
+      "components": {
+        "feeder": {
+          "gin": "0445800883",
+          "name": "Robust Feed Pro Off Water CPL"
+        },
+        "cooler": {
+          "gin": "0465427881",
+          "name": "Cool 2 Stand alone"
+        },
+        "interconnector": {
+          "gin": "0460160892",
+          "name": "Interconn RF 70mm2, Water cooled, 10m"
+        },
+        "torch": {
+          "gin": "0700026426",
+          "name": "EXEOR PSF 520W Water cooled, dual circuit cooling, 4m"
+        },
+        "power_accessory": {
+          "gin": "0446398880",
+          "name": "Trolley  (water cooled)"
+        },
+        "feeder_accessory": {
+          "gin": "0446081880",
+          "name": "Wheel kit robust feed"
+        }
+      }
+    },
+    {
+      "package_id": 18,
+      "powersource_gin": "0445250880",
+      "powersource_name": "Renegade ES 300i with cables",
+      "components": {
+        "feeder": {
+          "gin": "F000000007",
+          "name": "No Feeder available"
+        },
+        "cooler": {
+          "gin": "F000000005",
+          "name": "No cooler available"
+        },
+        "interconnector": {
+          "gin": "F000000008",
+          "name": "No interconn available"
+        },
+        "torch": {
+          "gin": "F000000003",
+          "name": "No torch"
+        },
+        "power_accessory": {
+          "gin": "0445139880",
+          "name": "1 to 3 phase (Renegade)"
+        },
+        "feeder_accessory": {
+          "gin": "F000000009",
+          "name": "No accessories available"
+        }
+      }
+    }
+  ]
+}

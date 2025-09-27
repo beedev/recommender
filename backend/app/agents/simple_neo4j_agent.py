@@ -142,6 +142,33 @@ class SimpleNeo4jAgent:
             if process_conditions:
                 conditions.append(f"({' OR '.join(process_conditions)})")
         
+        # FALLBACK: Keyword-based process detection when entity extraction fails
+        elif hasattr(intent, 'original_query') and intent.original_query:
+            original_query = intent.original_query.upper()
+            fallback_processes = []
+            
+            # Detect stick welding
+            if "STICK" in original_query or "ELECTRODE" in original_query:
+                fallback_processes.extend(["SMAW", "stick", "electrode"])
+            
+            # Detect MIG welding
+            if "MIG" in original_query:
+                fallback_processes.extend(["GMAW", "MIG"])
+            
+            # Detect TIG welding
+            if "TIG" in original_query:
+                fallback_processes.extend(["GTAW", "TIG"])
+            
+            if fallback_processes:
+                process_conditions = []
+                for i, process in enumerate(fallback_processes):
+                    param_name = f"fallback_process_{i}"
+                    process_conditions.append(f"(p.specifications_json CONTAINS ${param_name} OR p.description CONTAINS ${param_name})")
+                    parameters[param_name] = process
+                
+                conditions.append(f"({' OR '.join(process_conditions)})")
+                logger.info(f"Using keyword-based fallback for processes: {fallback_processes}")
+        
         # Material-specific logic (search in description)
         if intent.material:
             conditions.append("p.description CONTAINS $material")
@@ -164,10 +191,10 @@ class SimpleNeo4jAgent:
         if conditions:
             query_parts.append("AND " + " AND ".join(conditions))
         
-        # Add sales frequency and ordering
+        # Add sales frequency and ordering using new Order architecture
         query_parts.extend([
-            "OPTIONAL MATCH (p)<-[:CONTAINS]-(t:Transaction)",
-            "WITH p, COUNT(DISTINCT t.order_id) as sales_frequency",
+            "OPTIONAL MATCH (p)<-[:CONTAINS]-(o:Order)",
+            "WITH p, COUNT(DISTINCT o) as sales_frequency",
             "RETURN p.product_id as product_id,",
             "       p.name as product_name,", 
             "       p.category as category,",
@@ -201,8 +228,8 @@ class SimpleNeo4jAgent:
         query = f"""
         MATCH (p:Product {{product_id: $power_source_id, category: 'PowerSource'}})
         MATCH (p)-[:DETERMINES]->(comp:Product {{category: $component_category}})
-        OPTIONAL MATCH (comp)<-[:CONTAINS]-(t:Transaction)
-        WITH comp, COUNT(DISTINCT t.order_id) as sales_frequency
+        OPTIONAL MATCH (comp)<-[:CONTAINS]-(o:Order)
+        WITH comp, COUNT(DISTINCT o) as sales_frequency
         RETURN comp.product_id as product_id,
                comp.name as product_name,
                comp.category as category,
@@ -390,9 +417,121 @@ Identify which categories are needed:"""
             logger.error(f"Error finding power sources: {e}")
             return []
     
+    async def _generate_entity_extraction_prompt(self, query: str) -> str:
+        """
+        Generate dynamic entity extraction prompt using current YAML configuration.
+        This allows the YAML file to be modified at runtime without code changes.
+        
+        Args:
+            query: User query text
+            
+        Returns:
+            Generated prompt string with current YAML configuration
+        """
+        try:
+            # Load current welding processes configuration
+            import yaml
+            import os
+            config_path = os.path.join(os.path.dirname(__file__), '..', '..', 'config', 'welding_processes.yaml')
+            
+            with open(config_path, 'r') as file:
+                welding_config = yaml.safe_load(file)
+            
+            # Generate process mapping examples from YAML
+            process_examples = []
+            if 'welding_processes' in welding_config and 'aliases' in welding_config['welding_processes']:
+                aliases = welding_config['welding_processes']['aliases']
+                for primary, alias_list in aliases.items():
+                    if alias_list:  # If there are aliases
+                        for alias in alias_list[:2]:  # Take first 2 aliases as examples
+                            if primary == 'STICK':
+                                process_examples.append(f'- "{alias.lower()}" → "SMAW"')
+                            elif primary == 'MIG':
+                                process_examples.append(f'- "{alias.lower()}" → "GMAW"')
+                            elif primary == 'TIG':
+                                process_examples.append(f'- "{alias.lower()}" → "GTAW"')
+                            elif primary == 'FLUX_CORE':
+                                process_examples.append(f'- "{alias.lower()}" → "FCAW"')
+            
+            # Generate material examples from YAML
+            material_examples = []
+            if 'materials' in welding_config and 'aliases' in welding_config['materials']:
+                material_aliases = welding_config['materials']['aliases']
+                for material, alias_list in material_aliases.items():
+                    if alias_list:
+                        material_examples.append(f'- "{alias_list[0]}" → "{material}"')
+            
+            # Build the dynamic prompt
+            prompt = f"""
+Extract welding-specific entities from this query: "{query}"
+
+Use this welding domain knowledge for proper term mapping:
+
+WELDING PROCESSES CONFIGURATION:
+{yaml.dump(welding_config.get('welding_processes', {}), default_flow_style=False)}
+
+MATERIALS CONFIGURATION:
+{yaml.dump(welding_config.get('materials', {}), default_flow_style=False)}
+
+INDUSTRIES:
+{welding_config.get('industries', [])}
+
+APPLICATIONS:
+{welding_config.get('applications', [])}
+
+IMPORTANT MAPPING RULES:
+For welding processes, always return the TECHNICAL abbreviation (SMAW, GMAW, GTAW, FCAW) not the common name.
+
+Process mapping examples:
+{chr(10).join(process_examples) if process_examples else '- "stick welding" → "SMAW"'}
+
+Material mapping examples:
+{chr(10).join(material_examples) if material_examples else '- "mild steel" → "steel"'}
+
+Identify and extract:
+- Product names/models (e.g., "Aristo 500ix", "Warrior 400i", "PowerWave")
+- Welding processes (USE TECHNICAL ABBREVIATIONS: "SMAW", "GMAW", "GTAW", "FCAW")
+- Materials (use canonical names from config)
+- Specifications (e.g., "500 amp", "400A", "230V", "three phase")
+- Applications (from the applications list above)
+- Equipment types (e.g., "feeder", "cooler", "torch", "cable")
+
+Return ONLY a JSON object with this exact format:
+{{
+    "product_names": ["list", "of", "product", "names"],
+    "processes": ["list", "of", "technical", "abbreviations"],
+    "materials": ["list", "of", "canonical", "materials"],
+    "specifications": ["list", "of", "specs"],
+    "applications": ["list", "of", "applications"],
+    "equipment_types": ["list", "of", "equipment", "types"]
+}}
+
+Example: "I want a welding package for stick welding"
+Response: {{"product_names": [], "processes": ["SMAW"], "materials": [], "specifications": [], "applications": [], "equipment_types": []}}
+"""
+            return prompt.strip()
+            
+        except Exception as e:
+            logger.error(f"Error generating dynamic prompt: {e}")
+            # Fallback to basic prompt if YAML loading fails
+            return f"""
+Extract welding-specific entities from this query: "{query}"
+
+Return ONLY a JSON object with this exact format:
+{{
+    "product_names": ["list", "of", "product", "names"],
+    "processes": ["SMAW", "GMAW", "GTAW", "FCAW"],
+    "materials": ["aluminum", "steel", "stainless steel"],
+    "specifications": ["list", "of", "specs"],
+    "applications": ["list", "of", "applications"],
+    "equipment_types": ["list", "of", "equipment", "types"]
+}}
+"""
+
     async def _extract_welding_entities(self, query: str) -> Dict[str, List[str]]:
         """
         Extract welding-specific entities using LLM for intelligent query formation.
+        Uses YAML configuration for proper term mapping.
         
         Args:
             query: User query text
@@ -402,30 +541,9 @@ Identify which categories are needed:"""
         """
         try:
             logger.info(f"[Entity Extraction] Starting LLM entity extraction for query: {query}")
-            entity_extraction_prompt = f"""
-            Extract welding-specific entities from this query: "{query}"
             
-            Identify and extract:
-            - Product names/models (e.g., "Aristo 500ix", "Warrior 400i", "PowerWave")
-            - Welding processes (e.g., "MIG", "TIG", "STICK", "GMAW", "GTAW", "SMAW")
-            - Materials (e.g., "aluminum", "steel", "stainless steel", "carbon steel")
-            - Specifications (e.g., "500 amp", "400A", "230V", "three phase")
-            - Applications (e.g., "automotive", "pipeline", "fabrication", "repair")
-            - Equipment types (e.g., "feeder", "cooler", "torch", "cable")
-            
-            Return ONLY a JSON object with this exact format:
-            {{
-                "product_names": ["list", "of", "product", "names"],
-                "processes": ["list", "of", "welding", "processes"],
-                "materials": ["list", "of", "materials"],
-                "specifications": ["list", "of", "specs"],
-                "applications": ["list", "of", "applications"],
-                "equipment_types": ["list", "of", "equipment", "types"]
-            }}
-            
-            Example: "Create package with Aristo 500ix for aluminum MIG welding"
-            Response: {{"product_names": ["Aristo 500ix"], "processes": ["MIG"], "materials": ["aluminum"], "specifications": [], "applications": [], "equipment_types": []}}
-            """
+            # Generate dynamic prompt with current YAML configuration
+            entity_extraction_prompt = await self._generate_entity_extraction_prompt(query)
             
             response = await self.llm_client.chat.completions.create(
                 model="gpt-4",
@@ -770,7 +888,8 @@ Identify which categories are needed:"""
             return power_sources
             
         except Exception as e:
-            logger.error(f"Error in vector search for power sources: {e}")
+            logger.warning(f"Vector search failed (likely OpenAI quota exceeded), will use parameter fallback: {e}")
+            # Return empty list to trigger parameter-based fallback
             return []
     
     async def _search_power_sources_by_parameters(self, intent: SimpleWeldingIntent) -> List[WeldingPackageComponent]:
@@ -1109,21 +1228,21 @@ Identify which categories are needed:"""
             
             logger.info(f"🔍 Sales History Analysis: Trinity IDs - PS: {power_source_id}, F: {feeder_id}, C: {cooler_id}")
             
-            # First check if we have any Transaction data at all
-            order_count_query = "MATCH (t:Transaction) RETURN count(DISTINCT t.order_id) as total_orders"
+            # First check if we have any Order data at all
+            order_count_query = "MATCH (o:Order) RETURN count(DISTINCT o) as total_orders"
             order_count_result = await self.neo4j_repo.execute_query(order_count_query, {})
             total_orders = order_count_result[0]["total_orders"] if order_count_result else 0
             logger.info(f"🔍 Database Check: Total orders in database: {total_orders}")
             
-            # Find orders that contain this trinity combination
+            # Find orders that contain this trinity combination using new Order architecture
             query = """
-            MATCH (t1:Transaction)-[:CONTAINS]->(ps:Product {product_id: $power_source_id})
-            MATCH (t2:Transaction)-[:CONTAINS]->(f:Product {product_id: $feeder_id})
-            MATCH (t3:Transaction)-[:CONTAINS]->(c:Product {product_id: $cooler_id})
-            MATCH (t_other:Transaction)-[:CONTAINS]->(other:Product)
-            WHERE t1.order_id = t2.order_id AND t2.order_id = t3.order_id AND t3.order_id = t_other.order_id
+            MATCH (o1:Order)-[:CONTAINS]->(ps:Product {product_id: $power_source_id})
+            MATCH (o2:Order)-[:CONTAINS]->(f:Product {product_id: $feeder_id})
+            MATCH (o3:Order)-[:CONTAINS]->(c:Product {product_id: $cooler_id})
+            MATCH (o_other:Order)-[:CONTAINS]->(other:Product)
+            WHERE o1.order_id = o2.order_id AND o2.order_id = o3.order_id AND o3.order_id = o_other.order_id
               AND NOT other.product_id IN [$power_source_id, $feeder_id, $cooler_id]
-            WITH other, COUNT(DISTINCT t_other.order_id) as purchase_frequency
+            WITH other, COUNT(DISTINCT o_other) as purchase_frequency
             RETURN other.product_id as product_id,
                    other.name as product_name,
                    other.category as category,
@@ -1321,6 +1440,101 @@ Identify which categories are needed:"""
             
             logger.info(f"Using query for category inference: {original_query}")
             
+            # TRINITY-FIRST: Try Trinity semantic search for guided flow
+            logger.info("🎯 TRINITY-FIRST: Attempting Trinity semantic search...")
+            trinity_results = await self.search_trinity_combinations(original_query, limit=5)
+            
+            if trinity_results and len(trinity_results) > 0:
+                logger.info(f"🏆 Trinity semantic search found {len(trinity_results)} combinations")
+                
+                # Debug: Log all Trinity combinations and their scores before LLM ranking
+                for i, trinity in enumerate(trinity_results):
+                    logger.info(f"🔍 Trinity {i+1}: PS_NAME={trinity.get('powersource_name', 'N/A')}, "
+                               f"PS_GIN={trinity.get('powersource_gin', 'N/A')}, "
+                               f"Score={trinity['similarity_score']:.3f}")
+                
+                # Use LLM to intelligently rank Trinity combinations based on user intent
+                ranked_trinity_results = await self._llm_rank_trinity_combinations(original_query, trinity_results)
+                
+                # Debug: Log Trinity combinations after LLM ranking
+                logger.info("🤖 LLM-ranked Trinity combinations:")
+                for i, trinity in enumerate(ranked_trinity_results):
+                    logger.info(f"🔍 Ranked Trinity {i+1}: PS_GIN={trinity.get('powersource_gin', 'N/A')}, "
+                               f"LLM_Score={trinity['llm_score']:.3f}")
+                
+                # Use the best LLM-ranked Trinity result for package formation
+                best_trinity = ranked_trinity_results[0]
+                logger.info(f"🎯 Selected Trinity: PS={best_trinity['powersource_name'][:30]}..., "
+                           f"F={best_trinity['feeder_name'][:30]}..., "
+                           f"C={best_trinity['cooler_name'][:30]}... "
+                           f"(score: {best_trinity['similarity_score']:.3f})")
+                
+                # Get Trinity components as WeldingPackageComponent objects
+                trinity_components = await self.get_trinity_package_components(best_trinity['trinity_id'])
+                
+                if trinity_components:
+                    logger.info("✅ Trinity components retrieved, forming complete package...")
+                    
+                    # Extract core components
+                    power_source = trinity_components.get('PowerSource')
+                    feeder = trinity_components.get('Feeder')
+                    cooler = trinity_components.get('Cooler')
+                    
+                    # Find additional accessories for this Trinity
+                    if power_source and feeder and cooler:
+                        trinity_accessories = await self._find_trinity_based_accessories(
+                            power_source.product_id, 
+                            feeder.product_id, 
+                            cooler.product_id
+                        )
+                        
+                        # Calculate total price
+                        total_price = sum([
+                            power_source.price or 0.0,
+                            feeder.price or 0.0,
+                            cooler.price or 0.0
+                        ] + [acc.price or 0.0 for acc in trinity_accessories])
+                        
+                        # Calculate package score based on Trinity semantic similarity
+                        package_score = best_trinity['similarity_score'] * 0.8  # High confidence for Trinity match
+                        
+                        # Create Trinity-based package
+                        trinity_package = SimpleWeldingPackage(
+                            power_source=power_source,
+                            feeders=[feeder] if feeder else [],
+                            coolers=[cooler] if cooler else [],
+                            consumables=[],  # Trinity doesn't include consumables
+                            accessories=trinity_accessories[:5],  # Limit accessories
+                            total_price=total_price,
+                            package_score=package_score,
+                            confidence=intent.confidence * package_score
+                        )
+                        
+                        logger.info(f"🎯 Trinity package formed: score={package_score:.3f}, price=${total_price:.2f}")
+                        
+                        # Store Trinity package as the primary recommendation
+                        trinity_package._recommendation_type = "trinity_semantic"
+                        trinity_package._priority = 1  # Highest priority
+                        
+                        # Continue to generate additional recommendations (sales frequency, golden packages)
+                        logger.info("🔄 Trinity found, now generating additional sales frequency and golden package recommendations...")
+                        additional_packages = await self._generate_additional_recommendations(intent, original_query, trinity_package)
+                        
+                        # Return Trinity as primary with additional options
+                        if additional_packages:
+                            logger.info(f"📋 Returning Trinity package with {len(additional_packages)} additional recommendations")
+                            # For now, return Trinity but we should return multiple packages in enterprise mode
+                            return trinity_package
+                        else:
+                            return trinity_package
+                    else:
+                        logger.warning("❌ Trinity components incomplete, falling back to standard approach")
+                else:
+                    logger.warning("❌ Could not retrieve Trinity components, falling back to standard approach")
+            else:
+                logger.info("ℹ️ No Trinity matches found, proceeding with standard approach")
+            
+            # STANDARD APPROACH: Continue with existing logic
             # Infer required categories from the original query
             required_categories = await self.infer_required_categories(original_query)
             
@@ -1421,16 +1635,200 @@ Identify which categories are needed:"""
             logger.error(f"Error forming welding package: {e}")
             return None
     
+    async def _generate_additional_recommendations(self, intent: SimpleWeldingIntent, original_query: str, trinity_package: SimpleWeldingPackage) -> List[SimpleWeldingPackage]:
+        """Generate additional sales frequency and golden package recommendations alongside Trinity"""
+        try:
+            logger.info("🔄 Generating additional sales frequency and golden package recommendations...")
+            additional_packages = []
+            
+            # Generate sales frequency based recommendations
+            logger.info("📊 Generating sales frequency based recommendations...")
+            sales_packages = await self._generate_sales_frequency_recommendations(intent, original_query, exclude_trinity_power_source=trinity_package.power_source.product_id if trinity_package.power_source else None)
+            if sales_packages:
+                for pkg in sales_packages[:2]:  # Top 2 sales frequency recommendations
+                    pkg._recommendation_type = "sales_frequency"
+                    pkg._priority = 2
+                additional_packages.extend(sales_packages)
+                logger.info(f"✅ Added {len(sales_packages)} sales frequency recommendations")
+            
+            # Generate golden package recommendations  
+            logger.info("🏆 Generating golden package recommendations...")
+            golden_packages = await self._generate_golden_package_recommendations(intent, original_query, exclude_trinity_power_source=trinity_package.power_source.product_id if trinity_package.power_source else None)
+            if golden_packages:
+                for pkg in golden_packages[:1]:  # Top 1 golden package recommendation
+                    pkg._recommendation_type = "golden_package"
+                    pkg._priority = 3
+                additional_packages.extend(golden_packages)
+                logger.info(f"✅ Added {len(golden_packages)} golden package recommendations")
+            
+            logger.info(f"🎯 Generated {len(additional_packages)} additional recommendations")
+            return additional_packages
+            
+        except Exception as e:
+            logger.error(f"Error generating additional recommendations: {e}")
+            return []
+    
+    async def _generate_sales_frequency_recommendations(self, intent: SimpleWeldingIntent, original_query: str, exclude_trinity_power_source: str = None) -> List[SimpleWeldingPackage]:
+        """Generate sales frequency based recommendations"""
+        try:
+            # Find power sources using traditional approach (excluding Trinity power source if specified)
+            power_sources = await self.find_power_sources(intent)
+            if exclude_trinity_power_source:
+                power_sources = [ps for ps in power_sources if ps.product_id != exclude_trinity_power_source]
+            
+            if not power_sources:
+                return []
+            
+            packages = []
+            for power_source in power_sources[:2]:  # Top 2 different power sources
+                # Generate traditional package using sales frequency approach
+                compatible_components = await self.find_compatible_components(power_source.product_id, intent)
+                
+                # Calculate total price
+                total_price = power_source.price or 0.0
+                all_components = []
+                all_components.extend(compatible_components["feeders"][:1])
+                all_components.extend(compatible_components["coolers"][:1])
+                all_components.extend(compatible_components["consumables"][:2])
+                all_components.extend(compatible_components["accessories"][:2])
+                
+                for comp in all_components:
+                    if comp.price:
+                        total_price += comp.price
+                
+                # Calculate package score
+                component_scores = [comp.compatibility_score for comp in all_components]
+                avg_component_score = sum(component_scores) / len(component_scores) if component_scores else 0.5
+                package_score = (power_source.compatibility_score * 0.6 + avg_component_score * 0.4)
+                
+                # Create package
+                package = SimpleWeldingPackage(
+                    power_source=power_source,
+                    feeders=compatible_components["feeders"][:1],
+                    coolers=compatible_components["coolers"][:1],
+                    consumables=compatible_components["consumables"][:2],
+                    accessories=compatible_components["accessories"][:2],
+                    total_price=total_price,
+                    package_score=package_score,
+                    confidence=intent.confidence * package_score
+                )
+                packages.append(package)
+                logger.info(f"📊 Sales frequency package: {power_source.product_name} (score: {package_score:.3f})")
+            
+            return packages
+            
+        except Exception as e:
+            logger.error(f"Error generating sales frequency recommendations: {e}")
+            return []
+    
+    async def _generate_golden_package_recommendations(self, intent: SimpleWeldingIntent, original_query: str, exclude_trinity_power_source: str = None) -> List[SimpleWeldingPackage]:
+        """Generate golden package recommendations"""
+        try:
+            # Find golden packages (excluding Trinity power source if specified)
+            query = """
+            MATCH (gp:GoldenPackage)
+            MATCH (ps:Product {gin: gp.powersource_gin, category: 'PowerSource'})
+            MATCH (gp)-[:CONTAINS]->(product:Product)
+            WITH gp, ps, COLLECT(DISTINCT {
+                product_id: product.product_id,
+                product_name: product.name,
+                category: product.category,
+                subcategory: product.subcategory,
+                price: product.price,
+                description: product.description
+            }) as components
+            RETURN gp.golden_package_id as package_id,
+                   ps.product_id as power_source_id,
+                   ps.name as power_source_name,
+                   ps.price as power_source_price,
+                   ps.description as power_source_description,
+                   components
+            ORDER BY ps.name
+            LIMIT 3
+            """
+            
+            results = await self.neo4j_repo.execute_query(query, {})
+            
+            packages = []
+            for result in results:
+                power_source_id = result.get("power_source_id")
+                if exclude_trinity_power_source and power_source_id == exclude_trinity_power_source:
+                    continue
+                
+                # Create power source component
+                power_source = WeldingPackageComponent(
+                    product_id=power_source_id,
+                    product_name=result.get("power_source_name", "Unknown"),
+                    category="PowerSource",
+                    price=result.get("power_source_price", 0.0),
+                    sales_frequency=0,
+                    description=result.get("power_source_description", ""),
+                    compatibility_score=0.9  # Golden packages have high compatibility
+                )
+                
+                # Process components
+                components = result.get("components", [])
+                feeders = []
+                coolers = []
+                consumables = []
+                accessories = []
+                
+                total_price = power_source.price or 0.0
+                
+                for comp_data in components:
+                    comp = WeldingPackageComponent(
+                        product_id=comp_data.get("product_id", ""),
+                        product_name=comp_data.get("product_name", "Unknown"),
+                        category=comp_data.get("category", "Unknown"),
+                        subcategory=comp_data.get("subcategory"),
+                        price=comp_data.get("price", 0.0),
+                        sales_frequency=0,
+                        description=comp_data.get("description", ""),
+                        compatibility_score=0.9
+                    )
+                    
+                    total_price += comp.price or 0.0
+                    
+                    category = comp.category.lower()
+                    if "feeder" in category:
+                        feeders.append(comp)
+                    elif "cooler" in category:
+                        coolers.append(comp)
+                    elif "consumable" in category:
+                        consumables.append(comp)
+                    else:
+                        accessories.append(comp)
+                
+                # Create golden package
+                package = SimpleWeldingPackage(
+                    power_source=power_source,
+                    feeders=feeders[:1],
+                    coolers=coolers[:1], 
+                    consumables=consumables[:3],
+                    accessories=accessories[:3],
+                    total_price=total_price,
+                    package_score=0.85,  # Golden packages have good baseline score
+                    confidence=intent.confidence * 0.85
+                )
+                packages.append(package)
+                logger.info(f"🏆 Golden package: {power_source.product_name} (price: ${total_price:.2f})")
+            
+            return packages[:1]  # Return top golden package
+            
+        except Exception as e:
+            logger.error(f"Error generating golden package recommendations: {e}")
+            return []
+    
     # ========================================
     # TRINITY-FIRST ARCHITECTURE METHODS
     # ========================================
     
-    async def _generate_trinity_combinations(self, powersource_id: str) -> List[Dict]:
+    async def _generate_trinity_combinations(self, powersource_gin: str) -> List[Dict]:
         """Generate all possible Trinity combinations for a PowerSource using DETERMINES relationships"""
         try:
             # Get all compatible feeders using DETERMINES relationships
             feeders_query = """
-            MATCH (ps:Product {gin: $ps_id})-[:DETERMINES]->(f:Product)
+            MATCH (ps:Product {gin: $ps_gin})-[:DETERMINES]->(f:Product)
             WHERE f.category = 'Feeder'
             RETURN f.gin as feeder_id, f.name as feeder_name
             ORDER BY f.name
@@ -1438,14 +1836,14 @@ Identify which categories are needed:"""
             
             # Get all compatible coolers using DETERMINES relationships
             coolers_query = """
-            MATCH (ps:Product {gin: $ps_id})-[:DETERMINES]->(c:Product)
+            MATCH (ps:Product {gin: $ps_gin})-[:DETERMINES]->(c:Product)
             WHERE c.category = 'Cooler'
             RETURN c.gin as cooler_id, c.name as cooler_name
             ORDER BY c.name
             """
             
-            feeders = await self.neo4j_repo.execute_query(feeders_query, {"ps_id": powersource_id})
-            coolers = await self.neo4j_repo.execute_query(coolers_query, {"ps_id": powersource_id})
+            feeders = await self.neo4j_repo.execute_query(feeders_query, {"ps_gin": powersource_gin})
+            coolers = await self.neo4j_repo.execute_query(coolers_query, {"ps_gin": powersource_gin})
             
             logger.info(f"🔧 Found {len(feeders)} compatible feeders and {len(coolers)} compatible coolers")
             
@@ -1454,10 +1852,10 @@ Identify which categories are needed:"""
             for feeder in feeders:
                 for cooler in coolers:
                     combination = {
-                        "powersource_id": powersource_id,
-                        "feeder_id": feeder["feeder_id"],
+                        "powersource_gin": powersource_gin,
+                        "feeder_gin": feeder["feeder_id"],
                         "feeder_name": feeder["feeder_name"],
-                        "cooler_id": cooler["cooler_id"],
+                        "cooler_gin": cooler["cooler_id"],
                         "cooler_name": cooler["cooler_name"]
                     }
                     combinations.append(combination)
@@ -1479,24 +1877,25 @@ Identify which categories are needed:"""
             if not trinity_combinations:
                 return None
                 
-            powersource_id = trinity_combinations[0]["powersource_id"]
+            powersource_gin = trinity_combinations[0]["powersource_gin"]
             
-            # Fast Trinity popularity query using FORMS_TRINITY relationships
+            # Fast Trinity popularity query using new Order→Trinity architecture
             trinity_popularity_query = """
-            MATCH (t:Transaction)-[trinity:FORMS_TRINITY]->(ps:Product {gin: $powersource_id})
-            MATCH (f:Product {gin: trinity.feeder_gin})
-            MATCH (c:Product {gin: trinity.cooler_gin})
-            RETURN trinity.feeder_gin as feeder_gin, 
-                   trinity.cooler_gin as cooler_gin,
+            MATCH (o:Order)-[:FORMS_TRINITY]->(tr:Trinity)-[:COMPRISES]->(ps:Product {gin: $powersource_id})
+            MATCH (tr)-[:COMPRISES]->(f:Product)
+            MATCH (tr)-[:COMPRISES]->(c:Product)
+            WHERE f.category = 'Feeder' AND c.category = 'Cooler'
+            RETURN f.gin as feeder_gin, 
+                   c.gin as cooler_gin,
                    f.name as feeder_name,
                    c.name as cooler_name,
-                   count(*) as trinity_frequency
+                   count(DISTINCT o) as trinity_frequency
             ORDER BY trinity_frequency DESC
             LIMIT 1
             """
             
             result = await self.neo4j_repo.execute_query(trinity_popularity_query, {
-                "powersource_id": powersource_id
+                "powersource_id": powersource_gin
             })
             
             if not result or not result[0]:
@@ -1539,18 +1938,19 @@ Identify which categories are needed:"""
             logger.info(f"🚀 TRINITY-FIRST: Finding accessories for Trinity using FORMS_TRINITY relationships")
             logger.info(f"🔍 DEBUG: Looking for accessories with Trinity PS={powersource_id}, F={feeder_id}, C={cooler_id}")
             
-            # Fast Trinity-based accessories query using FORMS_TRINITY relationships
+            # Fast Trinity-based accessories query using new Order→Trinity architecture
             trinity_accessories_query = """
-            // Find Transaction nodes that have this specific Trinity
-            MATCH (trinity_t:Transaction)-[trinity:FORMS_TRINITY]->(ps:Product {gin: $ps_id})
-            WHERE trinity.feeder_gin = $feeder_id AND trinity.cooler_gin = $cooler_id
+            // Find Orders that contain this specific Trinity combination
+            MATCH (o:Order)-[:FORMS_TRINITY]->(tr:Trinity)-[:COMPRISES]->(ps:Product {gin: $ps_id})
+            MATCH (tr)-[:COMPRISES]->(f:Product {gin: $feeder_id})
+            MATCH (tr)-[:COMPRISES]->(c:Product {gin: $cooler_id})
             
-            // Find ALL Transaction nodes with the same order_id (since Transaction nodes are per-product)
-            MATCH (all_t:Transaction {order_id: trinity_t.order_id})-[:CONTAINS]->(accessory:Product)
+            // Find other Products in the same Orders (accessories)
+            MATCH (o)-[:CONTAINS]->(accessory:Product)
             WHERE accessory.gin <> $ps_id AND accessory.gin <> $feeder_id AND accessory.gin <> $cooler_id
             
             // Count co-occurrence with this Trinity
-            WITH accessory, COUNT(DISTINCT trinity_t.order_id) as trinity_cooccurrence
+            WITH accessory, COUNT(DISTINCT o) as trinity_cooccurrence
             RETURN accessory.gin as product_id,
                    accessory.name as product_name,
                    accessory.category as category,
@@ -1573,10 +1973,11 @@ Identify which categories are needed:"""
             # If no accessories found, debug the Trinity relationship
             if not results:
                 debug_query = """
-                MATCH (t:Transaction)-[trinity:FORMS_TRINITY]->(ps:Product {gin: $ps_id})
-                WHERE trinity.feeder_gin = $feeder_id AND trinity.cooler_gin = $cooler_id
-                RETURN count(t) as trinity_transactions, 
-                       collect(DISTINCT t.order_id)[0..3] as sample_orders
+                MATCH (o:Order)-[:FORMS_TRINITY]->(tr:Trinity)-[:COMPRISES]->(ps:Product {gin: $ps_id})
+                MATCH (tr)-[:COMPRISES]->(f:Product {gin: $feeder_id})
+                MATCH (tr)-[:COMPRISES]->(c:Product {gin: $cooler_id})
+                RETURN count(DISTINCT o) as trinity_orders, 
+                       collect(DISTINCT o.order_id)[0..3] as sample_orders
                 """
                 debug_result = await self.neo4j_repo.execute_query(debug_query, {
                     "ps_id": powersource_id,
@@ -1584,16 +1985,17 @@ Identify which categories are needed:"""
                     "cooler_id": cooler_id
                 })
                 if debug_result:
-                    logger.info(f"🔍 DEBUG: Found {debug_result[0]['trinity_transactions']} transactions with this Trinity")
+                    logger.info(f"🔍 DEBUG: Found {debug_result[0]['trinity_orders']} orders with this Trinity")
                     logger.info(f"🔍 DEBUG: Sample order IDs: {debug_result[0]['sample_orders']}")
                     
                     # Check what products exist in those orders
-                    if debug_result[0]['trinity_transactions'] > 0:
+                    if debug_result[0]['trinity_orders'] > 0:
                         products_query = """
-                        MATCH (trinity_t:Transaction)-[trinity:FORMS_TRINITY]->(ps:Product {gin: $ps_id})
-                        WHERE trinity.feeder_gin = $feeder_id AND trinity.cooler_gin = $cooler_id
-                        WITH trinity_t LIMIT 1
-                        MATCH (all_t:Transaction {order_id: trinity_t.order_id})-[:CONTAINS]->(p:Product)
+                        MATCH (o:Order)-[:FORMS_TRINITY]->(tr:Trinity)-[:COMPRISES]->(ps:Product {gin: $ps_id})
+                        MATCH (tr)-[:COMPRISES]->(f:Product {gin: $feeder_id})
+                        MATCH (tr)-[:COMPRISES]->(c:Product {gin: $cooler_id})
+                        WITH o LIMIT 1
+                        MATCH (o)-[:CONTAINS]->(p:Product)
                         RETURN p.gin, p.name, p.category
                         ORDER BY p.category
                         """
@@ -1624,6 +2026,254 @@ Identify which categories are needed:"""
         except Exception as e:
             logger.error(f"Error finding Trinity-based accessories: {e}")
             return []
+    
+    # =============================================================================
+    # TRINITY SEMANTIC SEARCH FUNCTIONALITY
+    # =============================================================================
+    
+    async def search_trinity_combinations(self, user_query: str, limit: int = 10) -> List[Dict[str, Any]]:
+        """
+        Search for Trinity combinations using semantic similarity on combined descriptions.
+        
+        Args:
+            user_query: User's natural language query (e.g., "package with Renegade")
+            limit: Maximum number of Trinity combinations to return
+            
+        Returns:
+            List of Trinity combinations with similarity scores
+        """
+        try:
+            logger.info(f"🔍 Trinity Semantic Search: '{user_query}' (limit: {limit})")
+            
+            # Generate query embedding for semantic search
+            query_embedding = self.embedding_generator.query_embedding(user_query)
+            
+            # Vector search query for Trinity nodes (assumes Trinity embeddings exist)
+            trinity_search_query = """
+            CALL db.index.vector.queryNodes($indexName, $numberOfNearestNeighbours, $query)
+            YIELD node as trinity, score
+            WHERE trinity:Trinity
+            RETURN trinity.trinity_id as trinity_id,
+                   trinity.powersource_gin as powersource_gin,
+                   trinity.feeder_gin as feeder_gin,
+                   trinity.cooler_gin as cooler_gin,
+                   trinity.powersource_name as powersource_name,
+                   trinity.feeder_name as feeder_name,
+                   trinity.cooler_name as cooler_name,
+                   trinity.combined_description as combined_description,
+                   trinity.order_count as order_count,
+                   score as similarity_score
+            ORDER BY score DESC
+            LIMIT $limit
+            """
+            
+            parameters = {
+                "indexName": "trinity_embeddings",  # Assume Trinity embeddings index exists
+                "numberOfNearestNeighbours": limit * 2,  # Get more candidates
+                "query": query_embedding,
+                "limit": limit
+            }
+            
+            try:
+                # Try Trinity-specific vector search first
+                results = await self.neo4j_repo.execute_query(trinity_search_query, parameters)
+                logger.info(f"✅ Trinity vector search found {len(results)} results")
+                
+                return [
+                    {
+                        "trinity_id": result["trinity_id"],
+                        "powersource_gin": result["powersource_gin"],
+                        "feeder_gin": result["feeder_gin"],
+                        "cooler_gin": result["cooler_gin"],
+                        "powersource_name": result["powersource_name"],
+                        "feeder_name": result["feeder_name"],
+                        "cooler_name": result["cooler_name"],
+                        "combined_description": result["combined_description"],
+                        "order_count": result["order_count"],
+                        "similarity_score": float(result["similarity_score"])
+                    }
+                    for result in results
+                ]
+                
+            except Exception as vector_error:
+                logger.warning(f"Trinity vector search failed: {vector_error}")
+                # Fallback to text-based Trinity search
+                return await self._fallback_trinity_text_search(user_query, limit)
+                
+        except Exception as e:
+            logger.error(f"Error in Trinity semantic search: {e}")
+            return []
+    
+    async def _fallback_trinity_text_search(self, user_query: str, limit: int) -> List[Dict[str, Any]]:
+        """
+        Fallback Trinity search using text matching on combined descriptions.
+        
+        Args:
+            user_query: User's natural language query
+            limit: Maximum number of results
+            
+        Returns:
+            List of Trinity combinations from text search
+        """
+        try:
+            logger.info(f"🔧 Trinity text search fallback: '{user_query}'")
+            
+            # Extract key terms from user query
+            key_terms = self._extract_key_terms(user_query)
+            
+            # Enhance key terms using LLM domain knowledge
+            enhanced_key_terms = await self._llm_enhance_key_terms(user_query, key_terms)
+            logger.info(f"🔑 Trinity search terms: {key_terms} → Enhanced: {enhanced_key_terms}")
+            
+            # Use enhanced terms for search
+            key_terms = enhanced_key_terms
+            
+            if not key_terms:
+                # If no key terms, return most popular Trinity combinations
+                text_search_query = """
+                MATCH (tr:Trinity)
+                RETURN tr.trinity_id as trinity_id,
+                       tr.powersource_gin as powersource_gin,
+                       tr.feeder_gin as feeder_gin,
+                       tr.cooler_gin as cooler_gin,
+                       tr.powersource_name as powersource_name,
+                       tr.feeder_name as feeder_name,
+                       tr.cooler_name as cooler_name,
+                       tr.combined_description as combined_description,
+                       tr.order_count as order_count,
+                       0.5 as similarity_score
+                ORDER BY tr.order_count DESC
+                LIMIT $limit
+                """
+                parameters = {"limit": limit}
+            else:
+                # Build text matching conditions
+                text_conditions = []
+                parameters = {"limit": limit}
+                
+                for i, term in enumerate(key_terms):
+                    param_name = f"term_{i}"
+                    text_conditions.append(
+                        f"(tr.combined_description CONTAINS ${param_name} OR "
+                        f"tr.powersource_name CONTAINS ${param_name} OR "
+                        f"tr.feeder_name CONTAINS ${param_name} OR "
+                        f"tr.cooler_name CONTAINS ${param_name})"
+                    )
+                    parameters[param_name] = term
+                
+                where_clause = " OR ".join(text_conditions)
+                
+                # Build dynamic scoring based on extracted terms to prioritize user-specified products
+                scoring_conditions = []
+                for i, term in enumerate(key_terms):
+                    if term.lower() in ['aristo', 'warrior', 'renegade']:  # Product brand names
+                        scoring_conditions.append(f"WHEN toLower(tr.powersource_name) CONTAINS toLower($term_{i}) THEN 0.95")
+                        scoring_conditions.append(f"WHEN toLower(tr.feeder_name) CONTAINS toLower($term_{i}) THEN 0.90")
+                        scoring_conditions.append(f"WHEN toLower(tr.cooler_name) CONTAINS toLower($term_{i}) THEN 0.90")
+                    elif len(term) > 3 and any(char.isdigit() for char in term):  # Model numbers like "500ix", "Aristo 500 ix"
+                        scoring_conditions.append(f"WHEN toLower(tr.powersource_name) CONTAINS toLower($term_{i}) THEN 0.93")
+                    else:  # Generic terms
+                        scoring_conditions.append(f"WHEN toLower(tr.combined_description) CONTAINS toLower($term_{i}) THEN 0.70")
+                
+                # Build the CASE statement with all scoring conditions
+                case_statement = "CASE " + " ".join(scoring_conditions) + " ELSE 0.5 END"
+                
+                text_search_query = f"""
+                MATCH (tr:Trinity)
+                WHERE {where_clause}
+                WITH tr, 
+                     {case_statement} as similarity_score
+                RETURN tr.trinity_id as trinity_id,
+                       tr.powersource_gin as powersource_gin,
+                       tr.feeder_gin as feeder_gin,
+                       tr.cooler_gin as cooler_gin,
+                       tr.powersource_name as powersource_name,
+                       tr.feeder_name as feeder_name,
+                       tr.cooler_name as cooler_name,
+                       tr.combined_description as combined_description,
+                       tr.order_count as order_count,
+                       similarity_score
+                ORDER BY similarity_score DESC, tr.order_count DESC
+                LIMIT $limit
+                """
+            
+            results = await self.neo4j_repo.execute_query(text_search_query, parameters)
+            logger.info(f"🔍 Trinity text search found {len(results)} results")
+            
+            return [
+                {
+                    "trinity_id": result["trinity_id"],
+                    "powersource_gin": result["powersource_gin"],
+                    "feeder_gin": result["feeder_gin"],
+                    "cooler_gin": result["cooler_gin"],
+                    "powersource_name": result["powersource_name"],
+                    "feeder_name": result["feeder_name"],
+                    "cooler_name": result["cooler_name"],
+                    "combined_description": result["combined_description"],
+                    "order_count": result["order_count"],
+                    "similarity_score": float(result["similarity_score"])
+                }
+                for result in results
+            ]
+            
+        except Exception as e:
+            logger.error(f"Error in Trinity text search fallback: {e}")
+            return []
+    
+    async def get_trinity_package_components(self, trinity_id: str) -> Optional[Dict[str, WeldingPackageComponent]]:
+        """
+        Get the individual components (PowerSource, Feeder, Cooler) for a Trinity combination.
+        
+        Args:
+            trinity_id: Trinity combination ID
+            
+        Returns:
+            Dictionary with component objects or None
+        """
+        try:
+            # Get Trinity details and component information
+            trinity_query = """
+            MATCH (tr:Trinity {trinity_id: $trinity_id})-[:COMPRISES]->(p:Product)
+            RETURN tr.trinity_id as trinity_id,
+                   tr.order_count as trinity_order_count,
+                   p.gin as product_gin,
+                   p.name as product_name,
+                   p.category as category,
+                   p.subcategory as subcategory,
+                   p.description as description,
+                   p.price as price
+            """
+            
+            results = await self.neo4j_repo.execute_query(trinity_query, {"trinity_id": trinity_id})
+            
+            if not results:
+                logger.warning(f"Trinity {trinity_id} not found")
+                return None
+            
+            # Organize components by category
+            components = {}
+            trinity_order_count = results[0]["trinity_order_count"]
+            
+            for result in results:
+                category = result["category"]
+                component = WeldingPackageComponent(
+                    product_id=result["product_gin"],
+                    product_name=result["product_name"],
+                    category=category,
+                    subcategory=result["subcategory"],
+                    description=result["description"],
+                    price=result["price"],
+                    sales_frequency=trinity_order_count,  # Use Trinity order count
+                    compatibility_score=1.0  # Perfect compatibility within Trinity
+                )
+                components[category] = component
+            
+            logger.info(f"✅ Trinity {trinity_id}: Found {len(components)} components")
+            return components
+            
+        except Exception as e:
+            logger.error(f"Error getting Trinity package components: {e}")
+            return None
     
     # =============================================================================
     # VECTOR COMPATIBILITY SEARCH WITH SMART FALLBACK
@@ -1873,7 +2523,7 @@ Identify which categories are needed:"""
     
     def _extract_key_terms(self, query: str) -> List[str]:
         """Extract key terms from compatibility query for text matching."""
-        # Simple keyword extraction - could be enhanced with NLP
+        # Enhanced keyword extraction including product names and model numbers
         import re
         
         # Common welding terms to look for
@@ -1885,18 +2535,200 @@ Identify which categories are needed:"""
             "amperage", "voltage", "power", "current"
         ]
         
+        # Product names and brand terms to look for
+        product_terms = [
+            "aristo", "warrior", "renegade", "robustfeed", "cool2",
+            "cool", "feed", "es", "cc", "cv", "ce", "ix", "lx",
+            "500", "400", "350", "300", "250", "200", "150", "100"
+        ]
+        
         query_lower = query.lower()
         found_terms = []
         
+        # Extract welding process terms
         for term in welding_terms:
             if term.lower() in query_lower:
                 found_terms.append(term)
         
-        # Also extract quoted phrases
+        # Extract product names and model numbers
+        for term in product_terms:
+            if term.lower() in query_lower:
+                found_terms.append(term)
+        
+        # Extract quoted phrases
         quoted_phrases = re.findall(r'"([^"]+)"', query)
         found_terms.extend(quoted_phrases)
         
+        # Extract potential model numbers (alphanumeric sequences)
+        model_patterns = re.findall(r'\b([A-Za-z]+\s*\d+\s*[A-Za-z]*)\b', query)
+        found_terms.extend(model_patterns)
+        
+        # Log what we found for debugging
+        if found_terms:
+            logger.info(f"🔍 Key terms extracted from '{query}': {found_terms}")
+        
         return list(set(found_terms))  # Remove duplicates
+    
+    async def _llm_enhance_key_terms(self, query: str, extracted_terms: List[str]) -> List[str]:
+        """
+        Use LLM to enhance key term extraction with domain knowledge and synonym mapping.
+        Fixes issues like 'pulse welding' not being recognized.
+        """
+        try:
+            enhancement_prompt = f"""
+You are a welding expert. Enhance this term extraction for better search results.
+
+Original query: "{query}"
+Extracted terms: {extracted_terms}
+
+Add missing welding domain terms by understanding synonyms and variants:
+
+Examples:
+- "pulse welding" → add ["MIG", "GMAW", "pulse"] (pulse is a MIG technique)
+- "wire welding" → add ["MIG", "GMAW"] 
+- "stick welding" → add ["STICK", "SMAW"]
+- "argon welding" → add ["TIG", "GTAW"]
+- "arc welding" → add ["STICK", "MIG", "TIG"]
+
+For "{query}", what additional terms should be included for better product matching?
+Consider welding processes, techniques, equipment types, and industry terminology.
+
+Return only the additional terms as a JSON array: ["term1", "term2", ...]
+"""
+            
+            response = await self.llm_client.chat.completions.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {"role": "system", "content": "You are a welding equipment expert who understands industry terminology and synonyms."},
+                    {"role": "user", "content": enhancement_prompt}
+                ],
+                max_tokens=200,
+                temperature=0.1
+            )
+            
+            llm_response = response.choices[0].message.content.strip()
+            logger.info(f"🤖 LLM term enhancement response: {llm_response}")
+            
+            # Parse LLM response
+            import json
+            try:
+                additional_terms = json.loads(llm_response)
+                if isinstance(additional_terms, list):
+                    enhanced_terms = extracted_terms + additional_terms
+                    unique_terms = list(set(enhanced_terms))
+                    logger.info(f"🤖 Enhanced terms: {extracted_terms} → {unique_terms}")
+                    return unique_terms
+                else:
+                    logger.warning(f"🤖 LLM response not a list: {llm_response}")
+                    return extracted_terms
+                    
+            except json.JSONDecodeError as e:
+                logger.warning(f"🤖 Failed to parse LLM enhancement: {e}")
+                return extracted_terms
+                
+        except Exception as e:
+            logger.error(f"🤖 Error in LLM term enhancement: {e}")
+            return extracted_terms
+    
+    async def _llm_rank_trinity_combinations(self, user_query: str, trinity_combinations: List[Dict]) -> List[Dict]:
+        """
+        Use LLM to intelligently rank Trinity combinations based on user intent and product preferences.
+        
+        Args:
+            user_query: Original user query expressing their intent
+            trinity_combinations: List of Trinity combinations with their descriptions
+            
+        Returns:
+            Trinity combinations re-ranked based on LLM assessment of user intent match
+        """
+        try:
+            if not trinity_combinations:
+                return trinity_combinations
+            
+            # Prepare Trinity combination summaries for LLM evaluation
+            trinity_summaries = []
+            for i, trinity in enumerate(trinity_combinations):
+                # Extract key product info from descriptions
+                ps_desc = trinity.get('powersource_name', '')
+                feeder_desc = trinity.get('feeder_name', '')
+                cooler_desc = trinity.get('cooler_name', '')
+                
+                # Clean HTML and extract key product names
+                import re
+                ps_clean = re.sub(r'<[^>]+>', '', ps_desc)
+                feeder_clean = re.sub(r'<[^>]+>', '', feeder_desc)
+                cooler_clean = re.sub(r'<[^>]+>', '', cooler_desc)
+                
+                summary = f"Trinity {i+1}: Power Source: {ps_clean[:100]}... | Feeder: {feeder_clean[:50]}... | Cooler: {cooler_clean[:50]}..."
+                trinity_summaries.append(summary)
+            
+            # Create LLM prompt for intelligent ranking
+            ranking_prompt = f"""
+You are an expert welding equipment specialist. A user has made this request: "{user_query}"
+
+I have {len(trinity_combinations)} Trinity welding equipment combinations to choose from. Please rank them from best (1) to worst ({len(trinity_combinations)}) based on how well they match the user's specific requirements and product preferences.
+
+Trinity Combinations:
+{chr(10).join(trinity_summaries)}
+
+Focus on:
+1. Product name matches (if user mentions specific brands/models like "Aristo", "Warrior", "Renegade")
+2. Technical specifications that align with user needs
+3. Overall suitability for the expressed welding requirements
+
+Respond with ONLY a JSON array of rankings, where each object has "trinity_index" (0-based) and "score" (0.0-1.0, higher is better):
+[{{"trinity_index": 0, "score": 0.95}}, {{"trinity_index": 1, "score": 0.85}}, ...]
+"""
+            
+            # Get LLM ranking using existing LLM client
+            response = await self.llm_client.chat.completions.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {"role": "system", "content": "You are a welding equipment expert who ranks equipment combinations based on user requirements."},
+                    {"role": "user", "content": ranking_prompt}
+                ],
+                max_tokens=500,
+                temperature=0.1
+            )
+            
+            llm_response = response.choices[0].message.content.strip()
+            logger.info(f"🤖 LLM Trinity ranking response: {llm_response}")
+            
+            # Parse LLM response
+            import json
+            try:
+                rankings = json.loads(llm_response)
+                
+                # Apply LLM scores to Trinity combinations
+                ranked_combinations = []
+                for ranking in rankings:
+                    trinity_idx = ranking['trinity_index']
+                    llm_score = ranking['score']
+                    
+                    if 0 <= trinity_idx < len(trinity_combinations):
+                        trinity = trinity_combinations[trinity_idx].copy()
+                        trinity['llm_score'] = llm_score
+                        ranked_combinations.append(trinity)
+                
+                # Sort by LLM score (highest first)
+                ranked_combinations.sort(key=lambda x: x['llm_score'], reverse=True)
+                
+                logger.info(f"🤖 LLM successfully ranked {len(ranked_combinations)} Trinity combinations")
+                return ranked_combinations
+                
+            except json.JSONDecodeError as e:
+                logger.warning(f"🤖 Failed to parse LLM ranking response: {e}")
+                # Fallback: return original order with default scores
+                for trinity in trinity_combinations:
+                    trinity['llm_score'] = trinity.get('similarity_score', 0.5)
+                return trinity_combinations
+                
+        except Exception as e:
+            logger.error(f"🤖 Error in LLM Trinity ranking: {e}")
+            # Fallback: return original order with default scores
+            for trinity in trinity_combinations:
+                trinity['llm_score'] = trinity.get('similarity_score', 0.5)
+            return trinity_combinations
     
     def _calculate_basic_compatibility_score(self, product_result: Dict, key_terms: List[str]) -> float:
         """Calculate basic compatibility score based on term matching."""

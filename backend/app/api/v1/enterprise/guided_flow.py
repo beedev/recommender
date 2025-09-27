@@ -35,6 +35,38 @@ router = APIRouter()
 # REQUEST/RESPONSE MODELS
 # =============================================================================
 
+class TrinitySearchRequest(BaseModel):
+    """Request for Trinity semantic search"""
+    query: str = Field(..., min_length=3, description="Natural language query for Trinity search")
+    limit: int = Field(default=5, ge=1, le=10, description="Maximum Trinity combinations to return")
+    session_id: str = Field(..., description="Session ID for tracking")
+    user_context: Dict[str, Any] = Field(default={}, description="User context")
+
+class TrinitySearchResponse(BaseModel):
+    """Response for Trinity semantic search"""
+    trinity_combinations: List[Dict[str, Any]] = Field(default_factory=list)
+    search_query: str
+    total_found: int
+    processing_time_ms: float
+    session_id: str
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "trinity_combinations": [
+                    {
+                        "trinity_id": "0445250880_F000000007_F000000005",
+                        "powersource_name": "Renegade ES 300i Kit w/welding cables",
+                        "feeder_name": "No Feeder Available",
+                        "cooler_name": "No Cooler Available",
+                        "similarity_score": 0.95,
+                        "order_count": 5,
+                        "combined_description": "Complete welding system featuring..."
+                    }
+                ]
+            }
+        }
+
 class GuidedStepRequest(BaseModel):
     """Base request for guided flow steps"""
     query: str = Field(..., description="Original user query for context")
@@ -100,6 +132,113 @@ class GuidedPackageResponse(BaseModel):
 # =============================================================================
 # GUIDED FLOW ENDPOINTS
 # =============================================================================
+
+@router.post("/trinity/search", response_model=TrinitySearchResponse)
+async def search_trinity_combinations(
+    request: TrinitySearchRequest,
+    neo4j_repo: Neo4jRepository = Depends(get_neo4j_repository)
+):
+    """
+    Trinity Semantic Search: Find complete Trinity packages using natural language
+    
+    This endpoint provides semantic search over Trinity combinations (PowerSource + Feeder + Cooler)
+    using their combined descriptions for guided flow functionality.
+    """
+    try:
+        start_time = time.time()
+        logger.info(f"Trinity semantic search: '{request.query}' (session: {request.session_id})")
+        
+        # Get smart Neo4j service for Trinity search
+        smart_neo4j = await get_smart_neo4j_service(neo4j_repo)
+        
+        # Access the simple Neo4j agent for Trinity search
+        simple_agent = smart_neo4j.simple_agent
+        
+        # Perform Trinity semantic search
+        trinity_results = await simple_agent.search_trinity_combinations(request.query, limit=request.limit)
+        
+        processing_time = (time.time() - start_time) * 1000
+        
+        logger.info(f"Trinity search found {len(trinity_results)} combinations in {processing_time:.1f}ms")
+        
+        return TrinitySearchResponse(
+            trinity_combinations=trinity_results,
+            search_query=request.query,
+            total_found=len(trinity_results),
+            processing_time_ms=processing_time,
+            session_id=request.session_id
+        )
+        
+    except Exception as e:
+        logger.error(f"Trinity search error: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Trinity search failed: {str(e)}"
+        )
+
+@router.post("/trinity/{trinity_id}/components")
+async def get_trinity_components(
+    trinity_id: str,
+    session_id: str = Query(..., description="Session ID for tracking"),
+    neo4j_repo: Neo4jRepository = Depends(get_neo4j_repository)
+):
+    """
+    Get individual components for a specific Trinity combination
+    
+    Returns the PowerSource, Feeder, and Cooler components that make up the Trinity,
+    formatted for use in guided flow.
+    """
+    try:
+        start_time = time.time()
+        logger.info(f"Getting Trinity components for {trinity_id} (session: {session_id})")
+        
+        # Get smart Neo4j service 
+        smart_neo4j = await get_smart_neo4j_service(neo4j_repo)
+        simple_agent = smart_neo4j.simple_agent
+        
+        # Get Trinity components
+        components = await simple_agent.get_trinity_package_components(trinity_id)
+        
+        if not components:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Trinity combination {trinity_id} not found"
+            )
+        
+        processing_time = (time.time() - start_time) * 1000
+        
+        # Format components for guided flow
+        response_components = {}
+        for category, component in components.items():
+            response_components[category.lower()] = {
+                "product_id": component.product_id,
+                "product_name": component.product_name,
+                "category": component.category,
+                "subcategory": component.subcategory,
+                "description": component.description,
+                "price": component.price,
+                "compatibility_score": component.compatibility_score,
+                "sales_frequency": component.sales_frequency
+            }
+        
+        logger.info(f"Retrieved {len(components)} Trinity components in {processing_time:.1f}ms")
+        
+        return {
+            "trinity_id": trinity_id,
+            "components": response_components,
+            "total_components": len(components),
+            "processing_time_ms": processing_time,
+            "session_id": session_id
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Trinity component retrieval error: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to retrieve Trinity components: {str(e)}"
+        )
 
 @router.post("/powersources", response_model=GuidedStepResponse)
 async def get_guided_powersources(
